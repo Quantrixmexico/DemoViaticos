@@ -135,10 +135,10 @@ export default function AppShell({ user, children }: { user: any; children: Reac
       {/* ── Sidebar (desktop) ──────────────────────────────── */}
       <aside className="sidebar">
         <div style={{ padding:"8px 12px 16px", display:"flex", alignItems:"center", gap:10 }}>
-          <Image src="/logo.png" alt="Grupo Zapata" width={36} height={36}
+          <Image src="/logo.png" alt="Tu empresa AQUI" width={36} height={36}
             style={{ borderRadius:8, objectFit:"cover" }} />
           <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:13, fontWeight:700, letterSpacing:"-0.02em" }}>Grupo Zapata</div>
+            <div style={{ fontSize:13, fontWeight:700, letterSpacing:"-0.02em" }}>Tu empresa AQUI</div>
             <div style={{ fontSize:10, color:"var(--text-3)" }}>Viáticos</div>
           </div>
           <div style={{ display:"flex", gap:4, alignItems:"center" }}>
@@ -293,7 +293,7 @@ export default function AppShell({ user, children }: { user: any; children: Reac
       <div className="mobile-topbar">
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           <Image src="/logo.png" alt="GZ" width={24} height={24} style={{ borderRadius:4, objectFit:"cover" }}/>
-          <span style={{ fontSize:13, fontWeight:700 }}>Grupo Zapata</span>
+          <span style={{ fontSize:13, fontWeight:700 }}>Tu empresa AQUI</span>
         </div>
         <div style={{ display:"flex", gap:6 }}>
           <NotificationBell userId={user.id}/>

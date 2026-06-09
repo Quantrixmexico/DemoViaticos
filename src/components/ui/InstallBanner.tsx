@@ -92,7 +92,7 @@ export function InstallBanner() {
               style={{ width:"100%", height:"100%", objectFit:"contain" }}/>
           </div>
           <div>
-            <div style={{ fontWeight:700, fontSize:17, marginBottom:2 }}>Viáticos Grupo Zapata</div>
+            <div style={{ fontWeight:700, fontSize:17, marginBottom:2 }}>Viáticos Tu empresa AQUI</div>
             <div style={{ fontSize:13, color:"var(--text-3)" }}>
               Instala la app para acceso rápido
             </div>

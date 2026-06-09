@@ -5,7 +5,7 @@ import { PWARegister } from "@/components/ui/PWARegister"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Viáticos Grupo Zapata",
+  title: "Viáticos Tu empresa AQUI",
   description: "Sistema de gestión de viáticos y gastos corporativos",
   manifest: "/manifest.json",
   appleWebApp: {

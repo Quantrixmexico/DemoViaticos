@@ -51,13 +51,13 @@ export default function ResetPasswordPage() {
         <div style={{ textAlign:"center", marginBottom:28 }}>
           <div style={{ width:64, height:64, margin:"0 auto 14px", borderRadius:16,
             overflow:"hidden", background:"white", padding:3, boxShadow:"0 8px 32px rgba(0,0,0,.2)" }}>
-            <Image src="/logo.png" alt="Grupo Zapata" width={58} height={58}
+            <Image src="/logo.png" alt="Tu empresa AQUI" width={58} height={58}
               style={{ width:"100%", height:"100%", objectFit:"contain" }}/>
           </div>
           <div style={{ fontSize:20, fontWeight:700, letterSpacing:"-0.02em" }}>
             Nueva contraseña
           </div>
-          <div style={{ fontSize:13, color:"var(--text-3)", marginTop:4 }}>Grupo Zapata · Viáticos</div>
+          <div style={{ fontSize:13, color:"var(--text-3)", marginTop:4 }}>Tu empresa AQUI · Viáticos</div>
         </div>
 
         {success ? (
