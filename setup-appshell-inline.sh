@@ -1,3 +1,7 @@
+#!/bin/bash
+set -e
+
+cat > 'src/components/layout/AppShell.tsx' << 'FILEEOF'
 "use client"
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -403,3 +407,11 @@ export function AppShell({ user, children }: Props) {
 
 export default AppShell
 
+FILEEOF
+
+npm run build 2>&1 | grep -E "✓ Compiled|Type error|error TS" | head -3
+
+git add .
+git commit -m "fix: AppShell inline layout styles guarantee grid works, added default export"
+git push
+echo "✓ Done"
