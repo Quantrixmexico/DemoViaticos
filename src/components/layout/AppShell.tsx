@@ -194,7 +194,7 @@ export function AppShell({ user, children }: Props) {
         <div style={{ display:"flex", alignItems:"center", gap:10, padding:"4px 8px 12px" }}>
           <Image src="/logo.png" alt="Logo" width={36} height={36} style={{ borderRadius:8 }}/>
           <div>
-            <div style={{ fontSize:12, fontWeight:700 }}>Grupo Zapata</div>
+            <div style={{ fontSize:12, fontWeight:700 }}>Demo Viáticos</div>
             <div style={{ fontSize:10, color:"var(--text-3, #888)" }}>Viáticos</div>
           </div>
         </div>
