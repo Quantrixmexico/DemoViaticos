@@ -136,7 +136,7 @@ export default function AdminUsuariosPage() {
 
       {/* Modal nuevo usuario */}
       {creando && (
-        <Modal title="Nuevo usuario" onClose={()=>setCreando(false)} onSave={crearUsuario} guardando={guardando}>
+        <Modal title="Nuevo usuario" onClose={()= guardando={guardando}>setCreando(false)} onSave={crearUsuario} guardando={guardando}>
           <FormField label="Nombre completo">
             <input className="input" value={nuevoForm.nombre} onChange={e=>setNuevoForm({...nuevoForm,nombre:e.target.value})}/>
           </FormField>
@@ -173,7 +173,7 @@ export default function AdminUsuariosPage() {
 
       {/* Modal editar */}
       {editando && (
-        <Modal title={`Editar · ${editando.nombre}`} onClose={()=>setEditando(null)} onSave={guardar}>
+        <Modal title={`Editar · ${editando.nombre}`} onClose={()= guardando={guardando}>setEditando(null)} onSave={guardar}>
           <FormField label="Nombre">
             <input className="input" value={editando.nombre||""} onChange={e=>setEditando({...editando,nombre:e.target.value})}/>
           </FormField>
