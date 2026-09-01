@@ -3,8 +3,6 @@ import { useState, useEffect, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 
 const ROLES = ["usuario","gerente","tesoreria","contador","admin"]
-const WORKER_URL = process.env.NEXT_PUBLIC_WORKER_URL || ""
-const WORKER_SECRET = "viaticos-zapata-push-2026"
 
 async function callWorker(action: string, payload: any) {
   const res = await fetch(WORKER_URL + "/" + action, {
