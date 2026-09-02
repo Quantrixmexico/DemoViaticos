@@ -5,9 +5,9 @@ import { createClient } from "@/lib/supabase/client"
 const ROLES = ["usuario","gerente","tesoreria","contador","admin"]
 
 async function callWorker(action: string, payload: any) {
-  const res = await fetch(WORKER_URL + "/" + action, {
+  const res = await fetch(`/api/admin/users/${action}`, {
     method:"POST",
-    headers:{"Content-Type":"application/json","Authorization":"Bearer "+WORKER_SECRET},
+    headers:{"Content-Type":"application/json"},
     body: JSON.stringify(payload),
   })
   const data = await res.json()
