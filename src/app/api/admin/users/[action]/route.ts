@@ -7,15 +7,21 @@
 //  cookie sb-*-auth-token directamente.
 // ════════════════════════════════════════════════════════════════════
 import { NextRequest, NextResponse } from "next/server"
+import { getCloudflareContext } from "@opennextjs/cloudflare"
 
 
 // Env vars se leen EN RUNTIME (dentro del request), no al cargar el módulo.
 // En Cloudflare Workers + OpenNext, los secrets solo existen dentro del handler.
 function getEnv() {
+  // Cloudflare secrets/vars vienen del context, no de process.env
+  let cfEnv: any = {}
+  try {
+    cfEnv = getCloudflareContext().env || {}
+  } catch {}
   return {
-    SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    SERVICE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    SUPABASE_URL: cfEnv.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    ANON_KEY:     cfEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SERVICE_KEY:  cfEnv.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
   }
 }
 
