@@ -1,14 +1,17 @@
+
 // ════════════════════════════════════════════════════════════════════
-//  API route para operaciones administrativas de usuarios
-//  Se ejecuta como Cloudflare Pages Function.
-//  Usa SUPABASE_SERVICE_ROLE_KEY (server-only) para operaciones admin.
+//  API route admin/users — versión standalone (sin @/lib/supabase/server)
+//
+//  No usa Supabase SSR client para evitar el bug de interopDefault
+//  con OpenNext en Cloudflare Pages. Verifica sesión leyendo el
+//  cookie sb-*-auth-token directamente.
 // ════════════════════════════════════════════════════════════════════
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
 
 export const runtime = "edge"
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 function iniciales(nombre: string): string {
@@ -21,12 +24,73 @@ function iniciales(nombre: string): string {
     .slice(0, 3)
 }
 
-async function requireAdmin() {
-  const sb = await createClient()
-  const { data: { user } } = await sb.auth.getUser()
-  if (!user) return { error: "No autenticado", status: 401 as const }
-  const { data: profile } = await sb.from("usuarios").select("rol").eq("id", user.id).single()
-  if (profile?.rol !== "admin") return { error: "No autorizado", status: 403 as const }
+// Extrae el access_token del cookie de Supabase
+function extractAccessToken(req: NextRequest): string | null {
+  const cookieHeader = req.headers.get("cookie") || ""
+  const cookies: Record<string, string> = {}
+  cookieHeader.split(";").forEach(c => {
+    const [k, ...v] = c.trim().split("=")
+    if (k) cookies[k] = v.join("=")
+  })
+
+  // Buscar cookie sb-*-auth-token
+  const authCookieName = Object.keys(cookies).find(
+    k => k.startsWith("sb-") && k.endsWith("-auth-token")
+  )
+  if (!authCookieName) return null
+
+  let cookieValue = cookies[authCookieName]
+  if (!cookieValue) return null
+
+  // Supabase v2 prefija con "base64-"
+  if (cookieValue.startsWith("base64-")) {
+    try {
+      cookieValue = atob(cookieValue.slice(7))
+    } catch {
+      return null
+    }
+  } else {
+    try {
+      cookieValue = decodeURIComponent(cookieValue)
+    } catch {}
+  }
+
+  try {
+    const parsed = JSON.parse(cookieValue)
+    return parsed.access_token || null
+  } catch {
+    return null
+  }
+}
+
+async function requireAdmin(req: NextRequest) {
+  const token = extractAccessToken(req)
+  if (!token) return { error: "No autenticado (sin cookie)", status: 401 as const }
+
+  // Validar el token contra Supabase
+  const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: {
+      apikey: ANON_KEY!,
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!userRes.ok) return { error: "Sesión inválida", status: 401 as const }
+  const user: any = await userRes.json()
+
+  // Verificar rol admin usando service_key
+  const profileRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/usuarios?id=eq.${user.id}&select=rol`,
+    {
+      headers: {
+        apikey: SERVICE_KEY!,
+        Authorization: `Bearer ${SERVICE_KEY}`,
+      },
+    }
+  )
+  const profiles: any = await profileRes.json()
+  if (!Array.isArray(profiles) || profiles[0]?.rol !== "admin") {
+    return { error: "No autorizado (no eres admin)", status: 403 as const }
+  }
   return { ok: true }
 }
 
@@ -136,30 +200,37 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ action: string }> }
 ) {
-  const { action } = await params
+  try {
+    const { action } = await params
 
-  if (!SERVICE_KEY) {
-    return NextResponse.json(
-      { error: "SUPABASE_SERVICE_ROLE_KEY no configurada en el servidor" },
-      { status: 500 }
-    )
+    if (!SERVICE_KEY) {
+      return NextResponse.json(
+        { error: "SUPABASE_SERVICE_ROLE_KEY no configurada" },
+        { status: 500 }
+      )
+    }
+
+    const authCheck = await requireAdmin(req)
+    if ("error" in authCheck) {
+      return NextResponse.json({ error: authCheck.error }, { status: authCheck.status })
+    }
+
+    const body = await req.json().catch(() => ({}))
+
+    let result: any
+    switch (action) {
+      case "createUser":    result = await createUserAction(body); break
+      case "resetPassword": result = await resetPasswordAction(body); break
+      case "deleteUser":    result = await deleteUserAction(body); break
+      default: return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 })
+    }
+
+    const status = "error" in result ? (result.status || 500) : 200
+    return NextResponse.json(result, { status })
+  } catch (e: any) {
+    // Nunca dejamos que Next devuelva HTML de error — siempre JSON
+    return NextResponse.json({ error: e.message || String(e) }, { status: 500 })
   }
-
-  const authCheck = await requireAdmin()
-  if ("error" in authCheck) {
-    return NextResponse.json({ error: authCheck.error }, { status: authCheck.status })
-  }
-
-  const body = await req.json().catch(() => ({}))
-
-  let result: any
-  switch (action) {
-    case "createUser":    result = await createUserAction(body); break
-    case "resetPassword": result = await resetPasswordAction(body); break
-    case "deleteUser":    result = await deleteUserAction(body); break
-    default: return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 })
-  }
-
-  const status = "error" in result ? (result.status || 500) : 200
-  return NextResponse.json(result, { status })
 }
+
+
