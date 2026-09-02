@@ -7,3 +7,8 @@ out/
 .open-next
 .wrangler
 .dev.vars
+.vercel
+.env*
+
+# Scripts locales de setup
+*.sh
