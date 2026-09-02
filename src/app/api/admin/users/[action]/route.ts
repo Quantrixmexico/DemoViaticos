@@ -108,9 +108,22 @@ async function requireAdmin(req: NextRequest) {
 
 async function createUserAction(body: any) {
   const { SUPABASE_URL, SERVICE_KEY } = getEnv()
-  const { nombre, correo, password, rol, centro_id, gerente_id, division } = body
+  // Tolerante a variantes de nombres de campo (email/correo, name/nombre, etc.)
+  const nombre    = body.nombre ?? body.name ?? body.nombre_completo ?? ""
+  const correo    = body.correo ?? body.email ?? ""
+  const password  = body.password ?? body.contrasena ?? body.pwd ?? ""
+  const rol       = body.rol ?? body.role ?? ""
+  const centro_id = body.centro_id ?? body.centroId ?? body.centro ?? null
+  const gerente_id= body.gerente_id ?? body.gerenteId ?? body.gerente ?? null
+  const division  = body.division ?? body.division_sap ?? null
+
   if (!correo || !password || !nombre || !rol) {
-    return { error: "Faltan campos: nombre, correo, password, rol", status: 400 as const }
+    return {
+      error: "Faltan campos requeridos",
+      recibido: { nombre: !!nombre, correo: !!correo, password: !!password, rol: !!rol },
+      body_keys: Object.keys(body),
+      status: 400 as const,
+    }
   }
 
   const authRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
