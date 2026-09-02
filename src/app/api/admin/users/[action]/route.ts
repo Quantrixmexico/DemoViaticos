@@ -100,10 +100,11 @@ async function requireAdmin(req: NextRequest) {
     }
   )
   const profiles: any = await profileRes.json()
-  if (!Array.isArray(profiles) || profiles[0]?.rol !== "admin") {
+  const rol = Array.isArray(profiles) ? profiles[0]?.rol : null
+  if (rol !== "admin" && rol !== "demo") {
     return { error: "No autorizado (no eres admin)", status: 403 as const }
   }
-  return { ok: true }
+  return { ok: true, rol }
 }
 
 async function createUserAction(body: any) {
@@ -245,6 +246,17 @@ export async function POST(
     }
 
     const body = await req.json().catch(() => ({}))
+    const callerRol = (authCheck as any).rol
+
+    // Restricciones para rol demo
+    if (callerRol === "demo") {
+      if (action === "deleteUser" || action === "resetPassword") {
+        return NextResponse.json({ error: "Modo demo: acción no permitida" }, { status: 403 })
+      }
+      if (action === "createUser" && (body.rol === "admin" || body.role === "admin")) {
+        return NextResponse.json({ error: "Modo demo: no puedes crear usuarios admin" }, { status: 403 })
+      }
+    }
 
     let result: any
     switch (action) {

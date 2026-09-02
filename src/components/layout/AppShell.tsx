@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { UsuarioProvider } from "@/lib/UsuarioContext"
 import type { LucideIcon } from "lucide-react"
 import {
   Home, LayoutDashboard, CheckCircle2, ShieldCheck, Banknote, HandCoins,
@@ -18,6 +19,7 @@ interface NavItem  { id: string; label: string; icon: LucideIcon; href: string }
 interface NavGroup { label?: string; items: NavItem[] }
 
 const NAV_BY_ROL: Record<string, NavGroup[]> = {
+  get demo() { return this.admin },
   usuario: [
     { items: [{ id:"dashboard", label:"Inicio", icon: Home, href:"/dashboard" }]},
     { label:"Solicitudes", items: [
@@ -386,7 +388,20 @@ export function AppShell({ user, children }: Props) {
       </div>
 
       {/* MAIN */}
-      <main style={mainStyle}>{children}</main>
+      <main style={mainStyle}>
+        {user.rol === "demo" && (
+          <div style={{
+            background: "linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%)",
+            color: "#1a1a1a", padding: "8px 16px", borderRadius: 8,
+            marginBottom: 16, fontSize: 13, fontWeight: 600,
+            display: "flex", alignItems: "center", gap: 8,
+          }}>
+            <span style={{fontSize:16}}>👁</span>
+            MODO DEMO — Puedes explorar y crear registros, pero las acciones destructivas (borrar, desactivar) están bloqueadas.
+          </div>
+        )}
+        <UsuarioProvider usuario={user}>{children}</UsuarioProvider>
+      </main>
 
       {/* BOTTOM NAV MOBILE */}
       <nav style={mobileNavStyle}>

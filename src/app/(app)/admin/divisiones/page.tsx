@@ -1,6 +1,8 @@
 "use client"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { useUsuario } from "@/lib/UsuarioContext"
+import { esDemo, MSG_DEMO_BLOQUEADO } from "@/lib/permisos"
 import { Layers, Plus, Edit2, Power, Trash2 } from "lucide-react"
 
 interface Division {
@@ -34,6 +36,8 @@ const Modal = ({ title, onClose, onSave, guardando, children }: any) => (
 )
 
 export default function AdminDivisionesPage() {
+  const usuarioActual = useUsuario()
+  const soyDemo = esDemo(usuarioActual.rol)
   const [divisiones, setDivisiones] = useState<Division[]>([])
   const [loading, setLoading] = useState(true)
   const [editando, setEditando] = useState<Division|null>(null)
@@ -102,6 +106,7 @@ export default function AdminDivisionesPage() {
   }
 
   const toggleActivo = async (d: Division) => {
+    if (soyDemo && d.activo) { showToast(MSG_DEMO_BLOQUEADO); return }
     const sb = createClient()
     await sb.from("divisiones").update({ activo: !d.activo }).eq("codigo", d.codigo)
     showToast(d.activo ? "División desactivada" : "División reactivada")

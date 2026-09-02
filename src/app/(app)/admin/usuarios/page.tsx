@@ -1,8 +1,10 @@
 "use client"
 import { useState, useEffect, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { useUsuario } from "@/lib/UsuarioContext"
+import { esDemo, MSG_DEMO_BLOQUEADO } from "@/lib/permisos"
 
-const ROLES = ["usuario","gerente","tesoreria","contador","admin"]
+const ROLES = ["usuario","gerente","tesoreria","contador","admin","demo"]
 
 async function callWorker(action: string, payload: any) {
   const res = await fetch(`/api/admin/users/${action}`, {
@@ -41,6 +43,8 @@ const Modal = ({ title, onClose, onSave, guardando, children }: any) => (
 )
 
 export default function AdminUsuariosPage() {
+  const usuarioActual = useUsuario()
+  const soyDemo = esDemo(usuarioActual.rol)
   const [usuarios, setUsuarios] = useState<any[]>([])
   const [centros, setCentros] = useState<any[]>([])
   const [divisiones, setDivisiones] = useState<any[]>([])
@@ -98,6 +102,7 @@ export default function AdminUsuariosPage() {
   }
 
   const resetPassword = async (userId:string) => {
+    if (soyDemo) { showToast(MSG_DEMO_BLOQUEADO); return }
     const pwd = prompt("Nueva contraseña (mínimo 6 caracteres):")
     if (!pwd || pwd.length < 6) return
     try {
@@ -107,6 +112,7 @@ export default function AdminUsuariosPage() {
   }
 
   const desactivar = async (id:string, nombre:string) => {
+    if (soyDemo) { showToast(MSG_DEMO_BLOQUEADO); return }
     if (!confirm(`¿Desactivar a ${nombre}?`)) return
     const sb = createClient()
     await sb.from("usuarios").update({ activo:false }).eq("id",id)
