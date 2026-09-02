@@ -9,9 +9,15 @@
 import { NextRequest, NextResponse } from "next/server"
 
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+// Env vars se leen EN RUNTIME (dentro del request), no al cargar el módulo.
+// En Cloudflare Workers + OpenNext, los secrets solo existen dentro del handler.
+function getEnv() {
+  return {
+    SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SERVICE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  }
+}
 
 function iniciales(nombre: string): string {
   return (nombre || "")
@@ -63,6 +69,7 @@ function extractAccessToken(req: NextRequest): string | null {
 }
 
 async function requireAdmin(req: NextRequest) {
+  const { SUPABASE_URL, ANON_KEY, SERVICE_KEY } = getEnv()
   const token = extractAccessToken(req)
   if (!token) return { error: "No autenticado (sin cookie)", status: 401 as const }
 
@@ -94,6 +101,7 @@ async function requireAdmin(req: NextRequest) {
 }
 
 async function createUserAction(body: any) {
+  const { SUPABASE_URL, SERVICE_KEY } = getEnv()
   const { nombre, correo, password, rol, centro_id, gerente_id, division } = body
   if (!correo || !password || !nombre || !rol) {
     return { error: "Faltan campos: nombre, correo, password, rol", status: 400 as const }
@@ -158,6 +166,7 @@ async function createUserAction(body: any) {
 }
 
 async function resetPasswordAction(body: any) {
+  const { SUPABASE_URL, SERVICE_KEY } = getEnv()
   const { userId, newPassword } = body
   if (!userId || !newPassword) return { error: "Falta userId o newPassword", status: 400 as const }
   if (newPassword.length < 6) return { error: "Mínimo 6 caracteres", status: 400 as const }
@@ -180,6 +189,7 @@ async function resetPasswordAction(body: any) {
 }
 
 async function deleteUserAction(body: any) {
+  const { SUPABASE_URL, SERVICE_KEY } = getEnv()
   const { userId } = body
   if (!userId) return { error: "Falta userId", status: 400 as const }
 
@@ -202,6 +212,7 @@ export async function POST(
   try {
     const { action } = await params
 
+    const { SERVICE_KEY } = getEnv()
     if (!SERVICE_KEY) {
       return NextResponse.json(
         { error: "SUPABASE_SERVICE_ROLE_KEY no configurada" },
