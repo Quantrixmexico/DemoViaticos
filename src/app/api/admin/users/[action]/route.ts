@@ -1,16 +1,12 @@
 // ════════════════════════════════════════════════════════════════════
 //  API route para operaciones administrativas de usuarios
-//
-//  Reemplaza el Cloudflare Worker externo. Usa el service_role_key
-//  de Supabase (var server-only, sin NEXT_PUBLIC_) para hacer
-//  operaciones admin como crear usuarios, resetear contraseñas, etc.
-//
-//  Se ejecuta como Cloudflare Pages Function automáticamente.
+//  Se ejecuta como Cloudflare Pages Function.
+//  Usa SUPABASE_SERVICE_ROLE_KEY (server-only) para operaciones admin.
 // ════════════════════════════════════════════════════════════════════
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
-export const runtime = "edge"  // Requerido para Cloudflare Pages
+export const runtime = "edge"
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -40,7 +36,6 @@ async function createUserAction(body: any) {
     return { error: "Faltan campos: nombre, correo, password, rol", status: 400 as const }
   }
 
-  // 1. Crear auth user
   const authRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
     method: "POST",
     headers: {
@@ -66,7 +61,6 @@ async function createUserAction(body: any) {
 
   const userId = authData.id
 
-  // 2. Insertar en tabla usuarios
   const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
     method: "POST",
     headers: {
@@ -89,7 +83,6 @@ async function createUserAction(body: any) {
   })
 
   if (!profileRes.ok) {
-    // Rollback: borrar auth user
     await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
       method: "DELETE",
       headers: { apikey: SERVICE_KEY!, Authorization: `Bearer ${SERVICE_KEY}` },
@@ -152,7 +145,6 @@ export async function POST(
     )
   }
 
-  // Verificar que el caller sea admin
   const authCheck = await requireAdmin()
   if ("error" in authCheck) {
     return NextResponse.json({ error: authCheck.error }, { status: authCheck.status })
@@ -165,10 +157,9 @@ export async function POST(
     case "createUser":    result = await createUserAction(body); break
     case "resetPassword": result = await resetPasswordAction(body); break
     case "deleteUser":    result = await deleteUserAction(body); break
-    default:              return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 })
+    default: return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 })
   }
 
   const status = "error" in result ? (result.status || 500) : 200
   return NextResponse.json(result, { status })
 }
-
