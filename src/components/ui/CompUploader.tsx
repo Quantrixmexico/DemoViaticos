@@ -5,7 +5,7 @@ import { parseCFDIXml } from "@/lib/cfdi"
 import { normalizaCuentaAsync } from "@/lib/normalizaCuenta"
 import { getDiasMaxFactura } from "@/lib/ajustes"
 import type { CfdItem } from "@/types"
-import { FolderOpen, Loader2 } from "lucide-react"
+import { UploadCloud, Loader2 } from "lucide-react"
 
 const CUENTA_PATTERNS: [RegExp, string][] = [
   [/(peaje|caseta|autopista|telepeaje|iave)/i,          "__peaje__"],
@@ -196,21 +196,23 @@ export function CompUploader({ solicitudId, catalogoGastos, onAdd }: Props) {
   }, [solicitudId, onAdd])
 
   return (
-    <div>
-      <div className="card"
-        style={{ border:"2px dashed var(--border)", textAlign:"center", padding:"24px 20px",
-          cursor: uploading ? "default" : "pointer" }}
+    <div className="card form-section">
+      <div className="form-section-head">
+        <div className="card-title">Comprobantes</div>
+        <div className="form-section-desc">Sube el XML del CFDI; los tickets en PDF o foto se leen con OCR.</div>
+      </div>
+      <div className="dropzone" role="button" tabIndex={0} aria-busy={uploading}
+        style={{ cursor: uploading ? "default" : "pointer" }}
         onClick={() => !uploading && fileRef.current?.click()}
-        onDragOver={e => { e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor="var(--accent)" }}
-        onDragLeave={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--border)" }}
-        onDrop={e => { e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor="var(--border)"; processFiles(e.dataTransfer.files) }}>
-        <div style={{ marginBottom:6, color:"var(--text-3)", display:"flex", justifyContent:"center" }}>{uploading ? <Loader2 size={24} strokeWidth={1.75} className="spin"/> : <FolderOpen size={24} strokeWidth={1.75}/>}</div>
-        <div style={{ fontWeight:600, marginBottom:3, fontSize:13 }}>
-          {ocrProgress ? ocrProgress : uploading ? "Procesando…" : "Arrastra o clic para subir"}
+        onKeyDown={e => { if (!uploading && (e.key==="Enter"||e.key===" ")) { e.preventDefault(); fileRef.current?.click() } }}
+        onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add("over") }}
+        onDragLeave={e => { e.currentTarget.classList.remove("over") }}
+        onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove("over"); processFiles(e.dataTransfer.files) }}>
+        <div className="dropzone-icon">{uploading ? <Loader2 size={22} strokeWidth={1.75} className="spin"/> : <UploadCloud size={22} strokeWidth={1.75}/>}</div>
+        <div className="dropzone-title">
+          {ocrProgress ? ocrProgress : uploading ? "Procesando…" : "Arrastra archivos aquí o toca para elegir"}
         </div>
-        <div style={{ fontSize:11.5, color:"var(--text-3)" }}>
-          XML (CFDI), PDF o imagen — tickets con OCR automático
-        </div>
+        <div className="dropzone-text">XML (CFDI), PDF o imagen del ticket</div>
         <input ref={fileRef} type="file" accept=".xml,.pdf,image/*" multiple hidden
           onChange={e => processFiles(e.target.files)} />
       </div>

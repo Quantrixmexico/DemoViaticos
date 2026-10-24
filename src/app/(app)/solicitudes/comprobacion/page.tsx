@@ -1,5 +1,5 @@
 "use client"
-import { AlertTriangle, AlarmClock, Send, Paperclip } from "lucide-react"
+import { AlertTriangle, AlarmClock, Send, Paperclip, X, ChevronRight } from "lucide-react"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { Toast } from "@/components/ui/Toast"
 
@@ -120,60 +120,64 @@ function NuevaComprobacionInner() {
   }
 
   return (
-    <div style={{ maxWidth: 900 }}>
-      <div className="page-head">
+    <div className="form" style={{ maxWidth: 900 }}>
+      <div className="page-head" style={{ marginBottom: 4 }}>
         <div>
           <h1 className="page-title">Nueva comprobación</h1>
-          <div className="page-sub">Sube los CFDIs para comprobar tu anticipo</div>
+          <div className="page-sub">Elige el anticipo y sube los CFDIs que lo comprueban.</div>
         </div>
       </div>
 
       {/* Anticipo selector */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-title" style={{ marginBottom: 12 }}>Anticipo a comprobar</div>
+      <div className="card form-section">
+        <div className="form-section-head">
+          <div className="card-title">Anticipo a comprobar</div>
+          {!anticipoSel && anticipos.length > 0 && <div className="form-section-desc">Solo se muestran los anticipos liberados con saldo pendiente.</div>}
+        </div>
         {anticipos.length === 0 ? (
           <EmptyState variant="plain" compact icon={Paperclip} title="Nada por comprobar" text="No tienes anticipos liberados pendientes de comprobar."
             action={<button className="btn sm" onClick={() => router.push("/solicitudes/anticipo")}>Solicitar anticipo</button>}/>
         ) : anticipoSel ? (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontWeight: 600 }}>{anticipoSel.id}</div>
-              <div style={{ fontSize: 13, color: "var(--text-2)" }}>{anticipoSel.concepto}</div>
-              <div style={{ fontSize: 12, color: "var(--warn)", marginTop: 2 }}>
-                Saldo pendiente: {fmtMXN(anticipoSel.saldoPendiente)}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{anticipoSel.id}</div>
+              <div style={{ fontSize: 13, color: "var(--text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{anticipoSel.concepto}</div>
+              <div style={{ fontSize: 13, marginTop: 4 }}>
+                <span style={{ color: "var(--text-3)" }}>Saldo pendiente </span>
+                <strong style={{ color: "var(--warn)", fontVariantNumeric: "tabular-nums" }}>{fmtMXN(anticipoSel.saldoPendiente)}</strong>
               </div>
             </div>
-            <button className="btn ghost" onClick={() => setAnticipoSel(null)}>Cambiar</button>
+            <button className="btn sm" onClick={() => setAnticipoSel(null)}>Cambiar</button>
           </div>
         ) : (
           <div style={{ display: "grid", gap: 8 }}>
             {anticipos.map(a => (
-              <div key={a.id} className="card" style={{ cursor: "pointer", margin: 0 }}
+              <button key={a.id} type="button" className="row-press"
+                style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left",
+                  padding: "12px 14px", borderRadius: 14, border: "1px solid var(--border-soft)",
+                  background: "var(--surface-2)", color: "inherit", font: "inherit", cursor: "pointer" }}
                 onClick={() => setAnticipoSel(a)}>
-                <div className="spread">
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 13 }}>{a.id}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-2)" }}>{a.concepto}</div>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ color: "var(--warn)", fontWeight: 600 }}>{fmtMXN(a.saldoPendiente)}</div>
-                    <div style={{ fontSize: 11, color: "var(--text-3)" }}>{fmtFecha(a.fecha)}</div>
-                  </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, fontVariantNumeric: "tabular-nums" }}>{a.id}</div>
+                  <div style={{ fontSize: 12.5, color: "var(--text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.concepto}</div>
                 </div>
-              </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ color: "var(--warn)", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{fmtMXN(a.saldoPendiente)}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--text-3)" }}>{fmtFecha(a.fecha)}</div>
+                </div>
+                <ChevronRight size={16} strokeWidth={2} color="var(--text-3)" style={{ flexShrink: 0 }}/>
+              </button>
             ))}
           </div>
         )}
       </div>
 
       {/* Uploader */}
-      <div style={{ marginBottom: 16 }}>
-        <CompUploader solicitudId={anticipoSel?.id} catalogoGastos={catalogoGastos} onAdd={handleAdd} />
-      </div>
+      <CompUploader solicitudId={anticipoSel?.id} catalogoGastos={catalogoGastos} onAdd={handleAdd} />
 
       {/* Items list */}
       {items.length > 0 && (
-        <div className="card" style={{ marginBottom: 16, padding: 0, overflow: "auto" }}>
+        <div className="card" style={{ padding: 0, overflow: "auto" }}>
           <table className="t" style={{ minWidth: 960 }}>
             <thead>
               <tr>
@@ -189,7 +193,7 @@ function NuevaComprobacionInner() {
             <tbody>
               {items.map((it, i) => (
                 <tr key={i} style={{ ...(it.duplicado ? { textDecoration: "line-through", opacity: 0.5 } : {}) }}>
-                  <td className="mono" style={{ fontSize: 10, maxWidth: 120 }}>
+                  <td className="uuid" style={{ fontSize: 10.5, maxWidth: 120, color: "var(--text-3)" }}>
                     <span title={it.uuid} onClick={() => navigator.clipboard.writeText(it.uuid)}
                       style={{ cursor: "pointer" }}>
                       {it.uuid ? it.uuid.slice(0, 18) + "…" : "—"}
@@ -241,16 +245,16 @@ function NuevaComprobacionInner() {
                   </td>
                   <td className="num">{fmtMXN(it.total)}</td>
                   <td>
-                    <button onClick={() => setItems(prev => prev.filter((_, j) => j !== i))}
-                      style={{ background: "none", border: "none", color: "var(--text-3)", cursor: "pointer", fontSize: 16 }}>×</button>
+                    <button className="line-remove" aria-label="Quitar comprobante"
+                      onClick={() => setItems(prev => prev.filter((_, j) => j !== i))}><X size={14} strokeWidth={2}/></button>
                   </td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
-              <tr>
-                <td colSpan={4} style={{ textAlign: "right", fontWeight: 600, padding: "10px 12px" }}>Total a comprobar</td>
-                <td className="num" style={{ fontWeight: 700, fontSize: 16 }}>{fmtMXN(total)}</td>
+              <tr className="total-row">
+                <td colSpan={5} className="total-label">Total a comprobar</td>
+                <td className="num total-value">{fmtMXN(total)}</td>
                 <td />
               </tr>
             </tfoot>
@@ -259,9 +263,9 @@ function NuevaComprobacionInner() {
       )}
 
       {/* Toast */}
-      <Toast message={toast?.msg} style={{ marginBottom: 12 }}/>
+      <Toast message={toast?.msg} style={{ marginBottom: 0 }}/>
 
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+      <div className="form-actions">
         <button className="btn ghost" onClick={() => router.push("/solicitudes")}>Cancelar</button>
         <button className="btn primary" onClick={handleEnviar}
           disabled={enviando || !anticipoSel || total <= 0}

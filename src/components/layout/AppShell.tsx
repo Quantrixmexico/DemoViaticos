@@ -352,14 +352,9 @@ export function AppShell({ user, children }: Props) {
       {/* MAIN */}
       <main style={mainStyle}>
         {user.rol === "demo" && (
-          <div style={{
-            background: "var(--warn-soft)", color: "var(--warn)",
-            border: "1px solid color-mix(in srgb, var(--warn) 25%, transparent)",
-            padding: "9px 14px", borderRadius: 14, marginBottom: 20,
-            fontSize: 13, fontWeight: 500, display: "flex", alignItems: "center", gap: 10,
-          }}>
-            <Eye size={16} strokeWidth={2} style={{ flexShrink:0 }}/>
-            <span>Modo demo: puedes explorar y crear registros. Borrar y desactivar están bloqueados.</span>
+          <div className="demo-strip" role="note">
+            <Eye size={14} strokeWidth={2}/>
+            <span><b>Modo demo.</b> Puedes explorar y crear registros; borrar y desactivar están bloqueados.</span>
           </div>
         )}
         <div key={pathname} className="page-enter" style={{ maxWidth: 1280, margin: "0 auto" }}>

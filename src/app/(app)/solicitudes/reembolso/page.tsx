@@ -1,5 +1,5 @@
 "use client"
-import { AlertTriangle, AlarmClock, FolderOpen, Send } from "lucide-react"
+import { AlertTriangle, AlarmClock, Send, X, UploadCloud } from "lucide-react"
 import { Toast } from "@/components/ui/Toast"
 import { useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
@@ -157,40 +157,50 @@ export default function NuevoReembolsoPage() {
   }
 
   return (
-    <div style={{ maxWidth: 1000 }}>
-      <div className="page-head">
+    <div className="form" style={{ maxWidth: 1000 }}>
+      <div className="page-head" style={{ marginBottom: 4 }}>
         <div>
           <h1 className="page-title">Nuevo reembolso</h1>
-          <div className="page-sub">Gastos pagados de tu bolsa sin anticipo previo</div>
+          <div className="page-sub">Gastos que pagaste de tu bolsa, sin anticipo previo.</div>
         </div>
       </div>
 
       {/* Concepto */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <label style={{ fontSize:12, color:"var(--text-3)", marginBottom:6, display:"block" }}>
-          Concepto / descripción general *
-        </label>
-        <input className="input" value={concepto} onChange={e=>setConcepto(e.target.value)}
-          placeholder="Ej: Gastos de viaje a Guadalajara — 28 mayo 2026" />
+      <div className="card form-section">
+        <div className="form-section-head">
+          <div className="card-title">Concepto</div>
+          <div className="form-section-desc">Una descripción general del gasto o del viaje.</div>
+        </div>
+        <div className="field">
+          <label htmlFor="concepto">Concepto<span className="req">*</span></label>
+          <input id="concepto" className="input" value={concepto} onChange={e=>setConcepto(e.target.value)}
+            placeholder="Ej: Gastos de viaje a Guadalajara, 28 de mayo" />
+        </div>
       </div>
 
-      {/* Drop zone */}
-      <div className="card" style={{ marginBottom:16, border:"2px dashed var(--border)",
-           textAlign:"center", padding:"28px 20px", cursor:"pointer" }}
-        onClick={() => fileRef.current?.click()}
-        onDragOver={e=>{ e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor="var(--accent)" }}
-        onDragLeave={e=>{ (e.currentTarget as HTMLElement).style.borderColor="var(--border)" }}
-        onDrop={e=>{ e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor="var(--border)"; handleFiles(e.dataTransfer.files) }}>
-        <div style={{ marginBottom:8, color:"var(--text-3)", display:"flex", justifyContent:"center" }}><FolderOpen size={28} strokeWidth={1.75}/></div>
-        <div style={{ fontWeight:600, marginBottom:4 }}>Arrastra o haz clic para subir</div>
-        <div style={{ fontSize:12, color:"var(--text-3)" }}>XML (CFDI), PDF o imágenes de ticket</div>
-        <input ref={fileRef} type="file" accept=".xml,.pdf,image/*" multiple hidden
-          onChange={e=>handleFiles(e.target.files)} />
+      {/* Comprobantes */}
+      <div className="card form-section">
+        <div className="form-section-head">
+          <div className="card-title">Comprobantes</div>
+          <div className="form-section-desc">Sube el XML del CFDI cuando lo tengas; el PDF o la foto del ticket sirven como respaldo.</div>
+        </div>
+        <div className="dropzone" role="button" tabIndex={0}
+          onClick={() => fileRef.current?.click()}
+          onKeyDown={e=>{ if (e.key==="Enter"||e.key===" ") { e.preventDefault(); fileRef.current?.click() } }}
+          onDragOver={e=>{ e.preventDefault(); e.currentTarget.classList.add("over") }}
+          onDragLeave={e=>{ e.currentTarget.classList.remove("over") }}
+          onDrop={e=>{ e.preventDefault(); e.currentTarget.classList.remove("over"); handleFiles(e.dataTransfer.files) }}>
+          <div className="dropzone-icon"><UploadCloud size={22} strokeWidth={1.75}/></div>
+          <div className="dropzone-title">Arrastra archivos aquí o toca para elegir</div>
+          <div className="dropzone-text">XML (CFDI), PDF o imagen del ticket</div>
+          <input ref={fileRef} type="file" accept=".xml,.pdf,image/*" multiple hidden
+            onChange={e=>handleFiles(e.target.files)} />
+        </div>
       </div>
 
       {/* Items list */}
       {items.length > 0 && (
-        <div className="card" style={{ marginBottom:16, padding:0, overflow:"auto" }}>
+        <div className="card" style={{ padding:0, overflow:"auto" }}>
           <table className="t" style={{ minWidth:900 }}>
             <thead>
               <tr>
@@ -251,20 +261,20 @@ export default function NuevoReembolsoPage() {
                     </td>
                     <td className="num">{fmtMXN(it.total)}</td>
                     <td>
-                      <button onClick={() => setItems(prev => prev.filter((_,j)=>j!==i))}
-                        style={{ background:"none", border:"none", color:"var(--text-3)", cursor:"pointer", fontSize:16 }}>×</button>
+                      <button className="line-remove" aria-label="Quitar comprobante"
+                        onClick={() => setItems(prev => prev.filter((_,j)=>j!==i))}><X size={14} strokeWidth={2}/></button>
                     </td>
                   </tr>
                 )
               })}
             </tbody>
             <tfoot>
-              <tr>
-                <td colSpan={4} style={{ textAlign:"right", fontWeight:600, padding:"10px 12px" }}>
+              <tr className="total-row">
+                <td colSpan={4} className="total-label">
                   Total a reembolsar
-                  {totalDups>0 && <span style={{ fontSize:10, color:"var(--text-3)", fontWeight:400, marginLeft:6 }}>(excl. dup: {fmtMXN(totalDups)})</span>}
+                  {totalDups>0 && <span style={{ fontSize:11, color:"var(--text-3)", marginLeft:6 }}>(sin duplicados: {fmtMXN(totalDups)})</span>}
                 </td>
-                <td className="num" style={{ fontWeight:700, fontSize:16 }}>{fmtMXN(total)}</td>
+                <td className="num total-value">{fmtMXN(total)}</td>
                 <td/>
               </tr>
             </tfoot>
@@ -272,9 +282,9 @@ export default function NuevoReembolsoPage() {
         </div>
       )}
 
-      <Toast message={toast?.msg} style={{ marginBottom:12 }}/>
+      <Toast message={toast?.msg} style={{ marginBottom:0 }}/>
 
-      <div style={{ display:"flex", justifyContent:"flex-end", gap:10 }}>
+      <div className="form-actions">
         <button className="btn ghost" onClick={()=>router.push("/solicitudes")}>Cancelar</button>
         <button className="btn primary" onClick={handleEnviar}
           disabled={enviando || total<=0 || itemsValidos.length===0}

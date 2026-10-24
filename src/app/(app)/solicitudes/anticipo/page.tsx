@@ -1,5 +1,5 @@
 "use client"
-import { Send } from "lucide-react"
+import { Send, Plus, X } from "lucide-react"
 import { Toast } from "@/components/ui/Toast"
 
 import { notifyUsers } from "@/lib/notify"
@@ -83,52 +83,53 @@ export default function SolicitarAnticipoPage() {
   }
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <div className="page-head">
+    <div className="form" style={{ maxWidth: 720 }}>
+      <div className="page-head" style={{ marginBottom: 4 }}>
         <div>
           <h1 className="page-title">Solicitar anticipo</h1>
-          <div className="page-sub">Completa el formulario y envía a tu gerente</div>
+          <div className="page-sub">Tu gerente lo recibe para autorizarlo en cuanto lo envíes.</div>
         </div>
       </div>
 
       {/* Datos generales */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-title" style={{ marginBottom: 14 }}>Datos del viaje</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
-          <div>
-            <label style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 4, display: "block" }}>
-              Motivo / Concepto *
-            </label>
-            <input className="input" value={concepto}
+      <div className="card form-section">
+        <div className="form-section-head">
+          <div className="card-title">Datos del viaje</div>
+          <div className="form-section-desc">Motivo y fechas del desplazamiento.</div>
+        </div>
+        <div className="form-grid">
+          <div className="field">
+            <label htmlFor="concepto">Motivo o concepto<span className="req">*</span></label>
+            <input id="concepto" className="input" value={concepto}
               onChange={e => setConcepto(e.target.value)}
               placeholder="Ej: Visita a cliente en Monterrey" />
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div>
-              <label style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 4, display: "block" }}>
-                Fecha de salida
-              </label>
-              <input className="input" type="date" value={salida} onChange={e => setSalida(e.target.value)} />
+          <div className="form-grid cols-2">
+            <div className="field">
+              <label htmlFor="salida">Fecha de salida</label>
+              <input id="salida" className="input" type="date" value={salida} onChange={e => setSalida(e.target.value)} />
             </div>
-            <div>
-              <label style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 4, display: "block" }}>
-                Fecha de regreso
-              </label>
-              <input className="input" type="date" value={regreso} onChange={e => setRegreso(e.target.value)} />
+            <div className="field">
+              <label htmlFor="regreso">Fecha de regreso</label>
+              <input id="regreso" className="input" type="date" value={regreso} onChange={e => setRegreso(e.target.value)} />
             </div>
           </div>
         </div>
       </div>
 
       {/* Desglose */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div className="spread" style={{ marginBottom: 14 }}>
-          <div className="card-title">Desglose estimado de gastos</div>
+      <div className="card form-section" style={{ paddingBottom: 0, overflow: "hidden" }}>
+        <div className="spread form-section-head" style={{ alignItems: "flex-start" }}>
+          <div>
+            <div className="card-title">Desglose estimado</div>
+            <div className="form-section-desc">Una línea por tipo de gasto; el monto es un estimado.</div>
+          </div>
           <button className="btn sm" onClick={() => setDesglose(prev => [...prev, newItem()])}>
-            + Agregar línea
+            <Plus size={14} strokeWidth={2.25}/> Agregar línea
           </button>
         </div>
-        <table className="t">
+        <div style={{ margin: "0 -20px", overflowX: "auto" }}>
+        <table className="t" style={{ minWidth: 560 }}>
           <thead>
             <tr>
               <th style={{ width: "45%" }}>Cuenta contable</th>
@@ -144,9 +145,9 @@ export default function SolicitarAnticipoPage() {
                   <select className="select" value={d.cuenta}
                     onChange={e => updItem(d.id, "cuenta", e.target.value)}
                     style={{
-                      fontSize: 11, padding: "5px 6px",
-                      borderColor: d.cuenta === "6121200001" ? "var(--warn)" : "var(--border)",
-                      background: d.cuenta === "6121200001" ? "rgba(245,158,11,.06)" : "var(--surface)",
+                      fontSize: 12, padding: "7px 30px 7px 8px", minHeight: 36,
+                      borderColor: d.cuenta === "6121200001" ? "var(--warn)" : undefined,
+                      background: d.cuenta === "6121200001" ? "var(--warn-soft)" : undefined,
                     }}>
                     {catalogoGastos.map(g => (
                       <option key={g.cuenta} value={g.cuenta}>{g.cuenta} · {g.nombre}</option>
@@ -154,21 +155,21 @@ export default function SolicitarAnticipoPage() {
                   </select>
                 </td>
                 <td>
-                  <input className="input" style={{ fontSize: 12 }} value={d.desc}
+                  <input className="input" style={{ fontSize: 12, padding: "7px 8px", minHeight: 36 }} value={d.desc}
                     onChange={e => updItem(d.id, "desc", e.target.value)}
                     placeholder="Descripción opcional" />
                 </td>
                 <td>
-                  <input className="input mono" type="number" min="0" step="0.01"
-                    style={{ textAlign: "right", fontSize: 13 }}
+                  <input className="input" type="number" min="0" step="0.01" inputMode="decimal"
+                    style={{ textAlign: "right", fontSize: 13, fontVariantNumeric: "tabular-nums" }}
                     value={d.monto || ""}
                     onChange={e => updItem(d.id, "monto", parseFloat(e.target.value) || 0)} />
                 </td>
                 <td>
                   {desglose.length > 1 && (
-                    <button onClick={() => setDesglose(prev => prev.filter(x => x.id !== d.id))}
-                      style={{ background: "none", border: "none", color: "var(--text-3)", cursor: "pointer", fontSize: 16 }}>
-                      ×
+                    <button className="line-remove" aria-label="Quitar línea"
+                      onClick={() => setDesglose(prev => prev.filter(x => x.id !== d.id))}>
+                      <X size={14} strokeWidth={2}/>
                     </button>
                   )}
                 </td>
@@ -176,24 +177,21 @@ export default function SolicitarAnticipoPage() {
             ))}
           </tbody>
           <tfoot>
-            <tr>
-              <td colSpan={2} style={{ textAlign: "right", fontSize: 13, fontWeight: 600, padding: "10px 12px" }}>
-                Total solicitado
-              </td>
-              <td className="num" style={{ fontSize: 18, fontWeight: 700, color: "var(--accent)" }}>
-                {fmtMXN(totalDesg)}
-              </td>
+            <tr className="total-row">
+              <td colSpan={2} className="total-label">Total solicitado</td>
+              <td className="num total-value">{fmtMXN(totalDesg)}</td>
               <td />
             </tr>
           </tfoot>
         </table>
+        </div>
       </div>
 
       {/* Toast */}
-      <Toast message={toast} style={{ marginBottom: 12 }}/>
+      <Toast message={toast} style={{ marginBottom: 0 }}/>
 
       {/* Actions */}
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+      <div className="form-actions">
         <button className="btn ghost" onClick={() => router.push("/solicitudes")}>Cancelar</button>
         <button className="btn primary" onClick={handleEnviar}
           disabled={enviando || totalDesg <= 0}

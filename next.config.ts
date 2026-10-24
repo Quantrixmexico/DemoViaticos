@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
     // Next 16.3) reutilizó un globals.css viejo en Cloudflare Workers Builds:
     // el CSS compilado no se invalida al cambiar el archivo. Desactivada.
     turbopackFileSystemCacheForBuild: false,
+    // Mismo problema en `next dev`: servía el CSS anterior tras editar globals.css.
+    turbopackFileSystemCacheForDev: false,
     serverActions: {
       allowedOrigins: [
         "zapata.mx",
