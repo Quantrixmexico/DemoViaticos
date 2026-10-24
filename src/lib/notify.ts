@@ -9,11 +9,13 @@ export async function notifyUsers(
 ) {
   if (!userIds.length) return
   try {
-    await fetch("/api/push/notify", {
+    const res = await fetch("/api/push/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userIds, title, body, path }),
     })
+    const data = await res.json().catch(() => null)
+    console.info("[Notify]", res.status, data)
   } catch (err) {
     console.warn("[Notify] Failed to send push:", err)
   }
