@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useTheme } from "@/contexts/ThemeContext"
+import { Sun, Moon } from "lucide-react"
 
 export function ThemePanel() {
   const { mode, accent, setMode, setAccent, accents } = useTheme()
@@ -11,8 +12,8 @@ export function ThemePanel() {
       <button onClick={() => setOpen(!open)}
         style={{ width:32, height:32, borderRadius:8, border:"1px solid var(--border)",
           background:"var(--surface-2)", display:"grid", placeItems:"center",
-          cursor:"pointer", fontSize:16 }}>
-        {mode === "dark" ? "🌙" : "☀️"}
+          cursor:"pointer", color:"var(--text)" }}>
+        {mode === "dark" ? <Moon size={14} strokeWidth={2}/> : <Sun size={14} strokeWidth={2}/>}
       </button>
 
       {open && (
@@ -34,8 +35,8 @@ export function ThemePanel() {
                     borderColor: mode===m ? "var(--accent)" : "var(--border)",
                     background: mode===m ? "var(--accent-soft)" : "var(--surface-2)",
                     color: mode===m ? "var(--accent)" : "var(--text-3)",
-                    cursor:"pointer" }}>
-                  {m === "dark" ? "🌙 Oscuro" : "☀️ Claro"}
+                    cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                  {m === "dark" ? <><Moon size={14} strokeWidth={2}/> Oscuro</> : <><Sun size={14} strokeWidth={2}/> Claro</>}
                 </button>
               ))}
             </div>

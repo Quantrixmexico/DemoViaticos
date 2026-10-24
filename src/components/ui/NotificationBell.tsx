@@ -2,6 +2,9 @@
 import { useState, useEffect, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { fmtFecha } from "@/lib/format"
+import { stripEmoji } from "@/lib/text"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { Bell, CheckCircle2, XCircle, Banknote, Paperclip, Landmark, Info, type LucideIcon } from "lucide-react"
 
 interface Notif {
   id: string
@@ -13,9 +16,9 @@ interface Notif {
   solicitud_id?: string
 }
 
-const TIPO_ICON: Record<string, string> = {
-  aprobacion: "✅", rechazo: "❌", liberacion: "💵",
-  comprobacion: "📎", cierre: "🏦", sistema: "ℹ️", default: "🔔",
+const TIPO_ICON: Record<string, LucideIcon> = {
+  aprobacion: CheckCircle2, rechazo: XCircle, liberacion: Banknote,
+  comprobacion: Paperclip, cierre: Landmark, sistema: Info, default: Bell,
 }
 
 export function NotificationBell({ userId }: { userId: string }) {
@@ -92,9 +95,9 @@ export function NotificationBell({ userId }: { userId: string }) {
         style={{
           width: 36, height: 36, borderRadius: 8, border: "1px solid var(--border)",
           background: "var(--surface-2)", display: "grid", placeItems: "center",
-          cursor: "pointer", position: "relative", fontSize: 18,
+          cursor: "pointer", position: "relative", color: "var(--text)",
         }}>
-        🔔
+        <Bell size={18} strokeWidth={1.75} />
         {unread > 0 && (
           <span style={{
             position: "absolute", top: -4, right: -4,
@@ -132,12 +135,11 @@ export function NotificationBell({ userId }: { userId: string }) {
             </div>
 
             {notifs.length === 0 ? (
-              <div style={{ padding: 32, textAlign: "center", color: "var(--text-3)", fontSize: 13 }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>🔔</div>
-                Sin notificaciones
-              </div>
+              <EmptyState icon={Bell} tone="neutral" variant="plain" compact title="Sin notificaciones" />
             ) : (
-              notifs.map(n => (
+              notifs.map(n => {
+                const Icon = TIPO_ICON[n.tipo] || TIPO_ICON.default
+                return (
                 <div key={n.id}
                   onClick={() => markRead(n.id)}
                   style={{
@@ -146,13 +148,11 @@ export function NotificationBell({ userId }: { userId: string }) {
                     background: n.leida ? "transparent" : "var(--accent-soft)",
                     transition: "background .15s",
                   }}>
-                  <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>
-                    {TIPO_ICON[n.tipo] || TIPO_ICON.default}
-                  </span>
+                  <Icon size={18} strokeWidth={1.75} style={{ flexShrink: 0, marginTop: 1, color: "var(--text-2)" }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: n.leida ? 400 : 600,
                       overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {n.titulo}
+                      {stripEmoji(n.titulo)}
                     </div>
                     {n.cuerpo && (
                       <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 2,
@@ -169,7 +169,8 @@ export function NotificationBell({ userId }: { userId: string }) {
                       background: "var(--accent)", flexShrink: 0, marginTop: 5 }} />
                   )}
                 </div>
-              ))
+                )
+              })
             )}
           </div>
         </>

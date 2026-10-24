@@ -3,6 +3,8 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Bell, CheckCheck, Inbox } from "lucide-react"
+import { stripEmoji } from "@/lib/text"
+import { EmptyState } from "@/components/ui/EmptyState"
 
 interface Notif {
   id: string
@@ -91,15 +93,8 @@ export default function NotificacionesPage() {
       </div>
 
       {notifs.length === 0 ? (
-        <div className="card" style={{padding:60,textAlign:"center"}}>
-          <Inbox size={48} strokeWidth={1.5} style={{color:"var(--text-3)",marginBottom:14}}/>
-          <div style={{fontSize:14,color:"var(--text-3)"}}>
-            No tienes notificaciones aún
-          </div>
-          <div style={{fontSize:11,color:"var(--text-3)",marginTop:6}}>
-            Cuando alguien te envíe una solicitud o cambie el estatus de una tuya, aparecerá aquí.
-          </div>
-        </div>
+        <EmptyState icon={Inbox} tone="neutral" title="No tienes notificaciones aún"
+          text="Cuando alguien te envíe una solicitud o cambie el estatus de una tuya, aparecerá aquí."/>
       ) : (
         <div className="card" style={{padding:0,overflow:"hidden"}}>
           {notifs.map((n, i) => (
@@ -125,7 +120,7 @@ export default function NotificacionesPage() {
               {n.leida && <div style={{width:8,flexShrink:0}}/>}
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:"flex",justifyContent:"space-between",gap:10,marginBottom:4}}>
-                  <div style={{fontWeight: n.leida ? 500 : 600, fontSize:14}}>{n.titulo}</div>
+                  <div style={{fontWeight: n.leida ? 500 : 600, fontSize:14}}>{stripEmoji(n.titulo)}</div>
                   <div style={{fontSize:11,color:"var(--text-3)",whiteSpace:"nowrap",flexShrink:0}}>
                     {fmtFechaRel(n.created_at)}
                   </div>

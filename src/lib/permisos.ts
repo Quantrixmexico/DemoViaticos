@@ -26,5 +26,5 @@ export function puedeAsignarRol(rolActual?: string | null, rolNuevo?: string | n
 }
 
 /** Mensaje estándar para mostrar en toast cuando se bloquea */
-export const MSG_DEMO_BLOQUEADO = "⚠ Modo demo: esta acción no está permitida para usuarios invitados"
+export const MSG_DEMO_BLOQUEADO = "Modo demo: esta acción no está permitida para usuarios invitados"
 

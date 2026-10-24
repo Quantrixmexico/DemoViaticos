@@ -4,6 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import type { Solicitud } from "@/types"
+import { Paperclip, Send } from "lucide-react"
+import { Toast } from "@/components/ui/Toast"
 
 function CierreInner() {
   const router = useRouter()
@@ -89,7 +91,7 @@ function CierreInner() {
 
   if (!anticipoId) return (
     <div className="card" style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>
-      No se especificó un anticipo. <a href="/solicitudes" style={{color:"var(--accent)"}}>← Mis solicitudes</a>
+      No se especificó un anticipo. <a href="/solicitudes" style={{color:"var(--accent)"}}>Mis solicitudes</a>
     </div>
   )
 
@@ -130,7 +132,7 @@ function CierreInner() {
             <label style={{fontSize:11,color:"var(--text-3)",display:"block",marginBottom:4}}>Comprobante del depósito (opcional)</label>
             <div style={{display:"flex",gap:8,alignItems:"center"}}>
               <button className="btn ghost" onClick={()=>fileRef.current?.click()}>
-                📎 {archivo ? archivo.name : "Subir comprobante"}
+                <Paperclip size={15} strokeWidth={2}/> {archivo ? archivo.name : "Subir comprobante"}
               </button>
               {archivo && <button onClick={()=>setArchivo(null)} style={{background:"none",border:"none",color:"var(--text-3)",cursor:"pointer"}}>×</button>}
             </div>
@@ -139,14 +141,12 @@ function CierreInner() {
         </div>
       </div>
 
-      {toast && <div style={{padding:"10px 14px",borderRadius:8,marginBottom:12,fontSize:13,
-        background:toast.startsWith("✓")?"var(--success-soft)":"var(--danger-soft)",
-        color:toast.startsWith("✓")?"var(--success)":"var(--danger)"}}>{toast}</div>}
+      <Toast message={toast} style={{marginBottom:12}}/>
 
       <div style={{display:"flex",justifyContent:"flex-end",gap:10}}>
         <button className="btn ghost" onClick={()=>router.push("/solicitudes")}>Cancelar</button>
         <button className="btn primary" onClick={handleCierre} disabled={enviando||!anticipo}>
-          {enviando?"Procesando…":"Enviar cierre →"}
+          {enviando?"Procesando…":<><Send size={15} strokeWidth={2}/> Enviar cierre</>}
         </button>
       </div>
     </div>

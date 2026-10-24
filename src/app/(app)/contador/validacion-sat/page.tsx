@@ -2,6 +2,8 @@
 import { useState, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN } from "@/lib/format"
+import { Download, CheckCircle2, Paperclip, AlertTriangle, XCircle, ShieldCheck } from "lucide-react"
+import { EmptyState } from "@/components/ui/EmptyState"
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -96,16 +98,16 @@ export default function ValidacionSATPage() {
     <>
       <div className="page-head">
         <div><h1 className="page-title">Validación SAT</h1><div className="page-sub">Verifica el estatus de CFDIs ante el SAT</div></div>
-        {resultados && <button className="btn ghost" onClick={exportCSV}>↓ CSV</button>}
+        {resultados && <button className="btn ghost" onClick={exportCSV}><Download size={15} strokeWidth={2}/> CSV</button>}
       </div>
 
       {(pdfsOImagenes>0||truncados>0) && (
         <div className="card" style={{marginBottom:16,fontSize:12.5}}>
-          <div style={{fontWeight:600,marginBottom:6}}>📋 Resumen del mes {mes}</div>
+          <div style={{fontWeight:600,marginBottom:6}}>Resumen del mes {mes}</div>
           <div style={{color:"var(--text-2)",lineHeight:1.7}}>
-            <div>✓ <strong>{cfdisDelMes.length}</strong> CFDIs con UUID válido — serán validados</div>
-            {pdfsOImagenes>0&&<div>📎 <strong>{pdfsOImagenes}</strong> PDFs/imágenes — no aplica validación SAT</div>}
-            {truncados>0&&<div style={{color:"var(--warn)"}}>⚠ <strong>{truncados}</strong> UUIDs truncados en BD — sube el XML de nuevo</div>}
+            <div><CheckCircle2 size={14} strokeWidth={2} color="var(--success)" style={{verticalAlign:"-0.15em"}}/> <strong>{cfdisDelMes.length}</strong> CFDIs con UUID válido — serán validados</div>
+            {pdfsOImagenes>0&&<div><Paperclip size={14} strokeWidth={2} style={{verticalAlign:"-0.15em"}}/> <strong>{pdfsOImagenes}</strong> PDFs/imágenes — no aplica validación SAT</div>}
+            {truncados>0&&<div style={{color:"var(--warn)"}}><AlertTriangle size={14} strokeWidth={2} color="var(--warn)" style={{verticalAlign:"-0.15em"}}/> <strong>{truncados}</strong> UUIDs truncados en BD — sube el XML de nuevo</div>}
           </div>
         </div>
       )}
@@ -167,7 +169,7 @@ export default function ValidacionSATPage() {
                   <td>
                     <span style={{fontSize:10,padding:"2px 8px",borderRadius:10,fontWeight:600,
                       background:estadoColor(r.estado)+"22",color:estadoColor(r.estado)}}>
-                      {r.estado==="Vigente"?"✓ Vigente":r.estado==="Cancelado"?"✗ Cancelado":r.estado}
+                      {r.estado==="Vigente"?<><CheckCircle2 size={14} strokeWidth={2} color="var(--success)" style={{verticalAlign:"-0.15em"}}/> Vigente</>:r.estado==="Cancelado"?<><XCircle size={14} strokeWidth={2} color="var(--danger)" style={{verticalAlign:"-0.15em"}}/> Cancelado</>:r.estado}
                     </span>
                   </td>
                   <td>
@@ -180,7 +182,7 @@ export default function ValidacionSATPage() {
                   <td>
                     {r.urlVerificacionSAT
                       ? <a href={r.urlVerificacionSAT} target="_blank" rel="noopener"
-                          style={{fontSize:11,color:"var(--accent)"}}>Verificar ↗</a>
+                          style={{fontSize:11,color:"var(--accent)"}}>Verificar</a>
                       : <span style={{fontSize:10,color:"var(--text-3)"}}>Sin RFC</span>}
                   </td>
                 </tr>
@@ -191,16 +193,13 @@ export default function ValidacionSATPage() {
       )}
 
       {!resultados && !validando && cfdisDelMes.length>0 && (
-        <div className="card" style={{padding:32,textAlign:"center",color:"var(--text-3)"}}>
-          <div style={{fontSize:32,marginBottom:12}}>🛡</div>
-          <div style={{fontWeight:600,marginBottom:6}}>{cfdisDelMes.length} CFDIs listos para validar</div>
-          <div style={{fontSize:12.5,lineHeight:1.6}}>
+        <EmptyState icon={ShieldCheck} tone="accent" title={`${cfdisDelMes.length} CFDIs listos para validar`}
+          text={<>
             Se verificará RFC, monto y estructura localmente. Si el SAT responde, también se consulta el estatus de cancelación.
-          </div>
-          {truncados>0&&<div style={{marginTop:10,fontSize:11.5,color:"var(--text-3)",padding:"8px 12px",background:"var(--surface-2)",borderRadius:8}}>
-            * CFDIs "Solo local" tienen estructura válida pero el SAT no respondió. Usa "Verificar ↗" en tu navegador.
-          </div>}
-        </div>
+            {truncados>0&&<div style={{marginTop:10,fontSize:11.5,color:"var(--text-3)",padding:"8px 12px",background:"var(--surface-2)",borderRadius:8}}>
+              * CFDIs "Solo local" tienen estructura válida pero el SAT no respondió. Usa "Verificar" en tu navegador.
+            </div>}
+          </>}/>
       )}
     </>
   )

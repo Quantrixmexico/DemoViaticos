@@ -3,7 +3,9 @@ import { useState, useEffect, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { TipoBadge } from "@/components/ui/StatusBadge"
-import Link from "next/link"
+import { SegmentedNav, TESORERIA_TABS } from "@/components/ui/SegmentedNav"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { CheckCircle2, Check, PiggyBank } from "lucide-react"
 import type { Solicitud } from "@/types"
 
 export default function TesoreriaLiberarPage() {
@@ -124,9 +126,8 @@ export default function TesoreriaLiberarPage() {
             <div style={{ display:"flex", gap:6, alignItems:"center", marginTop:2 }}>
               <span style={{ fontSize:11, color:"var(--text-3)" }}>{s.id} · {fmtFecha(s.fecha)}</span>
               {s.concepto?.includes("Saldo a favor") && (
-                <span style={{ fontSize:10, padding:"1px 7px", borderRadius:10, fontWeight:600,
-                  background:"var(--accent-soft)", color:"var(--accent)" }}>
-                  💰 Saldo a favor
+                <span className="badge autorizado" style={{ fontSize:10, padding:"1px 8px 1px 6px" }}>
+                  <PiggyBank size={11} strokeWidth={2}/> Saldo a favor
                 </span>
               )}
             </div>
@@ -146,10 +147,7 @@ export default function TesoreriaLiberarPage() {
           <h1 className="page-title">Liberar pagos</h1>
           <div className="page-sub">{solicitudes.length} autorizadas pendientes de dispersión</div>
         </div>
-        <div style={{ display:"flex", gap:8 }}>
-          <Link href="/tesoreria/pagados" className="btn ghost">Pagados</Link>
-          <Link href="/tesoreria/deudores" className="btn ghost">Deudores</Link>
-        </div>
+        <SegmentedNav items={TESORERIA_TABS} ariaLabel="Vistas de tesorería"/>
       </div>
 
       {selected.size > 0 && (
@@ -160,7 +158,7 @@ export default function TesoreriaLiberarPage() {
             {selected.size} seleccionada{selected.size>1?"s":""} · {fmtMXN(selectedTotal)}
           </div>
           <button className="btn primary" onClick={liberar} disabled={procesando}>
-            {procesando ? "Liberando…" : `Liberar ${selected.size} ✓`}
+            {procesando ? "Liberando…" : <><Check size={15} strokeWidth={2.5}/> Liberar {selected.size}</>}
           </button>
         </div>
       )}
@@ -168,11 +166,7 @@ export default function TesoreriaLiberarPage() {
       {loading ? (
         <div className="card" style={{ padding:40, textAlign:"center", color:"var(--text-3)" }}>Cargando…</div>
       ) : solicitudes.length === 0 ? (
-        <div className="card" style={{ padding:48, textAlign:"center" }}>
-          <div style={{ fontSize:40, marginBottom:12 }}>✅</div>
-          <div style={{ fontWeight:600, fontSize:16 }}>Todo liberado</div>
-          <div style={{ color:"var(--text-3)", fontSize:13, marginTop:6 }}>Sin pagos pendientes</div>
-        </div>
+        <EmptyState icon={CheckCircle2} tone="success" title="Todo liberado" text="No hay pagos pendientes de dispersión."/>
       ) : (
         <>
           <button className="btn ghost" style={{ fontSize:12, marginBottom:12 }} onClick={toggleAll}>

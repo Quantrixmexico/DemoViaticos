@@ -6,6 +6,7 @@ import { fmtMXN } from "@/lib/format"
 import { generarPolizas, agruparPorPoliza } from "@/lib/polizas"
 import { useCatalogos } from "@/hooks/useCatalogos"
 import type { Solicitud, PolizaLinea } from "@/types"
+import { Download, CheckCircle2, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react"
 
 export default function ContadorPolizasPage() {
   const { catalogoGastos, centros, usuarios, loaded } = useCatalogos()
@@ -79,7 +80,7 @@ export default function ContadorPolizasPage() {
           <div className="page-sub">Asientos para carga en SAP (RFBIBL00)</div>
         </div>
         <button className="btn primary" onClick={exportarCSV} disabled={polizas.length === 0}>
-          ↓ Exportar CSV
+          <Download size={15} strokeWidth={2}/> Exportar CSV
         </button>
       </div>
 
@@ -151,9 +152,11 @@ export default function ContadorPolizasPage() {
                   <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 10, fontWeight: 600,
                     background: cuadrada ? "var(--success-soft)" : "var(--danger-soft)",
                     color: cuadrada ? "var(--success)" : "var(--danger)" }}>
-                    {cuadrada ? "✓ Cuadrada" : "⚠ Descuadrada"}
+                    {cuadrada
+                      ? <><CheckCircle2 size={14} strokeWidth={2} style={{ verticalAlign: "-0.15em" }}/> Cuadrada</>
+                      : <><AlertTriangle size={14} strokeWidth={2} style={{ verticalAlign: "-0.15em" }}/> Descuadrada</>}
                   </span>
-                  <span style={{ color: "var(--text-3)", fontSize: 12 }}>{isOpen ? "▲" : "▼"}</span>
+                  <span style={{ color: "var(--text-3)", display: "inline-flex" }}>{isOpen ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}</span>
                 </div>
 
                 {/* Movimientos */}
@@ -212,7 +215,7 @@ export default function ContadorPolizasPage() {
                             {archivos.map((a: any, i: number) => (
                               <a key={i} href={a.url} target="_blank" rel="noopener"
                                 className="btn sm ghost" style={{ fontSize: 11 }}>
-                                ↓ {a.emisor || a.nombre || `Archivo ${i + 1}`}
+                                <Download size={14} strokeWidth={2}/> {a.emisor || a.nombre || `Archivo ${i + 1}`}
                               </a>
                             ))}
                           </div>

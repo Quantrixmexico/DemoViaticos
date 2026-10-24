@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
 import Link from "next/link"
+import { Search, User, Calendar, Banknote, Download, Landmark } from "lucide-react"
 
 export default function TrazabilidadPage() {
   const [folio, setFolio] = useState("")
@@ -58,7 +59,7 @@ export default function TrazabilidadPage() {
             placeholder="Ej: ANT-2026-1234 o REE-2026-5678"
             style={{flex:1,fontFamily:"monospace"}}/>
           <button className="btn primary" onClick={()=>buscar()} disabled={buscando||!folio.trim()}>
-            {buscando?"Buscando…":"🔍 Rastrear"}
+            {buscando?"Buscando…":<><Search size={15} strokeWidth={2}/> Rastrear</>}
           </button>
         </div>
       </div>
@@ -72,14 +73,14 @@ export default function TrazabilidadPage() {
             <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:8}}>
               <TipoBadge tipo={sol.tipo}/>
               <StatusBadge status={sol.status}/>
-              {sol.notas?.includes("CIERRE_DEPOSITO")&&<span style={{fontSize:11,padding:"2px 8px",borderRadius:12,background:"var(--accent-soft)",color:"var(--accent)",fontWeight:600}}>🏦 CIERRE</span>}
+              {sol.notas?.includes("CIERRE_DEPOSITO")&&<span style={{fontSize:11,padding:"2px 8px",borderRadius:12,background:"var(--accent-soft)",color:"var(--accent)",fontWeight:600,display:"inline-flex",alignItems:"center",gap:4}}><Landmark size={12} strokeWidth={2}/> CIERRE</span>}
               <span className="mono" style={{fontSize:11,color:"var(--text-3)"}}>{sol.id}</span>
             </div>
             <div style={{fontWeight:600,fontSize:16,marginBottom:4}}>{sol.concepto}</div>
             <div style={{display:"flex",gap:20,fontSize:12,color:"var(--text-3)"}}>
-              <span>👤 {usuario?.nombre||"—"}</span>
-              <span>📅 {fmtFecha(sol.fecha)}</span>
-              <span>💵 {fmtMXN(parseFloat(sol.monto))}</span>
+              <span style={{display:"inline-flex",alignItems:"center",gap:4}}><User size={14} strokeWidth={2}/> {usuario?.nombre||"—"}</span>
+              <span style={{display:"inline-flex",alignItems:"center",gap:4}}><Calendar size={14} strokeWidth={2}/> {fmtFecha(sol.fecha)}</span>
+              <span style={{display:"inline-flex",alignItems:"center",gap:4}}><Banknote size={14} strokeWidth={2}/> {fmtMXN(parseFloat(sol.monto))}</span>
             </div>
             {anticipoPadre&&<div style={{marginTop:8,padding:"8px 12px",background:"var(--warn-soft)",borderRadius:8,fontSize:12}}>
               Comprobación del anticipo: <button onClick={()=>{setFolio(anticipoPadre.id);buscar(anticipoPadre.id)}}
@@ -129,7 +130,7 @@ export default function TrazabilidadPage() {
                       <td>{cf.sat_estado&&<span style={{fontSize:10,padding:"2px 6px",borderRadius:8,
                         background:cf.sat_estado==="Vigente"?"var(--success-soft)":"var(--warn-soft)",
                         color:cf.sat_estado==="Vigente"?"var(--success)":"var(--warn)"}}>{cf.sat_estado}</span>}</td>
-                      <td>{cf.archivo_url&&<a href={cf.archivo_url} target="_blank" rel="noopener" className="btn sm ghost" style={{fontSize:11}}>↓</a>}</td>
+                      <td>{cf.archivo_url&&<a href={cf.archivo_url} target="_blank" rel="noopener" className="btn sm ghost" style={{fontSize:11}} title="Descargar" aria-label="Descargar"><Download size={14} strokeWidth={2}/></a>}</td>
                     </tr>
                   ))}
                 </tbody>

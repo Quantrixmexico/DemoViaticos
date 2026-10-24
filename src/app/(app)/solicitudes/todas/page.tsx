@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
+import { ChevronUp, ChevronDown, RotateCcw, CornerDownRight } from "lucide-react"
 
 type SortField = "fecha" | "monto" | "status" | "usuario"
 type SortDir   = "asc" | "desc"
@@ -102,7 +103,11 @@ export default function TodasSolicitudesPage() {
     .reduce((a, s) => a + parseFloat(s.saldo_pendiente), 0)
 
   const SortIcon = ({ field }: { field: SortField }) =>
-    sortField === field ? (sortDir === "asc" ? " ↑" : " ↓") : " ·"
+    sortField === field
+      ? (sortDir === "asc"
+          ? <ChevronUp size={12} style={{ verticalAlign: "-0.1em", marginLeft: 2 }}/>
+          : <ChevronDown size={12} style={{ verticalAlign: "-0.1em", marginLeft: 2 }}/>)
+      : " ·"
 
   const resetFiltros = () => {
     setQ(""); setFiltroStatus("todos"); setFiltroTipo("todos")
@@ -145,7 +150,7 @@ export default function TodasSolicitudesPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
           {/* Búsqueda */}
           <div style={{ gridColumn: "1 / -1" }}>
-            <input className="input" placeholder="🔍 Buscar por folio, concepto o nombre…"
+            <input className="input" placeholder="Buscar por folio, concepto o nombre…"
               value={q} onChange={e => setQ(e.target.value)} />
           </div>
           {/* Status */}
@@ -183,7 +188,7 @@ export default function TodasSolicitudesPage() {
             placeholder="Hasta" title="Fecha fin" />
           {/* Reset */}
           <button className="btn ghost" onClick={resetFiltros} style={{ fontSize: 12 }}>
-            ↺ Limpiar filtros
+            <RotateCcw size={15} strokeWidth={2}/> Limpiar filtros
           </button>
         </div>
       </div>
@@ -276,7 +281,7 @@ export default function TodasSolicitudesPage() {
                       return (
                         <tr key={cmp.id} style={{ cursor:"pointer", background:"var(--surface-2)" }}
                           onClick={() => router.push(`/solicitudes/${cmp.id}`)}>
-                          <td className="mono" style={{ fontSize:10, paddingLeft:28, color:"var(--text-3)" }}>↳ {cmp.id}</td>
+                          <td className="mono" style={{ fontSize:10, paddingLeft:28, color:"var(--text-3)" }}><CornerDownRight size={14} style={{ verticalAlign:"-0.2em", marginRight:2 }}/>{cmp.id}</td>
                           <td>{cu ? (
                             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                               <div style={{ width:20, height:20, borderRadius:"50%",

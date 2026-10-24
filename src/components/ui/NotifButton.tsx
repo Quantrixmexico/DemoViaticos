@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { triggerNotifSetup } from "@/components/ui/PushNotifications"
+import { Bell, CheckCircle2, XCircle } from "lucide-react"
 
 export function NotifButton() {
   const [perm, setPerm] = useState<string>("default")
@@ -21,8 +22,8 @@ export function NotifButton() {
       <div>
         <div style={{ fontSize:13, fontWeight:600, marginBottom:2 }}>Notificaciones push</div>
         <div style={{ fontSize:11.5, color:"var(--text-3)" }}>
-          {perm==="granted" ? "✅ Activadas" :
-           perm==="denied"  ? "🚫 Bloqueadas — habilítalas en los ajustes del navegador" :
+          {perm==="granted" ? <><CheckCircle2 size={14} strokeWidth={2} color="var(--success)" style={{verticalAlign:"-0.15em"}}/> Activadas</> :
+           perm==="denied"  ? <><XCircle size={14} strokeWidth={2} color="var(--danger)" style={{verticalAlign:"-0.15em"}}/> Bloqueadas — habilítalas en los ajustes del navegador</> :
            "Sin configurar"}
         </div>
       </div>
@@ -35,7 +36,7 @@ export function NotifButton() {
             color: perm==="granted" ? "var(--success)" : "#111",
             fontWeight: 600,
           }}>
-          {perm==="granted" ? "Reactivar" : "Activar 🔔"}
+          {perm==="granted" ? "Reactivar" : <><Bell size={14} strokeWidth={2}/> Activar</>}
         </button>
       )}
     </div>

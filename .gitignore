@@ -12,3 +12,4 @@ out/
 
 # Scripts locales de setup
 *.sh
+tsconfig.tsbuildinfo

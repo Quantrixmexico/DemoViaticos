@@ -1,5 +1,6 @@
 "use client"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, Plus, RotateCcw, Send } from "lucide-react"
+import { Toast } from "@/components/ui/Toast"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -98,7 +99,7 @@ export default function CorregirComprobacionPage() {
       .select("gerente_id, nombre").eq("id", user.id).single()
     if (perfil?.gerente_id) {
       await notifyUsers([perfil.gerente_id],
-        "📎 Comprobación corregida para revisar",
+        "Comprobación corregida para revisar",
         `${perfil.nombre} corrigió y reenvió la comprobación ${id}`,
         `/solicitudes/${id}`)
     }
@@ -117,7 +118,7 @@ export default function CorregirComprobacionPage() {
     <div style={{ maxWidth:1000 }}>
       <div className="page-head">
         <div>
-          <h1 className="page-title">↩️ Corregir comprobación</h1>
+          <h1 className="page-title"><RotateCcw size={16} strokeWidth={2} className="inline-icon"/> Corregir comprobación</h1>
           <div className="page-sub">{id} · {solicitud.concepto}</div>
         </div>
       </div>
@@ -133,7 +134,7 @@ export default function CorregirComprobacionPage() {
       <div className="card" style={{marginBottom:16,border:"2px dashed var(--border)",
         textAlign:"center",padding:"20px",cursor:"pointer"}}
         onClick={()=>fileRef.current?.click()}>
-        <div style={{fontSize:24,marginBottom:6}}>➕</div>
+        <div style={{marginBottom:6,color:"var(--text-3)",display:"flex",justifyContent:"center"}}><Plus size={24} strokeWidth={1.75}/></div>
         <div style={{fontWeight:600,fontSize:13}}>Agregar o reemplazar XMLs</div>
         <div style={{fontSize:12,color:"var(--text-3)"}}>Haz clic o arrastra archivos XML</div>
         <input ref={fileRef} type="file" accept=".xml" multiple hidden
@@ -193,20 +194,14 @@ export default function CorregirComprobacionPage() {
         </table>
       </div>
 
-      {toast&&(
-        <div style={{padding:"10px 14px",borderRadius:8,marginBottom:12,fontSize:13,
-          background:toast.ok?"var(--success-soft)":"var(--danger-soft)",
-          color:toast.ok?"var(--success)":"var(--danger)"}}>
-          {toast.msg}
-        </div>
-      )}
+      <Toast message={toast?.msg} style={{marginBottom:12}}/>
 
       <div style={{display:"flex",justifyContent:"flex-end",gap:10}}>
         <button className="btn ghost" onClick={()=>router.push(`/solicitudes/${id}`)}>Cancelar</button>
         <button className="btn primary" onClick={handleReenviar}
           disabled={enviando||total<=0}
           style={{opacity:enviando||total<=0?0.5:1}}>
-          {enviando?"Reenviando…":`Reenviar comprobación · ${fmtMXN(total)} →`}
+          {enviando?"Reenviando…":<><Send size={15} strokeWidth={2}/> Reenviar comprobación · {fmtMXN(total)}</>}
         </button>
       </div>
     </div>
