@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next"
+import Script from "next/script"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/contexts/ThemeContext"
 import { InstallBanner } from "@/components/ui/InstallBanner"
@@ -37,6 +38,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content={BRAND.nombreCorto} />
         <link rel="apple-touch-icon" href="/apple-touch-icon-180.png?v=2" />
+        {/* Variables públicas en tiempo de ejecución (ver src/lib/public-env.ts) */}
+        <Script src="/env.js" strategy="beforeInteractive" />
       </head>
       <body>
         <ThemeProvider>

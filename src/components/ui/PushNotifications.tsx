@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, useCallback } from "react"
 import { Bell, X } from "lucide-react"
 import { stripEmoji } from "@/lib/text"
 import { Toast } from "@/components/ui/Toast"
-import { FIREBASE_WEB, FIREBASE_VAPID_KEY, PUSH_DISPONIBLE } from "@/lib/firebase-public"
+import { firebaseWeb, firebaseVapidKey, pushDisponible } from "@/lib/firebase-public"
 
 interface Props { userId: string }
 type Status = "idle" | "asking" | "granted" | "denied"
@@ -13,7 +13,7 @@ export function triggerNotifSetup() { globalSetup?.() }
 
 export function PushNotifications({ userId }: Props) {
   // Sin proyecto de Firebase configurado no se ofrece push (ver src/lib/firebase-public.ts)
-  if (!PUSH_DISPONIBLE) return null
+  if (!pushDisponible()) return null
   return <PushNotificationsInner userId={userId}/>
 }
 
@@ -38,7 +38,7 @@ function PushNotificationsInner({ userId }: Props) {
       .then(() => {
         const fb = (window as any).firebase
         if (!fb) { reject(new Error("Firebase not available")); return }
-        if (!fb.apps?.length) fb.initializeApp(FIREBASE_WEB)
+        if (!fb.apps?.length) fb.initializeApp(firebaseWeb())
         messagingRef.current = fb.messaging()
         fbReadyRef.current = true
         messagingRef.current.onMessage((payload: any) => {
@@ -65,7 +65,7 @@ function PushNotificationsInner({ userId }: Props) {
       }
 
       const token = await messagingRef.current?.getToken({
-        vapidKey: FIREBASE_VAPID_KEY,
+        vapidKey: firebaseVapidKey(),
         ...(swReg ? { serviceWorkerRegistration: swReg } : {}),
       })
 

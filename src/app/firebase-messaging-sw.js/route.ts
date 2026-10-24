@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
-import { FIREBASE_WEB } from "@/lib/firebase-public"
+import { firebaseWeb } from "@/lib/firebase-public"
 import { BRAND } from "@/lib/brand"
 
 /** Service worker de Firebase Messaging con la configuración del proyecto inyectada. */
-const SW_CONTENT = `
+const swContent = () => { const FIREBASE_WEB = firebaseWeb(); return `
 importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js")
 importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js")
 
@@ -30,10 +30,10 @@ self.addEventListener("notificationclick", e => {
   const url = e.notification.data?.url || "/dashboard"
   e.waitUntil(clients.openWindow(url))
 })
-`
+` }
 
 export async function GET() {
-  return new NextResponse(SW_CONTENT, {
+  return new NextResponse(swContent(), {
     headers: {
       "Content-Type": "application/javascript; charset=utf-8",
       "Cache-Control": "no-cache, no-store, must-revalidate",
