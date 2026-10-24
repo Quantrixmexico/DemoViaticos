@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { triggerNotifSetup } from "@/components/ui/PushNotifications"
 import { Bell, BellOff, BellRing } from "lucide-react"
-import { PUSH_DISPONIBLE } from "@/lib/firebase-public"
+import { pushDisponible } from "@/lib/firebase-public"
 
 type Perm = "default" | "granted" | "denied" | "unsupported"
 
@@ -13,7 +13,7 @@ export function NotifButton() {
   useEffect(() => {
     // Lee el permiso del navegador al montar; cambia solo por acción del usuario
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPerm(PUSH_DISPONIBLE && "Notification" in window ? (Notification.permission as Perm) : "unsupported")
+    setPerm(pushDisponible() && "Notification" in window ? (Notification.permission as Perm) : "unsupported")
   }, [])
 
   const handleClick = () => {
@@ -25,7 +25,7 @@ export function NotifButton() {
     granted:     { icon: BellRing, tone: "var(--success)", soft: "var(--success-soft)", titulo: "Activadas en este dispositivo", texto: "Te avisamos al autorizar, liberar o devolver una solicitud." },
     denied:      { icon: BellOff,  tone: "var(--danger)",  soft: "var(--danger-soft)",  titulo: "Bloqueadas por el navegador",  texto: "Habilítalas en los ajustes del sitio y vuelve a esta pantalla." },
     default:     { icon: Bell,     tone: "var(--text-2)",  soft: "var(--surface-2)",    titulo: "Sin activar",                  texto: "Recibe alertas aunque la app esté cerrada." },
-    unsupported: { icon: BellOff,  tone: "var(--text-3)",  soft: "var(--surface-2)",    titulo: "No disponibles aquí",          texto: PUSH_DISPONIBLE ? "Este navegador no admite notificaciones push." : "Las notificaciones push no están configuradas en este sistema." },
+    unsupported: { icon: BellOff,  tone: "var(--text-3)",  soft: "var(--surface-2)",    titulo: "No disponibles aquí",          texto: pushDisponible() ? "Este navegador no admite notificaciones push." : "Las notificaciones push no están configuradas en este sistema." },
   }[perm]
   const Icon = estado.icon
 
