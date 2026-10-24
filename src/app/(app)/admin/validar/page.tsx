@@ -8,6 +8,7 @@ import { notifyUsers } from "@/lib/notify"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { CheckCircle2, Check, RefreshCw, Inbox, Banknote, Clock } from "lucide-react"
 import { StatCards } from "@/components/ui/StatCards"
+import { Dialog } from "@/components/ui/Dialog"
 import type { Solicitud } from "@/types"
 
 export default function AdminValidarPage() {
@@ -18,6 +19,7 @@ export default function AdminValidarPage() {
   const [procesando,  setProcesando]  = useState<string|null>(null)
   const [rechazandoId,setRechazandoId]= useState<string|null>(null)
   const [motivo,      setMotivo]      = useState("")
+  const [motivoError, setMotivoError] = useState(false)
   const [userId,      setUserId]      = useState<string|null>(null)
 
   const load = useCallback(async () => {
@@ -77,7 +79,7 @@ export default function AdminValidarPage() {
   }
 
   const rechazar = async (id: string, devolver = false) => {
-    if (!motivo.trim()) { alert("Escribe el motivo"); return }
+    if (!motivo.trim()) { setMotivoError(true); return }
     setProcesando(id)
     const sb = createClient()
     const s = solicitudes.find(x=>x.id===id)
@@ -105,7 +107,7 @@ export default function AdminValidarPage() {
       })
     } catch {}
     setSolicitudes(prev=>prev.filter(x=>x.id!==id))
-    setRechazandoId(null); setMotivo(""); setProcesando(null)
+    setRechazandoId(null); setMotivo(""); setMotivoError(false); setProcesando(null)
   }
 
   const totalPendiente = solicitudes.reduce((a,s)=>a+s.monto,0)
@@ -130,25 +132,26 @@ export default function AdminValidarPage() {
       ]}/>
 
       {/* Modal rechazo */}
-      {rechazandoId&&(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:100,display:"grid",placeItems:"center"}}>
-          <div className="card" style={{width:400,maxWidth:"90vw"}}>
-            <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>Rechazar solicitud</div>
-            <div style={{fontSize:12,color:"var(--text-3)",marginBottom:12}}>
-              {solicitudes.find(s=>s.id===rechazandoId)?.concepto}
-            </div>
-            <textarea className="input" rows={3} value={motivo} onChange={e=>setMotivo(e.target.value)}
-              placeholder="Motivo del rechazo…" style={{resize:"vertical",marginBottom:12}}/>
-            <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-              <button className="btn ghost" onClick={()=>{setRechazandoId(null);setMotivo("")}}>Cancelar</button>
-              <button className="btn" style={{background:"var(--danger)",border:"none",color:"#fff"}}
-                onClick={()=>rechazar(rechazandoId)} disabled={!!procesando}>
-                {procesando?"Procesando…":"Rechazar"}
-              </button>
-            </div>
-          </div>
+      <Dialog open={!!rechazandoId} size="sm" dismissible={!procesando}
+        onClose={()=>{setRechazandoId(null);setMotivo("");setMotivoError(false)}}
+        title="Rechazar solicitud"
+        description={solicitudes.find(s=>s.id===rechazandoId)?.concepto}
+        footer={<>
+          <button className="btn ghost" onClick={()=>{setRechazandoId(null);setMotivo("");setMotivoError(false)}}>Cancelar</button>
+          <button className="btn danger" onClick={()=>rechazandoId && rechazar(rechazandoId)} disabled={!!procesando}>
+            {procesando?"Procesando…":"Rechazar"}
+          </button>
+        </>}>
+        <div className="field">
+          <label htmlFor="motivo-rechazo-admin">Motivo<span className="req">*</span></label>
+          <textarea id="motivo-rechazo-admin" className="input" rows={3} value={motivo}
+            onChange={e=>{setMotivo(e.target.value); if (e.target.value.trim()) setMotivoError(false)}}
+            placeholder="Motivo del rechazo…"
+            aria-invalid={motivoError}
+            style={{resize:"vertical", borderColor: motivoError ? "var(--danger)" : undefined}}/>
+          {motivoError && <div className="field-hint" style={{color:"var(--danger)"}}>Escribe el motivo para continuar.</div>}
         </div>
-      )}
+      </Dialog>
 
       {loading?(
         <div className="card" style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>

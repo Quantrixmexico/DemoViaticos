@@ -156,7 +156,7 @@ export default function ContadorPolizasPage() {
                 {/* Movimientos */}
                 {isOpen && (
                   <div style={{ borderTop: "1px solid var(--border)" }}>
-                    <table className="t">
+                    <table className="t cards">
                       <thead>
                         <tr>
                           <th>Cuenta</th><th>Descripción</th><th>T/D</th>
@@ -169,15 +169,15 @@ export default function ContadorPolizasPage() {
                           <tr key={i} style={{
                             background: l.tipo === "C" ? "rgba(100,200,100,.03)" : "rgba(100,150,255,.03)"
                           }}>
-                            <td className="mono" style={{ fontSize: 11 }}>{l.cuenta}</td>
-                            <td style={{ fontSize: 12 }}>{l.nombreCuenta}</td>
-                            <td style={{ fontSize: 11, fontWeight: 600,
+                            <td className="mono cell-sub" style={{ fontSize: 11 }}>{l.cuenta}</td>
+                            <td className="cell-title" style={{ fontSize: 12 }}>{l.nombreCuenta}</td>
+                            <td className="cell-sub" style={{ fontSize: 11, fontWeight: 600,
                               color: l.tipo === "C" ? "var(--success)" : "var(--accent)" }}>
                               {l.tipo === "C" ? "Cargo" : "Abono"}
                             </td>
-                            <td className="num">{l.debe > 0 ? fmtMXN(l.debe) : "—"}</td>
-                            <td className="num">{l.haber > 0 ? fmtMXN(l.haber) : "—"}</td>
-                            <td style={{ fontSize: 11, maxWidth: 200, overflow: "hidden",
+                            <td className="num" data-label="Debe">{l.debe > 0 ? fmtMXN(l.debe) : "—"}</td>
+                            <td className="num" data-label="Haber">{l.haber > 0 ? fmtMXN(l.haber) : "—"}</td>
+                            <td data-label="Concepto" style={{ fontSize: 11, maxWidth: 200, overflow: "hidden",
                               textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.concepto}</td>
                           </tr>
                         ))}

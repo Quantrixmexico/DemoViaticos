@@ -143,7 +143,7 @@ export default function CorregirComprobacionPage() {
 
       {/* Items table */}
       <div className="card" style={{marginBottom:16,padding:0,overflow:"auto"}}>
-        <table className="t" style={{minWidth:860}}>
+        <table className="t cards" style={{minWidth:860}}>
           <thead>
             <tr>
               <th>Emisor</th><th>Concepto</th>
@@ -155,16 +155,16 @@ export default function CorregirComprobacionPage() {
           <tbody>
             {items.map((it,i)=>(
               <tr key={i}>
-                <td style={{fontSize:12}}>{it.emisor}</td>
-                <td style={{fontSize:12}}>{it.concepto}</td>
-                <td>
+                <td className="cell-title" style={{fontSize:12}}>{it.emisor}</td>
+                <td className="cell-sub" style={{fontSize:12}}>{it.concepto}</td>
+                <td className="cell-field" data-label="Cuenta">
                   <select className="select" value={it.cuenta}
                     onChange={e=>setItems(prev=>prev.map((x,j)=>j===i?{...x,cuenta:e.target.value}:x))}
                     style={{fontSize:11,padding:"5px 6px"}}>
                     {catalogoGastos.map(g=><option key={g.cuenta} value={g.cuenta}>{g.cuenta} · {g.nombre}</option>)}
                   </select>
                 </td>
-                <td>
+                <td className="cell-field" data-label="Comentarios">
                   <input className="input"
                     value={it.observaciones||""}
                     onChange={e=>setItems(prev=>prev.map((x,j)=>j===i?{...x,observaciones:e.target.value}:x))}
@@ -176,8 +176,8 @@ export default function CorregirComprobacionPage() {
                     </div>
                   )}
                 </td>
-                <td className="num">{fmtMXN(it.total)}</td>
-                <td>
+                <td className="num cell-amount" data-label="Total">{fmtMXN(it.total)}</td>
+                <td className="cell-actions">
                   <button onClick={()=>setItems(p=>p.filter((_,j)=>j!==i))}
                     style={{background:"none",border:"none",color:"var(--text-3)",cursor:"pointer",fontSize:16}}>×</button>
                 </td>

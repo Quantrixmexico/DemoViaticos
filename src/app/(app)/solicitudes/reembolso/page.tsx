@@ -201,7 +201,7 @@ export default function NuevoReembolsoPage() {
       {/* Items list */}
       {items.length > 0 && (
         <div className="card" style={{ padding:0, overflow:"auto" }}>
-          <table className="t" style={{ minWidth:900 }}>
+          <table className="t cards" style={{ minWidth:900 }}>
             <thead>
               <tr>
                 <th style={{ minWidth:120 }}>Emisor</th>
@@ -217,7 +217,7 @@ export default function NuevoReembolsoPage() {
                 const meta = catalogoGastos.find(g => g.cuenta === it.cuenta)
                 return (
                   <tr key={i} style={{ ...(it.duplicado ? { textDecoration:"line-through", opacity:0.5 } : {}) }}>
-                    <td style={{ fontSize:12 }}>
+                    <td className="cell-title" style={{ fontSize:12 }}>
                       {it.emisor}
                       {it.duplicado && (
                         <span style={{
@@ -228,8 +228,8 @@ export default function NuevoReembolsoPage() {
                         </span>
                       )}
                     </td>
-                    <td style={{ fontSize:12 }}>{it.concepto}</td>
-                    <td>
+                    <td className="cell-sub" style={{ fontSize:12 }}>{it.concepto}</td>
+                    <td className="cell-field" data-label="Cuenta contable">
                       {it.duplicado
                         ? <span style={{ fontSize:11 }}>{meta?.nombre}</span>
                         : <select className="select" value={it.cuenta}
@@ -240,7 +240,7 @@ export default function NuevoReembolsoPage() {
                             {catalogoGastos.map(g=><option key={g.cuenta} value={g.cuenta}>{g.cuenta} · {g.nombre}</option>)}
                           </select>}
                     </td>
-                    <td>
+                    <td className="cell-field" data-label="Comentarios">
                       {!it.duplicado && (
                         <div>
                           <input className="input"
@@ -259,8 +259,8 @@ export default function NuevoReembolsoPage() {
                         </div>
                       )}
                     </td>
-                    <td className="num">{fmtMXN(it.total)}</td>
-                    <td>
+                    <td className="num cell-amount" data-label="Total">{fmtMXN(it.total)}</td>
+                    <td className="cell-actions">
                       <button className="line-remove" aria-label="Quitar comprobante"
                         onClick={() => setItems(prev => prev.filter((_,j)=>j!==i))}><X size={14} strokeWidth={2}/></button>
                     </td>

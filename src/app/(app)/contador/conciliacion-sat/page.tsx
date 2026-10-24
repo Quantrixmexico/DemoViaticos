@@ -110,16 +110,16 @@ export default function ConciliacionSATPage() {
               <div style={{fontSize:12,color:"var(--text-3)",marginBottom:10}}>
                 Estas facturas fueron emitidas a tu RFC pero nadie las comprobó en el sistema.
               </div>
-              <table className="t">
+              <table className="t cards">
                 <thead><tr><th>UUID</th><th>Emisor</th><th>Total</th><th>Fecha</th><th>Estado</th></tr></thead>
                 <tbody>
                   {resultado.enSATNoSistema.slice(0,50).map((c:any)=>(
                     <tr key={c.uuid}>
-                      <td className="mono" style={{fontSize:10}}>{c.uuid.slice(0,20)}…</td>
-                      <td style={{fontSize:11}}>{c.razonSocial||c.rfcEmisor||"—"}</td>
-                      <td className="num">{c.total}</td>
-                      <td style={{fontSize:11}}>{c.fecha}</td>
-                      <td><span style={{fontSize:10,padding:"2px 6px",borderRadius:8,
+                      <td className="mono uuid cell-sub" style={{fontSize:10}}>{c.uuid.slice(0,20)}…</td>
+                      <td className="cell-title" style={{fontSize:11}}>{c.razonSocial||c.rfcEmisor||"—"}</td>
+                      <td className="num cell-amount" data-label="Total">{c.total}</td>
+                      <td className="cell-sub" style={{fontSize:11}}>{c.fecha}</td>
+                      <td data-label="Estado"><span style={{fontSize:10,padding:"2px 6px",borderRadius:8,
                         background:"var(--warn-soft)",color:"var(--warn)"}}>{c.estado||"—"}</span></td>
                     </tr>
                   ))}

@@ -178,7 +178,7 @@ function NuevaComprobacionInner() {
       {/* Items list */}
       {items.length > 0 && (
         <div className="card" style={{ padding: 0, overflow: "auto" }}>
-          <table className="t" style={{ minWidth: 960 }}>
+          <table className="t cards" style={{ minWidth: 960 }}>
             <thead>
               <tr>
                 <th style={{ minWidth: 100 }}>UUID</th>
@@ -193,14 +193,14 @@ function NuevaComprobacionInner() {
             <tbody>
               {items.map((it, i) => (
                 <tr key={i} style={{ ...(it.duplicado ? { textDecoration: "line-through", opacity: 0.5 } : {}) }}>
-                  <td className="uuid" style={{ fontSize: 10.5, maxWidth: 120, color: "var(--text-3)" }}>
+                  <td className="uuid cell-hide" style={{ fontSize: 10.5, maxWidth: 120, color: "var(--text-3)" }}>
                     <span title={it.uuid} onClick={() => navigator.clipboard.writeText(it.uuid)}
                       style={{ cursor: "pointer" }}>
                       {it.uuid ? it.uuid.slice(0, 18) + "…" : "—"}
                     </span>
                   </td>
-                  <td style={{ fontSize: 12 }}>{it.emisor}</td>
-                  <td style={{ fontSize: 11, maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <td className="cell-title" style={{ fontSize: 12 }}>{it.emisor}</td>
+                  <td className="cell-sub" style={{ fontSize: 11, maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {it.concepto}
                     {it.duplicado && (
                       <span style={{
@@ -211,7 +211,7 @@ function NuevaComprobacionInner() {
                       </span>
                     )}
                   </td>
-                  <td>
+                  <td className="cell-field" data-label="Cuenta">
                     {it.duplicado ? (
                       <span style={{ fontSize: 11 }}>{catalogoGastos.find(g => g.cuenta === it.cuenta)?.nombre}</span>
                     ) : (
@@ -224,7 +224,7 @@ function NuevaComprobacionInner() {
                       </select>
                     )}
                   </td>
-                  <td>
+                  <td className="cell-field" data-label="Comentarios">
                     <div>
                       <input
                         className="input"
@@ -243,8 +243,8 @@ function NuevaComprobacionInner() {
                       )}
                     </div>
                   </td>
-                  <td className="num">{fmtMXN(it.total)}</td>
-                  <td>
+                  <td className="num cell-amount" data-label="Total">{fmtMXN(it.total)}</td>
+                  <td className="cell-actions">
                     <button className="line-remove" aria-label="Quitar comprobante"
                       onClick={() => setItems(prev => prev.filter((_, j) => j !== i))}><X size={14} strokeWidth={2}/></button>
                   </td>

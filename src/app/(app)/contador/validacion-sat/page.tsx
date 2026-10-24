@@ -141,7 +141,7 @@ export default function ValidacionSATPage() {
 
       {resultados && (
         <div className="card" style={{padding:0,overflow:"auto"}}>
-          <table className="t" style={{fontSize:12}}>
+          <table className="t cards" style={{fontSize:12}}>
             <thead><tr>
               <th>Folio</th>
               <th style={{minWidth:295}}>UUID</th>
@@ -153,27 +153,27 @@ export default function ValidacionSATPage() {
             <tbody>
               {resultados.map((r,i)=>(
                 <tr key={i}>
-                  <td className="mono" style={{fontSize:10}}>{r.folio}</td>
-                  <td style={{fontFamily:"monospace",fontSize:10.5,wordBreak:"break-all"}}>
+                  <td className="mono uuid cell-sub" style={{fontSize:10}}>{r.folio}</td>
+                  <td className="uuid cell-sub" style={{fontFamily:"monospace",fontSize:10.5,wordBreak:"break-all"}}>
                     <span onClick={()=>navigator.clipboard.writeText(r.uuid)}
                       style={{cursor:"pointer",padding:"2px 6px",borderRadius:4,display:"inline-block"}}
                       title="Clic para copiar">{r.uuid}</span>
                   </td>
-                  <td style={{fontSize:11}}>{r.emisor||"—"}</td>
-                  <td>
+                  <td className="cell-title" style={{fontSize:11}}>{r.emisor||"—"}</td>
+                  <td data-label="Estado">
                     <span style={{fontSize:10,padding:"2px 8px",borderRadius:10,fontWeight:600,
                       background:estadoColor(r.estado)+"22",color:estadoColor(r.estado)}}>
                       {r.estado==="Vigente"?<><CheckCircle2 size={14} strokeWidth={2} color="var(--success)" style={{verticalAlign:"-0.15em"}}/> Vigente</>:r.estado==="Cancelado"?<><XCircle size={14} strokeWidth={2} color="var(--danger)" style={{verticalAlign:"-0.15em"}}/> Cancelado</>:r.estado}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Método">
                     <span style={{fontSize:10,padding:"2px 6px",borderRadius:8,
                       background:r.metodo==="sat-soap"?"var(--success-soft)":"var(--surface-2)",
                       color:r.metodo==="sat-soap"?"var(--success)":"var(--text-3)"}}>
                       {r.metodo==="sat-soap"?"SAT":"Local"}
                     </span>
                   </td>
-                  <td>
+                  <td className="cell-actions">
                     {r.urlVerificacionSAT
                       ? <a href={r.urlVerificacionSAT} target="_blank" rel="noopener"
                           style={{fontSize:11,color:"var(--accent)"}}>Verificar</a>

@@ -448,23 +448,23 @@ export default function ReportesPage() {
             </div>
           </div>
           <div className="card" style={{padding:0,overflow:"auto"}}>
-            <table className="t" style={{minWidth:600}}>
+            <table className="t cards" style={{minWidth:600}}>
               <thead><tr><th>#</th><th>Área</th><th className="num">Solicitudes</th><th className="num">Monto</th><th className="num">% del total</th></tr></thead>
               <tbody>
                 {porArea.map((a,i)=>{
                   const totalGlobal = porArea.reduce((s,x)=>s+x.total,0)||1
                   return (
                     <tr key={a.codigo||a.label}>
-                      <td style={{fontWeight:700,color:"var(--text-3)",width:32}}>{i+1}</td>
-                      <td>
+                      <td className="cell-sub" style={{fontWeight:700,color:"var(--text-3)",width:32}}>{i+1}</td>
+                      <td className="cell-title">
                         <div style={{fontWeight:500}}>{a.label}</div>
                         {a.codigo && a.codigo!==a.label && (
                           <div className="mono" style={{fontSize:10,color:"var(--text-3)",marginTop:2}}>{a.codigo}</div>
                         )}
                       </td>
-                      <td className="num">{a.count}</td>
-                      <td className="num" style={{fontWeight:600}}>{fmtMXN(a.total)}</td>
-                      <td className="num">
+                      <td className="num" data-label="Solicitudes">{a.count}</td>
+                      <td className="num cell-amount" data-label="Monto" style={{fontWeight:600}}>{fmtMXN(a.total)}</td>
+                      <td className="num" data-label="% del total">
                         <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-end"}}>
                           <div style={{width:60,height:4,background:"var(--border)",borderRadius:2}}>
                             <div style={{height:"100%",width:`${(a.total/totalGlobal*100).toFixed(0)}%`,background:"var(--accent)",borderRadius:2}}/>
@@ -519,19 +519,19 @@ export default function ReportesPage() {
             )}
           </div>
           <div className="card" style={{padding:0,overflow:"auto"}}>
-            <table className="t" style={{minWidth:600}}>
+            <table className="t cards" style={{minWidth:600}}>
               <thead><tr><th>#</th><th>Cuenta</th><th>Nombre</th><th className="num">Movs</th><th className="num">Monto</th><th className="num">% del total</th></tr></thead>
               <tbody>
                 {porCuenta.map((c,i)=>{
                   const totalGlobal = porCuenta.reduce((s,x)=>s+x.total,0)||1
                   return (
                     <tr key={c.cuenta}>
-                      <td style={{fontWeight:700,color:"var(--text-3)",width:32}}>{i+1}</td>
-                      <td className="mono" style={{fontSize:11}}>{c.cuenta}</td>
-                      <td style={{fontWeight:500}}>{c.nombre}</td>
-                      <td className="num">{c.count}</td>
-                      <td className="num" style={{fontWeight:600}}>{fmtMXN(c.total)}</td>
-                      <td className="num">
+                      <td className="cell-sub" style={{fontWeight:700,color:"var(--text-3)",width:32}}>{i+1}</td>
+                      <td className="mono cell-sub" style={{fontSize:11}}>{c.cuenta}</td>
+                      <td className="cell-title" style={{fontWeight:500}}>{c.nombre}</td>
+                      <td className="num" data-label="Movs">{c.count}</td>
+                      <td className="num cell-amount" data-label="Monto" style={{fontWeight:600}}>{fmtMXN(c.total)}</td>
+                      <td className="num" data-label="% del total">
                         <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-end"}}>
                           <div style={{width:60,height:4,background:"var(--border)",borderRadius:2}}>
                             <div style={{height:"100%",width:`${(c.total/totalGlobal*100).toFixed(0)}%`,background:"var(--accent)",borderRadius:2}}/>
@@ -587,29 +587,29 @@ export default function ReportesPage() {
             )}
           </div>
           <div className="card" style={{padding:0,overflow:"auto"}}>
-            <table className="t" style={{minWidth:600}}>
+            <table className="t cards" style={{minWidth:600}}>
               <thead><tr><th>#</th><th>Usuario</th><th>Área</th><th className="num">Solicitudes</th><th className="num">Monto</th><th className="num">% del total</th></tr></thead>
               <tbody>
                 {porUsuario.map((u,i)=>{
                   const totalGlobal = porUsuario.reduce((s,x)=>s+x.total,0)||1
                   return (
                     <tr key={u.id}>
-                      <td style={{fontWeight:700,color:"var(--text-3)",width:32}}>{i+1}</td>
-                      <td>
+                      <td className="cell-sub" style={{fontWeight:700,color:"var(--text-3)",width:32}}>{i+1}</td>
+                      <td className="cell-title">
                         <div style={{display:"flex",alignItems:"center",gap:8}}>
                           <div style={{width:24,height:24,borderRadius:"50%",background:"var(--surface-2)",border:"1px solid var(--border)",display:"grid",placeItems:"center",fontSize:9,fontWeight:700}}>{u.iniciales}</div>
                           <span style={{fontWeight:500}}>{u.nombre}</span>
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Área">
                         <div style={{fontWeight:500,fontSize:12}}>{u.centro}</div>
                         {u.centroCodigo && (
                           <div className="mono" style={{fontSize:10,color:"var(--text-3)",marginTop:2}}>{u.centroCodigo}</div>
                         )}
                       </td>
-                      <td className="num">{u.count}</td>
-                      <td className="num" style={{fontWeight:600}}>{fmtMXN(u.total)}</td>
-                      <td className="num">
+                      <td className="num" data-label="Solicitudes">{u.count}</td>
+                      <td className="num cell-amount" data-label="Monto" style={{fontWeight:600}}>{fmtMXN(u.total)}</td>
+                      <td className="num" data-label="% del total">
                         <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"flex-end"}}>
                           <div style={{width:60,height:4,background:"var(--border)",borderRadius:2}}>
                             <div style={{height:"100%",width:`${(u.total/totalGlobal*100).toFixed(0)}%`,background:"var(--accent)",borderRadius:2}}/>
@@ -684,7 +684,7 @@ export default function ReportesPage() {
                   : "Sin anticipos pendientes — ningún deudor"}
               </div>
             ) : (
-              <table className="t" style={{minWidth:700}}>
+              <table className="t cards" style={{minWidth:700}}>
                 <thead>
                   <tr>
                     <th>#</th>
@@ -698,8 +698,8 @@ export default function ReportesPage() {
                 <tbody>
                   {topDeudores.map((d:any,i:number)=>(
                     <tr key={d.nombre+i}>
-                      <td style={{fontWeight:700,color:"var(--text-3)",width:32}}>{i+1}</td>
-                      <td>
+                      <td className="cell-sub" style={{fontWeight:700,color:"var(--text-3)",width:32}}>{i+1}</td>
+                      <td className="cell-title">
                         <div style={{display:"flex",alignItems:"center",gap:8}}>
                           <div style={{width:24,height:24,borderRadius:"50%",background:"var(--surface-2)",border:"1px solid var(--border)",display:"grid",placeItems:"center",fontSize:9,fontWeight:700}}>
                             {d.iniciales}
@@ -707,8 +707,8 @@ export default function ReportesPage() {
                           <span style={{fontWeight:500}}>{d.nombre}</span>
                         </div>
                       </td>
-                      <td className="num">{d.count}</td>
-                      <td className="num">
+                      <td className="num" data-label="Anticipos">{d.count}</td>
+                      <td className="num" data-label="Días máx.">
                         <span style={{
                           fontWeight:600,
                           color: d.maxDias > 60 ? "var(--danger)"
@@ -719,8 +719,8 @@ export default function ReportesPage() {
                           {d.maxDias}d
                         </span>
                       </td>
-                      <td className="num" style={{fontWeight:600,color:"var(--warn)"}}>{fmtMXN(d.saldo)}</td>
-                      <td>
+                      <td className="num cell-amount" data-label="Saldo" style={{fontWeight:600,color:"var(--warn)"}}>{fmtMXN(d.saldo)}</td>
+                      <td data-label="Proporción">
                         <div style={{width:100,height:4,background:"var(--border)",borderRadius:2}}>
                           <div style={{height:"100%",width:`${(d.saldo/maxDeudor*100).toFixed(0)}%`,background:"var(--warn)",borderRadius:2}}/>
                         </div>

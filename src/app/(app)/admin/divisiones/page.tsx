@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useUsuario } from "@/lib/UsuarioContext"
 import { esDemo, MSG_DEMO_BLOQUEADO } from "@/lib/permisos"
 import { Toast } from "@/components/ui/Toast"
+import { Dialog } from "@/components/ui/Dialog"
 import { Layers, Plus, Edit2, Power, Trash2 } from "lucide-react"
 
 interface Division {
@@ -14,25 +15,12 @@ interface Division {
   created_at?: string
 }
 
-// IMPORTANTE: FormField y Modal DEFINIDOS FUERA del componente
+// IMPORTANTE: FormField DEFINIDO FUERA del componente
 // para evitar remounts en cada render (focus loss en inputs)
 const FormField = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div>
-    <label style={{fontSize:11,color:"var(--text-3)",display:"block",marginBottom:4}}>{label}</label>
+  <div className="field">
+    <label>{label}</label>
     {children}
-  </div>
-)
-
-const Modal = ({ title, onClose, onSave, guardando, children }: any) => (
-  <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:100,display:"grid",placeItems:"center",padding:20}}>
-    <div className="card" style={{width:"100%",maxWidth:520,maxHeight:"90vh",overflowY:"auto"}}>
-      <div style={{fontWeight:700,fontSize:16,marginBottom:16}}>{title}</div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>{children}</div>
-      <div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:16}}>
-        <button className="btn ghost" onClick={onClose}>Cancelar</button>
-        <button className="btn primary" onClick={onSave} disabled={guardando}>{guardando?"Guardando…":"Guardar"}</button>
-      </div>
-    </div>
   </div>
 )
 
@@ -133,7 +121,7 @@ export default function AdminDivisionesPage() {
       <Toast message={toast}/>
 
       <div className="card" style={{padding:0,overflow:"auto"}}>
-        <table className="t" style={{minWidth:600}}>
+        <table className="t cards" style={{minWidth:600}}>
           <thead>
             <tr>
               <th>Código</th>
@@ -146,10 +134,10 @@ export default function AdminDivisionesPage() {
           <tbody>
             {divisiones.map(d => (
               <tr key={d.codigo} style={{opacity: d.activo ? 1 : 0.5}}>
-                <td className="mono" style={{fontWeight:600}}>{d.codigo}</td>
-                <td>{d.nombre}</td>
-                <td style={{color:"var(--text-3)",fontSize:12}}>{d.descripcion || "—"}</td>
-                <td>
+                <td className="mono cell-sub" style={{fontWeight:600}}>{d.codigo}</td>
+                <td className="cell-title">{d.nombre}</td>
+                <td className="cell-sub" style={{color:"var(--text-3)",fontSize:12}}>{d.descripcion || "—"}</td>
+                <td data-label="Estado">
                   <span style={{
                     fontSize:11, padding:"3px 8px", borderRadius:12,
                     background: d.activo ? "var(--success-soft)" : "var(--danger-soft)",
@@ -158,7 +146,7 @@ export default function AdminDivisionesPage() {
                     {d.activo ? "Activa" : "Inactiva"}
                   </span>
                 </td>
-                <td>
+                <td className="cell-actions">
                   <div style={{display:"flex",gap:6}}>
                     <button className="btn sm ghost" onClick={()=>setEditando(d)} title="Editar">
                       <Edit2 size={12}/>
@@ -175,13 +163,12 @@ export default function AdminDivisionesPage() {
       </div>
 
       {/* Modal nuevo */}
-      {creando && (
-        <Modal
-          title="Nueva división SAP"
-          onClose={()=>setCreando(false)}
-          onSave={crear}
-          guardando={guardando}
-        >
+      <Dialog open={creando} onClose={()=>setCreando(false)} title="Nueva división SAP" dismissible={!guardando}
+        footer={<>
+          <button className="btn ghost" onClick={()=>setCreando(false)}>Cancelar</button>
+          <button className="btn primary" onClick={crear} disabled={guardando}>{guardando?"Guardando…":"Guardar"}</button>
+        </>}>
+        <div className="form-grid cols-2">
           <FormField label="Código SAP">
             <input className="input" value={nuevoForm.codigo} onChange={e=>setNuevoForm({...nuevoForm,codigo:e.target.value})} placeholder="Ej. 4105"/>
           </FormField>
@@ -193,17 +180,16 @@ export default function AdminDivisionesPage() {
               <input className="input" value={nuevoForm.descripcion} onChange={e=>setNuevoForm({...nuevoForm,descripcion:e.target.value})}/>
             </FormField>
           </div>
-        </Modal>
-      )}
+        </div>
+      </Dialog>
 
       {/* Modal editar */}
-      {editando && (
-        <Modal
-          title={`Editar división ${editando.codigo}`}
-          onClose={()=>setEditando(null)}
-          onSave={guardarEdicion}
-          guardando={guardando}
-        >
+      <Dialog open={!!editando} onClose={()=>setEditando(null)} title={`Editar división ${editando?.codigo ?? ""}`} dismissible={!guardando}
+        footer={<>
+          <button className="btn ghost" onClick={()=>setEditando(null)}>Cancelar</button>
+          <button className="btn primary" onClick={guardarEdicion} disabled={guardando}>{guardando?"Guardando…":"Guardar"}</button>
+        </>}>
+        {editando && <div className="form-grid cols-2">
           <FormField label="Código SAP">
             <input className="input" value={editando.codigo} disabled/>
           </FormField>
@@ -215,8 +201,8 @@ export default function AdminDivisionesPage() {
               <input className="input" value={editando.descripcion||""} onChange={e=>setEditando({...editando,descripcion:e.target.value})}/>
             </FormField>
           </div>
-        </Modal>
-      )}
+        </div>}
+      </Dialog>
     </>
   )
 }
