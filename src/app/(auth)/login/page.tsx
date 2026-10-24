@@ -70,11 +70,8 @@ export default function LoginPage() {
       <section className="auth-panel">
         <div className="auth-card glass">
           <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:28 }}>
-            <div style={{ width:48, height:48, borderRadius:14, overflow:"hidden", background:"white",
-              padding:3, boxShadow:"0 8px 24px -8px rgba(0,0,0,.4)", flexShrink:0 }}>
-              <Image src="/logo.png" alt={BRAND.empresa} width={42} height={42}
-                style={{ width:"100%", height:"100%", objectFit:"contain" }}/>
-            </div>
+            <Image src="/logo.png" alt={BRAND.empresa} width={48} height={48}
+              style={{ borderRadius:13, flexShrink:0, boxShadow:"0 8px 24px -8px rgba(0,0,0,.5)" }}/>
             <div style={{ lineHeight:1.25 }}>
               <div style={{ fontSize:17, fontWeight:650, letterSpacing:"-0.02em" }}>{BRAND.empresa}</div>
               <div style={{ fontSize:13, color:"var(--text-3)" }}>Sistema de viáticos</div>

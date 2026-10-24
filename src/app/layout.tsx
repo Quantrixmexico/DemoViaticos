@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: BRAND.nombreCorto,
   },
-  icons: { icon: "/icon-192.png", apple: "/icon-512.png" },
+  icons: { icon: [{ url: "/icon-192.png?v=2", type: "image/png" }, { url: "/icon.svg?v=2", type: "image/svg+xml" }], apple: "/apple-touch-icon-180.png?v=2" },
 }
 
 export const viewport: Viewport = {
@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content={BRAND.nombreCorto} />
-        <link rel="apple-touch-icon" href="/icon-512.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon-180.png?v=2" />
       </head>
       <body>
         <ThemeProvider>

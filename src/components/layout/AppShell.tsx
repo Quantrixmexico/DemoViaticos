@@ -272,7 +272,7 @@ export function AppShell({ user, children }: Props) {
       <aside style={sidebarStyle} className="sidebar glass">
         <div style={{ display:"flex", alignItems:"center", gap:11, padding:"2px 6px 14px" }}>
           <Image src="/logo.png" alt="Logo" width={36} height={36}
-            style={{ borderRadius:10, boxShadow:"0 0 0 1px var(--border-soft), 0 6px 18px -6px rgba(0,0,0,.5)" }}/>
+            style={{ borderRadius:10 }}/>
           <div style={{ lineHeight:1.2 }}>
             <div style={{ fontSize:14, fontWeight:650, letterSpacing:"-0.02em" }}>{BRAND.producto}</div>
             <div style={{ fontSize:12, color:"var(--text-3)" }}>{BRAND.lema}</div>

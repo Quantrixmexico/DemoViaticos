@@ -52,11 +52,8 @@ export default function ResetPasswordPage() {
     <div style={{ minHeight:"100vh", display:"grid", placeItems:"center", background:"var(--bg)" }}>
       <div style={{ width:"100%", maxWidth:380, padding:"0 20px" }}>
         <div style={{ textAlign:"center", marginBottom:28 }}>
-          <div style={{ width:64, height:64, margin:"0 auto 14px", borderRadius:16,
-            overflow:"hidden", background:"white", padding:3, boxShadow:"0 8px 32px rgba(0,0,0,.2)" }}>
-            <Image src="/logo.png" alt={BRAND.empresa} width={58} height={58}
-              style={{ width:"100%", height:"100%", objectFit:"contain" }}/>
-          </div>
+          <Image src="/logo.png" alt={BRAND.empresa} width={64} height={64}
+            style={{ display:"block", margin:"0 auto 14px", borderRadius:17, boxShadow:"0 8px 32px rgba(0,0,0,.3)" }}/>
           <div style={{ fontSize:20, fontWeight:700, letterSpacing:"-0.02em" }}>
             Nueva contraseña
           </div>

@@ -1,13 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-<rect x="0" y="0" width="300" height="300" rx="66" fill="#04342C"/>
-<g transform="translate(150,150) translate(-212,-188)">
-
-<path d="M148 88 H232 Q244 88 244 100 V248 L230 260 L216 248 L202 260 L188 248 L174 260 L160 248 L146 260 L136 250 V100 Q136 88 148 88 Z" fill="#E1F5EE"/>
-<rect x="156" y="118" width="68" height="9" rx="4.5" fill="#9FE1CB"/>
-<rect x="156" y="142" width="48" height="9" rx="4.5" fill="#9FE1CB"/>
-<rect x="156" y="166" width="58" height="9" rx="4.5" fill="#9FE1CB"/>
-<circle cx="242" cy="242" r="46" fill="#1D9E75" stroke="#04342C" stroke-width="9"/>
-<text x="242" y="259" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="50" font-weight="bold" fill="#E1F5EE">$</text>
-
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <clipPath id="sq"><rect width="512" height="512" rx="114"/></clipPath>
+    <radialGradient id="g1" cx="22%" cy="18%" r="62%"><stop offset="0" stop-color="#5ee6c3" stop-opacity=".85"/><stop offset="1" stop-color="#5ee6c3" stop-opacity="0"/></radialGradient>
+    <radialGradient id="g2" cx="80%" cy="30%" r="60%"><stop offset="0" stop-color="#4da3ff" stop-opacity=".7"/><stop offset="1" stop-color="#4da3ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="g3" cx="40%" cy="95%" r="55%"><stop offset="0" stop-color="#b48cff" stop-opacity=".55"/><stop offset="1" stop-color="#b48cff" stop-opacity="0"/></radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="34"/></filter>
+    <linearGradient id="wire" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity=".9"/></linearGradient>
+  </defs>
+  <g clip-path="url(#sq)">
+    <rect width="512" height="512" fill="#05070a"/>
+    <g filter="url(#blur)">
+      <rect width="512" height="512" fill="url(#g1)"/>
+      <rect width="512" height="512" fill="url(#g2)"/>
+      <rect width="512" height="512" fill="url(#g3)"/>
+    </g>
+    <!-- ruta -->
+    <path d="M88 398 C 150 400, 170 300, 236 282 S 330 300, 392 190" fill="none" stroke="url(#wire)" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 30"/>
+    <!-- avión -->
+    <g transform="translate(392 190) rotate(-38)">
+      <path d="M0 -62 L18 -10 L66 22 L62 36 L14 18 L10 48 L28 64 L26 76 L0 68 L-26 76 L-28 64 L-10 48 L-14 18 L-62 36 L-66 22 L-18 -10 Z" fill="#ffffff"/>
+    </g>
+    <circle cx="88" cy="398" r="14" fill="#ffffff"/>
+  </g>
 </svg>
