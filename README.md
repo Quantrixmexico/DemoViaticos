@@ -28,7 +28,24 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
-Los secretos del lado servidor (Supabase service role, Firebase) se leen en tiempo de ejecución con `getCloudflareContext()`.
+Secretos solo del servidor (como secretos del Worker en Cloudflare; en desarrollo en `.dev.vars`). Se leen en tiempo de ejecución con `getCloudflareContext()`:
+
+```
+SUPABASE_SERVICE_ROLE_KEY=   # alta, baja y contraseñas de usuarios (api/admin/users)
+PUSH_WORKER_URL=             # Worker de FCM que envía las notificaciones push
+PUSH_WORKER_SECRET=          # token Bearer que acepta ese Worker
+```
+
+Sin `PUSH_WORKER_URL` y `PUSH_WORKER_SECRET` la app funciona, pero no envía push.
+
+## Seguridad
+
+- **RLS en Supabase.** La app consulta la base desde el navegador con la clave `anon`, así que la seguridad real la ponen las políticas por fila. `supabase/policies.sql` las define para todas las tablas y el bucket `comprobantes`; ejecútalo en el SQL Editor tras cualquier cambio de esquema y pruébalo con cada rol.
+- **Control de rol en el servidor.** Los layouts de `admin/`, `gerente/`, `tesoreria/`, `contador/` y `solicitudes/todas/` comprueban el rol con `requireRol` (`src/lib/auth-server.ts`) y redirigen a `/dashboard` si no corresponde. La lista de roles por área vive en `AREA_ROLES` y debe coincidir con la navegación de `AppShell`.
+- **Rol `demo`.** Solo puede dar de alta usuarios con rol `usuario`; no restablece contraseñas ni borra (`src/lib/permisos.ts` y `api/admin/users`).
+- **Push.** El navegador llama a `/api/push/notify`; el secreto del Worker nunca sale del servidor. El registro del token siempre se asocia al usuario con sesión.
+- **Service worker.** Solo cachea recursos estáticos y `/login`; las páginas con sesión no se guardan en el dispositivo.
+- **Pendiente.** Hacer privado el bucket `comprobantes` requiere servir los archivos con URLs firmadas en lugar de `getPublicUrl` (ver nota al final de `policies.sql`).
 
 ## Personalizar la marca
 
@@ -53,7 +70,8 @@ src/app/(app)         pantallas autenticadas, agrupadas por rol
 src/app/api           rutas: alta de usuarios, registro de push, validación SAT
 src/components/ui     componentes compartidos (Dialog, Toast, EmptyState, StatCards, Timeline…)
 src/components/layout AppShell: barra lateral, barra de pestañas móvil, tema
-src/lib               Supabase, formato, permisos, notificaciones, CFDI, marca
+src/lib               Supabase, formato, permisos, notificaciones, CFDI, marca, requireRol
+supabase/             policies.sql: políticas RLS para Supabase
 src/contexts          ThemeContext (modo claro/oscuro y acento)
 ```
 

@@ -79,7 +79,7 @@ export function PushNotifications({ userId }: Props) {
 
       const res = await fetch("/api/push/register", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, token }),
+        body: JSON.stringify({ token }),
       })
       const data = await res.json()
       if (data.ok) {
@@ -91,7 +91,7 @@ export function PushNotifications({ userId }: Props) {
     } catch(e: any) {
       console.error("[FCM] registerToken error:", e?.message || e)
     }
-  }, [userId, loadFirebase])
+  }, [loadFirebase])
 
   const handleActivar = useCallback(async () => {
     if (!("Notification" in window)) { setAviso("⚠ Este navegador no admite notificaciones push"); setTimeout(() => setAviso(null), 4000); return }
