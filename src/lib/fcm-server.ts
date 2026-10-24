@@ -24,14 +24,28 @@ function pemToPkcs8(pem: string): ArrayBuffer {
   return out.buffer
 }
 
-export function cuentaServicio(): ServiceAccount | null {
-  const raw = serverEnv("FIREBASE_SERVICE_ACCOUNT")
-  if (!raw) return null
-  try {
-    const sa = JSON.parse(raw)
-    if (sa.client_email && sa.private_key && sa.project_id) return sa
-  } catch {}
-  return null
+/**
+ * Lee FIREBASE_SERVICE_ACCOUNT. Acepta el JSON tal cual (en una o varias
+ * líneas), envuelto en comillas, o codificado en base64. Devuelve la cuenta o
+ * un motivo legible de por qué no sirve, sin revelar el contenido.
+ */
+export function cuentaServicio(): { sa: ServiceAccount } | { sa: null; motivo: string } {
+  let raw = serverEnv("FIREBASE_SERVICE_ACCOUNT")?.trim() ?? ""
+  if (!raw) return { sa: null, motivo: "FIREBASE_SERVICE_ACCOUNT no está definido en Variables and Secrets" }
+  if ((raw.startsWith("'") && raw.endsWith("'")) || (raw.startsWith('"') && raw.endsWith('"') && !raw.startsWith('{"'))) raw = raw.slice(1, -1).trim()
+  if (!raw.startsWith("{")) {
+    try { raw = atob(raw.replace(/\s+/g, "")).trim() } catch { return { sa: null, motivo: `FIREBASE_SERVICE_ACCOUNT no es JSON ni base64 (empieza por "${raw.slice(0, 12)}")` } }
+  }
+  let sa: Partial<ServiceAccount> & { type?: string }
+  try { sa = JSON.parse(raw) } catch {
+    // Pegado con saltos de línea reales dentro de private_key: los escapamos y reintentamos.
+    try { sa = JSON.parse(raw.replace(/"private_key"\s*:\s*"([\s\S]*?)"\s*(,|\})/, (_m, k: string, fin: string) => `"private_key":"${k.replace(/\r?\n/g, "\\n")}"${fin}`)) }
+    catch { return { sa: null, motivo: `FIREBASE_SERVICE_ACCOUNT no es JSON válido (${raw.length} caracteres; empieza por "${raw.slice(0, 12)}"). Suele pasar al pegarlo en varias líneas: pégalo en una sola línea.` } }
+  }
+  const faltan = (["client_email", "private_key", "project_id"] as const).filter(k => !sa[k])
+  if (faltan.length) return { sa: null, motivo: `FIREBASE_SERVICE_ACCOUNT no tiene ${faltan.join(", ")}. ¿Es el JSON de "Cuentas de servicio → Generar nueva clave privada"?` }
+  if (!sa.private_key!.includes("BEGIN PRIVATE KEY")) return { sa: null, motivo: "private_key de FIREBASE_SERVICE_ACCOUNT no tiene el formato PEM esperado" }
+  return { sa: sa as ServiceAccount }
 }
 
 /** Access token de Google (1 h) firmando un JWT RS256 con la cuenta de servicio. */
