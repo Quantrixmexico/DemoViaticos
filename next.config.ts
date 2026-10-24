@@ -6,6 +6,10 @@ initOpenNextCloudflareForDev()
 
 const nextConfig: NextConfig = {
   experimental: {
+    // La caché persistente de Turbopack (activa por defecto en builds desde
+    // Next 16.3) reutilizó un globals.css viejo en Cloudflare Workers Builds:
+    // el CSS compilado no se invalida al cambiar el archivo. Desactivada.
+    turbopackFileSystemCacheForBuild: false,
     serverActions: {
       allowedOrigins: [
         "zapata.mx",
