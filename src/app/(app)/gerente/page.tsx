@@ -7,7 +7,8 @@ import { fmtMXN, fmtFecha } from "@/lib/format"
 import { notifyUsers } from "@/lib/notify"
 import { TipoBadge } from "@/components/ui/StatusBadge"
 import { EmptyState } from "@/components/ui/EmptyState"
-import { CheckCircle2, Check, RefreshCw, RotateCcw } from "lucide-react"
+import { CheckCircle2, Check, RefreshCw, RotateCcw, Inbox, Banknote, Clock } from "lucide-react"
+import { StatCards } from "@/components/ui/StatCards"
 import type { Solicitud } from "@/types"
 
 export default function GerenteBandejaPage() {
@@ -162,18 +163,11 @@ export default function GerenteBandejaPage() {
       </div>
 
       {/* KPIs */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }}>
-        {[
-          { label:"Pendientes",     value:solicitudes.length,    color:solicitudes.length>0?"var(--warn)":"var(--success)" },
-          { label:"Monto total",    value:fmtMXN(totalPendiente) },
-          { label:"Días promedio",  value:diasPromedio+"d",       color:diasPromedio>3?"var(--danger)":undefined },
-        ].map(k=>(
-          <div key={k.label} className="card" style={{textAlign:"center",padding:"14px 12px"}}>
-            <div style={{fontSize:22,fontWeight:700,color:k.color}}>{k.value}</div>
-            <div style={{fontSize:11,color:"var(--text-3)",marginTop:3}}>{k.label}</div>
-          </div>
-        ))}
-      </div>
+      <StatCards loading={loading} items={[
+        { label:"Pendientes",    icon:Inbox,    value:solicitudes.length,    color:solicitudes.length>0?"var(--warn)":"var(--success)" },
+        { label:"Monto total",   icon:Banknote, value:fmtMXN(totalPendiente) },
+        { label:"Días en espera", icon:Clock,   value:`${diasPromedio} d`,  color:diasPromedio>3?"var(--danger)":undefined, hint:"promedio" },
+      ]}/>
 
       {/* Modal rechazo */}
       {rechazandoId && (

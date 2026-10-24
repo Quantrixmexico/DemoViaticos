@@ -1,6 +1,7 @@
 "use client"
 import type { LucideIcon } from "lucide-react"
-import { Inbox, Clock, ShieldCheck, Banknote, FileText, Trophy, XCircle, RotateCcw, Paperclip, ChevronDown, X, MousePointerClick, Receipt, Download } from "lucide-react"
+import { Inbox, Clock, ShieldCheck, Banknote, FileText, Trophy, XCircle, RotateCcw, Paperclip, ChevronDown, X, MousePointerClick, Receipt, Download, FolderOpen } from "lucide-react"
+import { EmptyState } from "@/components/ui/EmptyState"
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -172,9 +173,7 @@ export default function DashboardPage() {
               </div>
 
               {drillItems.length === 0 && (
-                <div className="card" style={{padding:28,textAlign:"center",color:"var(--text-2)",fontSize:14}}>
-                  No hay solicitudes en este estatus.
-                </div>
+                <EmptyState compact icon={FolderOpen} title="Nada en este estatus" text="No hay solicitudes aquí por ahora."/>
               )}
 
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -301,13 +300,8 @@ export default function DashboardPage() {
 
           {/* Empty state when no status selected */}
           {!activeStatus && (
-            <div className="card page-enter" style={{padding:"40px 24px",textAlign:"center",color:"var(--text-2)"}}>
-              <div style={{width:52,height:52,borderRadius:"50%",margin:"0 auto 14px",display:"grid",placeItems:"center",
-                background:"var(--accent-soft)",color:"var(--accent)"}}>
-                <MousePointerClick size={24} strokeWidth={1.75}/>
-              </div>
-              <div style={{fontWeight:650,fontSize:17,letterSpacing:"-0.02em",color:"var(--text)",marginBottom:4}}>Elige un estatus</div>
-              <div style={{fontSize:14}}>Toca una tarjeta para ver sus solicitudes.</div>
+            <div className="page-enter">
+              <EmptyState icon={MousePointerClick} tone="accent" title="Elige un estatus" text="Toca una tarjeta para ver sus solicitudes."/>
             </div>
           )}
         </>

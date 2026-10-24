@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Upload, AlertTriangle, XCircle, BarChart3 } from "lucide-react"
+import { StatCards } from "@/components/ui/StatCards"
 import { EmptyState } from "@/components/ui/EmptyState"
 
 export default function ConciliacionSATPage() {
@@ -93,19 +94,12 @@ export default function ConciliacionSATPage() {
       {resultado && (
         <>
           {/* Summary cards */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
-            {[
-              {label:"En SAT",value:resultado.total,color:undefined},
-              {label:"Coinciden",value:resultado.coinciden,color:"var(--success)"},
-              {label:"En SAT, no en sistema",value:resultado.enSATNoSistema.length,color:resultado.enSATNoSistema.length>0?"var(--warn)":undefined},
-              {label:"En sistema, no en SAT",value:resultado.enSistemaNoSAT.length,color:resultado.enSistemaNoSAT.length>0?"var(--danger)":undefined},
-            ].map(k=>(
-              <div key={k.label} className="card" style={{textAlign:"center",padding:"12px 8px"}}>
-                <div style={{fontSize:24,fontWeight:700,color:k.color}}>{k.value}</div>
-                <div style={{fontSize:11,color:"var(--text-3)",marginTop:2}}>{k.label}</div>
-              </div>
-            ))}
-          </div>
+          <StatCards min={140} items={[
+            {label:"En SAT",value:resultado.total},
+            {label:"Coinciden",value:resultado.coinciden,color:"var(--success)"},
+            {label:"En SAT, no en sistema",value:resultado.enSATNoSistema.length,color:resultado.enSATNoSistema.length>0?"var(--warn)":undefined},
+            {label:"En sistema, no en SAT",value:resultado.enSistemaNoSAT.length,color:resultado.enSistemaNoSAT.length>0?"var(--danger)":undefined},
+          ]}/>
 
           {/* En SAT pero no en sistema */}
           {resultado.enSATNoSistema.length>0&&(

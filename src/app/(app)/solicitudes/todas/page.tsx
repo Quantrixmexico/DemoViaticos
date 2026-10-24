@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
-import { ChevronUp, ChevronDown, RotateCcw, CornerDownRight } from "lucide-react"
+import { ChevronUp, ChevronDown, RotateCcw, CornerDownRight, SearchX } from "lucide-react"
+import { EmptyState } from "@/components/ui/EmptyState"
 
 type SortField = "fecha" | "monto" | "status" | "usuario"
 type SortDir   = "asc" | "desc"
@@ -200,9 +201,8 @@ export default function TodasSolicitudesPage() {
             Cargando solicitudes…
           </div>
         ) : filtradas.length === 0 ? (
-          <div style={{ padding: 48, textAlign: "center", color: "var(--text-3)" }}>
-            Sin resultados con ese filtro
-          </div>
+          <EmptyState variant="plain" compact icon={SearchX} title="Sin resultados" text="Ninguna solicitud coincide con esos filtros."
+            action={<button className="btn sm" onClick={resetFiltros}><RotateCcw size={14} strokeWidth={2}/> Limpiar filtros</button>}/>
         ) : (
           <table className="t" style={{ minWidth: 860 }}>
             <thead>

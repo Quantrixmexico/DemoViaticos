@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
 import Link from "next/link"
-import { Search, User, Calendar, Banknote, Download, Landmark } from "lucide-react"
+import { Search, User, Calendar, Banknote, Download, Landmark, History } from "lucide-react"
+import { EmptyState } from "@/components/ui/EmptyState"
 
 export default function TrazabilidadPage() {
   const [folio, setFolio] = useState("")
@@ -92,7 +93,7 @@ export default function TrazabilidadPage() {
           <div className="card" style={{marginBottom:12}}>
             <div style={{fontWeight:600,fontSize:13,marginBottom:14}}>Línea de tiempo</div>
             {bitacora.length===0 ? (
-              <div style={{color:"var(--text-3)",fontSize:12}}>Sin registros en bitácora. Las nuevas transacciones sí quedan registradas.</div>
+              <EmptyState variant="plain" compact icon={History} title="Sin registros en bitácora" text="Las nuevas transacciones sí quedan registradas."/>
             ) : (
               <div style={{display:"flex",flexDirection:"column",gap:0}}>
                 {bitacora.map((b:any,i:number)=>(

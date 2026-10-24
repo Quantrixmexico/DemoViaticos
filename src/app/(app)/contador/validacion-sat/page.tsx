@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN } from "@/lib/format"
 import { Download, CheckCircle2, Paperclip, AlertTriangle, XCircle, ShieldCheck } from "lucide-react"
+import { StatCards } from "@/components/ui/StatCards"
 import { EmptyState } from "@/components/ui/EmptyState"
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -130,19 +131,12 @@ export default function ValidacionSATPage() {
       </div>
 
       {resumen && (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:10,marginBottom:16}}>
-          {[
-            {label:"Vigentes",value:resumen.vigentes,color:"var(--success)"},
-            {label:"Cancelados",value:resumen.cancelados,color:"var(--danger)"},
-            {label:"No encontrados",value:resumen.noEncontrados,color:"var(--warn)"},
-            {label:"Solo local *",value:resumen.locales,color:"var(--accent)"},
-          ].map(k=>(
-            <div key={k.label} className="card" style={{textAlign:"center",padding:"12px 8px"}}>
-              <div style={{fontSize:24,fontWeight:700,color:k.color}}>{k.value}</div>
-              <div style={{fontSize:11,color:"var(--text-3)",marginTop:2}}>{k.label}</div>
-            </div>
-          ))}
-        </div>
+        <StatCards min={130} items={[
+          {label:"Vigentes",value:resumen.vigentes,color:"var(--success)"},
+          {label:"Cancelados",value:resumen.cancelados,color:"var(--danger)"},
+          {label:"No encontrados",value:resumen.noEncontrados,color:"var(--warn)"},
+          {label:"Solo local *",value:resumen.locales,color:"var(--accent)"},
+        ]}/>
       )}
 
       {resultados && (

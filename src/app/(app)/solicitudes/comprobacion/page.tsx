@@ -1,5 +1,6 @@
 "use client"
-import { AlertTriangle, AlarmClock, Send } from "lucide-react"
+import { AlertTriangle, AlarmClock, Send, Paperclip } from "lucide-react"
+import { EmptyState } from "@/components/ui/EmptyState"
 import { Toast } from "@/components/ui/Toast"
 
 import { notifyUsers } from "@/lib/notify"
@@ -131,9 +132,8 @@ function NuevaComprobacionInner() {
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card-title" style={{ marginBottom: 12 }}>Anticipo a comprobar</div>
         {anticipos.length === 0 ? (
-          <div style={{ color: "var(--text-3)", fontSize: 13 }}>
-            No tienes anticipos liberados pendientes de comprobar.
-          </div>
+          <EmptyState variant="plain" compact icon={Paperclip} title="Nada por comprobar" text="No tienes anticipos liberados pendientes de comprobar."
+            action={<button className="btn sm" onClick={() => router.push("/solicitudes/anticipo")}>Solicitar anticipo</button>}/>
         ) : anticipoSel ? (
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>

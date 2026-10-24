@@ -26,13 +26,13 @@ interface Props {
 export function EmptyState({ icon: Icon, title, text, action, tone = "neutral", variant = "card", compact }: Props) {
   const t = TONES[tone]
   const body = (
-    <div className="empty-state" style={{ padding: compact ? "20px 16px" : "40px 24px" }}>
+    <div className={`empty-state ${compact ? "compact" : ""}`}>
       <div className="empty-state-icon popover" style={{ background: t.bg, color: t.fg }}>
-        <Icon size={compact ? 20 : 24} strokeWidth={1.75} />
+        <Icon size={compact ? 18 : 22} strokeWidth={1.75} />
       </div>
       <div className="empty-state-title">{title}</div>
       {text && <div className="empty-state-text">{text}</div>}
-      {action && <div style={{ marginTop: 16, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>{action}</div>}
+      {action && <div className="empty-state-action">{action}</div>}
     </div>
   )
   return variant === "card" ? <div className="card" style={{ padding: 0 }}>{body}</div> : body
