@@ -1,6 +1,7 @@
 "use client"
+import { ArchivoLink } from "@/components/ui/ArchivoLink"
 import type { LucideIcon } from "lucide-react"
-import { Inbox, Clock, ShieldCheck, Banknote, FileText, Trophy, XCircle, RotateCcw, Paperclip, ChevronDown, X, MousePointerClick, Receipt, Download, FolderOpen } from "lucide-react"
+import { Inbox, Clock, ShieldCheck, Banknote, FileText, Trophy, XCircle, RotateCcw, Paperclip, ChevronDown, X, MousePointerClick, Receipt, FolderOpen } from "lucide-react"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
@@ -243,8 +244,7 @@ export default function DashboardPage() {
                                     <span className="mono" style={{fontSize:10,color:"var(--text-3)"}}>{cf.cuenta}</span>
                                     <span style={{fontWeight:600}}>{fmtMXN(parseFloat(cf.total))}</span>
                                     {cf.archivo_url&&(
-                                      <a href={cf.archivo_url} target="_blank" rel="noopener"
-                                        className="btn sm ghost" style={{padding:"4px 8px"}} aria-label="Descargar comprobante"><Download size={14} strokeWidth={1.75}/></a>
+                                      <ArchivoLink archivo={cf.archivo_url} style={{padding:"4px 8px"}} title="Descargar comprobante"/>
                                     )}
                                   </div>
                                 ))}

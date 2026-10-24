@@ -1,4 +1,5 @@
 "use client"
+import { BUCKET_COMPROBANTES } from "@/lib/archivos"
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -52,11 +53,8 @@ function CierreInner() {
     if (archivo) {
       const ext = archivo.name.split(".").pop()
       const path = `cierres/${anticipo.id}-${Date.now()}.${ext}`
-      const { data: up } = await sb.storage.from("comprobantes").upload(path, archivo, { upsert:true })
-      if (up) {
-        const { data: { publicUrl } } = sb.storage.from("comprobantes").getPublicUrl(path)
-        archivoUrl = publicUrl
-      }
+      const { data: up } = await sb.storage.from(BUCKET_COMPROBANTES).upload(path, archivo, { upsert:true })
+      if (up) archivoUrl = up.path // ruta en el bucket privado; se firma al mostrarla
     }
 
     const id = "CIE-" + new Date().getFullYear() + "-" + String(Date.now()).slice(-4)

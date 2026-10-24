@@ -1,4 +1,5 @@
 "use client"
+import { BUCKET_COMPROBANTES } from "@/lib/archivos"
 import { useRef, useCallback, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { parseCFDIXml } from "@/lib/cfdi"
@@ -112,11 +113,8 @@ export function CompUploader({ solicitudId, catalogoGastos, onAdd }: Props) {
       let archivoUrl: string | null = null
       const ext = file.name.split(".").pop()
       const path = `${solicitudId || "tmp"}/${Date.now()}.${ext}`
-      const { data: up } = await sb.storage.from("comprobantes").upload(path, file, { upsert: true })
-      if (up) {
-        const { data: { publicUrl } } = sb.storage.from("comprobantes").getPublicUrl(path)
-        archivoUrl = publicUrl
-      }
+      const { data: up } = await sb.storage.from(BUCKET_COMPROBANTES).upload(path, file, { upsert: true })
+      if (up) archivoUrl = up.path // ruta en el bucket privado; se firma al mostrarla
 
       if (isXml) {
         const text = await file.text()

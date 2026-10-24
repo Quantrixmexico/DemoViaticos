@@ -1,3 +1,4 @@
+import { urlsFirmadas } from "@/lib/archivos"
 import { createClient } from "@/lib/supabase/server"
 import { redirect, notFound } from "next/navigation"
 import { fmtMXN, fmtFecha } from "@/lib/format"
@@ -47,6 +48,8 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
     .eq("solicitud_id", id).order("ts", { ascending: true })
 
   const archivos = (s.cfdi || []).filter((c: any) => c.archivo_url)
+  // URLs firmadas (1 h) para el bucket privado; las filas viejas guardan la URL pública y también se resuelven
+  const descargas = await urlsFirmadas(sb, archivos.map((c: any) => c.archivo_url))
 
   const dates: Record<string, Date | null> = {}
   ;(bitacora || []).forEach((b: any) => { dates[b.accion] = new Date(b.ts) })
@@ -138,8 +141,8 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
                     )}
                   </td>
                   <td className="cell-actions">
-                    {cf.archivo_url && (
-                      <a href={cf.archivo_url} target="_blank" rel="noopener" className="btn sm ghost" title="Descargar" aria-label="Descargar">
+                    {descargas.get(cf.archivo_url) && (
+                      <a href={descargas.get(cf.archivo_url)} target="_blank" rel="noopener" className="btn sm ghost" title="Descargar" aria-label="Descargar">
                         <Download size={14} strokeWidth={2}/>
                       </a>
                     )}
