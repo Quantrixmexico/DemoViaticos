@@ -6,6 +6,7 @@ import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
 import Link from "next/link"
 import { Search, User, Calendar, Banknote, Download, Landmark, History } from "lucide-react"
 import { EmptyState } from "@/components/ui/EmptyState"
+import { Timeline } from "@/components/ui/Timeline"
 
 export default function TrazabilidadPage() {
   const [folio, setFolio] = useState("")
@@ -40,11 +41,6 @@ export default function TrazabilidadPage() {
   }
 
   const { sol, bitacora, usuario, anticipoPadre, comprobacionesLigadas } = resultado || {}
-
-  const ACCION_COLOR: Record<string,string> = {
-    solicitado:"var(--text-3)",autorizado:"var(--accent)",liberado:"#60a5fa",
-    comprobado:"var(--success)",rechazado:"var(--danger)",
-  }
 
   return (
     <div style={{maxWidth:800}}>
@@ -91,27 +87,11 @@ export default function TrazabilidadPage() {
 
           {/* Timeline */}
           <div className="card" style={{marginBottom:12}}>
-            <div style={{fontWeight:600,fontSize:13,marginBottom:14}}>Línea de tiempo</div>
+            <div className="card-title" style={{marginBottom:14}}>Línea de tiempo</div>
             {bitacora.length===0 ? (
               <EmptyState variant="plain" compact icon={History} title="Sin registros en bitácora" text="Las nuevas transacciones sí quedan registradas."/>
             ) : (
-              <div style={{display:"flex",flexDirection:"column",gap:0}}>
-                {bitacora.map((b:any,i:number)=>(
-                  <div key={b.id} style={{display:"flex",gap:14,paddingBottom:i<bitacora.length-1?16:0,position:"relative"}}>
-                    {i<bitacora.length-1&&<div style={{position:"absolute",left:11,top:24,width:2,height:"calc(100% - 8px)",background:"var(--border)"}}/>}
-                    <div style={{width:24,height:24,borderRadius:"50%",flexShrink:0,
-                      background:ACCION_COLOR[b.accion]||"var(--text-3)",
-                      display:"grid",placeItems:"center",fontSize:10,color:"#000",fontWeight:700,position:"relative",zIndex:1}}>
-                      {i+1}
-                    </div>
-                    <div style={{flex:1,paddingTop:3}}>
-                      <div style={{fontSize:13,fontWeight:600,textTransform:"capitalize",color:ACCION_COLOR[b.accion]||"var(--text)"}}>{b.accion}</div>
-                      <div style={{fontSize:11,color:"var(--text-3)",marginTop:1}}>{b.actor?.nombre||"Sistema"} · {fmtFecha(b.ts)}</div>
-                      {b.detalle&&<div style={{fontSize:11,color:"var(--text-2)",marginTop:2}}>{b.detalle}</div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Timeline eventos={bitacora.map((b:any)=>({ id:b.id, accion:b.accion, ts:b.ts, actor:b.actor?.nombre, detalle:b.detalle }))}/>
             )}
           </div>
 

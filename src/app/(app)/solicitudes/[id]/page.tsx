@@ -4,7 +4,8 @@ import { fmtMXN, fmtFecha } from "@/lib/format"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
 import { Stepper } from "@/components/ui/Stepper"
 import Link from "next/link"
-import { ArrowLeft, Landmark, XCircle, Download } from "lucide-react"
+import { ArrowLeft, Landmark, XCircle, Download, Paperclip, CheckCircle2, ShieldCheck, Banknote, Pencil } from "lucide-react"
+import { Timeline } from "@/components/ui/Timeline"
 
 export default async function DetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -21,6 +22,25 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
 
   const { data: perfil } = await sb.from("usuarios")
     .select("nombre, iniciales, rol").eq("id", s.usuario_id).single()
+  const { data: yo } = await sb.from("usuarios").select("rol").eq("id", user.id).single()
+  const rol = yo?.rol || ""
+  const esMia = s.usuario_id === user.id
+
+  // Acción que le toca a quien está viendo la solicitud, según su rol y el estatus
+  const acciones: { href: string; label: string; icon: typeof Paperclip; primary?: boolean }[] = []
+  if (s.status === "solicitado" && ["gerente", "admin", "demo"].includes(rol))
+    acciones.push({ href: "/gerente", label: "Revisar en bandeja", icon: CheckCircle2, primary: true })
+  if (s.status === "autorizado" && ["admin", "demo"].includes(rol))
+    acciones.push({ href: "/admin/validar", label: "Validar", icon: ShieldCheck, primary: true })
+  if (s.status === "validado" && ["tesoreria", "admin", "demo"].includes(rol))
+    acciones.push({ href: "/tesoreria", label: "Liberar pago", icon: Banknote, primary: true })
+  if (["liberado", "parcial"].includes(s.status) && s.tipo === "anticipo" && (esMia || ["admin", "demo"].includes(rol)))
+    acciones.push({ href: `/solicitudes/comprobacion?anticipo=${s.id}`, label: s.status === "parcial" ? "Comprobar saldo" : "Comprobar", icon: Paperclip, primary: true })
+  if (s.status === "parcial" && s.tipo === "anticipo" && esMia)
+    acciones.push({ href: `/solicitudes/cierre?anticipo=${s.id}`, label: "Cerrar anticipo", icon: Landmark })
+  if (s.status === "devuelto" && esMia)
+    acciones.push({ href: `/solicitudes/${s.id}/corregir`, label: "Corregir y reenviar", icon: Pencil, primary: true })
+
 
   const { data: bitacora } = await sb.from("bitacora")
     .select("*, actor:usuarios!usuario_id(nombre)")
@@ -32,99 +52,94 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
   ;(bitacora || []).forEach((b: any) => { dates[b.accion] = new Date(b.ts) })
 
   return (
-    <div style={{ maxWidth: 780 }}>
-      {/* Header */}
-      <div className="page-head">
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+    <div className="form" style={{ maxWidth: 820 }}>
+      {/* Encabezado */}
+      <div className="page-head" style={{ marginBottom: 4 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
             <TipoBadge tipo={s.tipo} />
             <StatusBadge status={s.status} />
             {s.notas?.includes("CIERRE_DEPOSITO") && (
-              <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 12,
-                background: "var(--accent-soft)", color: "var(--accent)", fontWeight: 600 }}>
-                <Landmark size={12} strokeWidth={2} style={{ verticalAlign: "-0.15em", marginRight: 4 }}/>CIERRE
-              </span>
+              <span className="badge autorizado"><Landmark size={11} strokeWidth={2}/> Cierre</span>
             )}
           </div>
-          <h1 className="page-title" style={{ fontSize: 20 }}>{id}</h1>
-          <p className="page-sub">{s.concepto}</p>
+          <h1 className="page-title" style={{ fontSize: 26 }}>{s.concepto}</h1>
+          <p className="page-sub" style={{ fontVariantNumeric: "tabular-nums" }}>{id}</p>
         </div>
         <Link href="/solicitudes" className="btn ghost"><ArrowLeft size={15} strokeWidth={2}/> Mis solicitudes</Link>
       </div>
 
-      {/* Stepper */}
-      <div className="card" style={{ marginBottom: 16 }}>
+      {/* Avance */}
+      <div className="card">
         <Stepper status={s.status} dates={dates} />
       </div>
 
-      {/* Info grid */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+      {/* Datos */}
+      <div className="card">
+        <dl className="info-grid">
           {[
             { label: "Solicitante", value: perfil?.nombre || "—" },
             { label: "Fecha", value: fmtFecha(s.fecha) },
             { label: "Monto", value: fmtMXN(parseFloat(s.monto)) },
             ...(s.tipo === "anticipo" && parseFloat(s.saldo_pendiente) > 0 ? [
-              { label: "Saldo pendiente", value: fmtMXN(parseFloat(s.saldo_pendiente)) }
+              { label: "Saldo por comprobar", value: fmtMXN(parseFloat(s.saldo_pendiente)), color: "var(--warn)" }
             ] : []),
-            ...(s.anticipo_ref ? [{ label: "Anticipo ref.", value: s.anticipo_ref }] : []),
-          ].map(({ label, value }) => (
+            ...(s.anticipo_ref ? [{ label: "Anticipo de origen", value: s.anticipo_ref }] : []),
+          ].map(({ label, value, color }) => (
             <div key={label}>
-              <div style={{ fontSize: 11, color: "var(--text-3)", textTransform: "uppercase",
-                letterSpacing: ".05em", marginBottom: 4 }}>{label}</div>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>{value}</div>
+              <dt>{label}</dt>
+              <dd style={{ color }}>{value}</dd>
             </div>
           ))}
-        </div>
+        </dl>
         {s.motivo_rechazo && (
-          <div style={{ marginTop: 14, padding: "10px 12px", borderRadius: 8,
-            background: "var(--danger-soft)", color: "var(--danger)", fontSize: 13 }}>
-            <XCircle size={14} strokeWidth={2} style={{ verticalAlign: "-0.15em", marginRight: 6 }}/>Motivo de rechazo: {s.motivo_rechazo}
+          <div className="notice danger" style={{ marginTop: 16 }}>
+            <XCircle size={16} strokeWidth={2}/>
+            <div><b>Motivo de rechazo.</b> {s.motivo_rechazo}</div>
           </div>
         )}
       </div>
 
-      {/* CFDIs */}
+      {/* Comprobantes */}
       {s.cfdi && s.cfdi.length > 0 && (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <div className="card-title" style={{ marginBottom: 12 }}>
-            Comprobantes · {s.cfdi.length}
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="form-section-head" style={{ padding: "18px 20px 0", marginBottom: 10 }}>
+            <div className="card-title">{s.cfdi.length === 1 ? "1 comprobante" : `${s.cfdi.length} comprobantes`}</div>
+            <div className="form-section-desc">
+              {fmtMXN((s.cfdi as any[]).reduce((a, c) => a + (parseFloat(c.total) || 0), 0))} en total
+              {archivos.length > 0 && `, ${archivos.length} con archivo adjunto`}
+            </div>
           </div>
           <table className="t cards">
             <thead>
               <tr>
-                <th>UUID</th><th>Emisor</th><th>Cuenta / Nombre</th><th>Comentarios</th>
+                <th>Emisor</th><th>Cuenta</th><th>Comentarios</th>
                 <th className="num">Total</th><th>SAT</th><th></th>
               </tr>
             </thead>
             <tbody>
               {s.cfdi.map((cf: any) => (
                 <tr key={cf.id}>
-                  <td className="mono uuid cell-sub" style={{ fontSize: 10 }}>
-                    {cf.uuid ? cf.uuid.slice(0, 20) + "…" : "—"}
+                  <td className="cell-title">
+                    <div>{cf.emisor || "—"}</div>
+                    {cf.uuid && <div className="uuid" style={{ fontSize: 10.5, color: "var(--text-3)", marginTop: 2 }} title={cf.uuid}>{cf.uuid.slice(0, 20)}…</div>}
                   </td>
-                  <td className="cell-title" style={{ fontSize: 12 }}>{cf.emisor || "—"}</td>
-                  <td data-label="Cuenta / Nombre" style={{ fontSize: 11 }}>
-                    <div className="mono" style={{ color:"var(--text-3)" }}>{cf.cuenta}</div>
-                    {cf.nombre_cuenta && <div style={{ fontSize:10, color:"var(--text-3)", marginTop:1 }}>{cf.nombre_cuenta}</div>}
+                  <td data-label="Cuenta" style={{ fontSize: 12 }}>
+                    <div style={{ fontVariantNumeric: "tabular-nums" }}>{cf.cuenta}</div>
+                    {cf.nombre_cuenta && <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 1 }}>{cf.nombre_cuenta}</div>}
                   </td>
-                  <td data-label="Comentarios" style={{ fontSize: 11, color: cf.observaciones ? "var(--text-2)" : "var(--text-3)", maxWidth:180 }}>
+                  <td data-label="Comentarios" style={{ fontSize: 12.5, color: cf.observaciones ? "var(--text-2)" : "var(--text-3)", maxWidth: 200 }}>
                     {cf.observaciones || <span className="muted">—</span>}
                   </td>
                   <td className="num cell-amount" data-label="Total">{fmtMXN(parseFloat(cf.total))}</td>
                   <td data-label="SAT">
                     {cf.sat_estado && (
-                      <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 10, fontWeight: 600,
-                        background: cf.sat_estado === "Vigente" ? "var(--success-soft)" : "var(--warn-soft)",
-                        color: cf.sat_estado === "Vigente" ? "var(--success)" : "var(--warn)" }}>
-                        {cf.sat_estado}
-                      </span>
+                      <span className={`badge ${cf.sat_estado === "Vigente" ? "comprobado" : "solicitado"}`}>{cf.sat_estado}</span>
                     )}
                   </td>
                   <td className="cell-actions">
                     {cf.archivo_url && (
-                      <a href={cf.archivo_url} target="_blank" rel="noopener"
-                        className="btn sm ghost" style={{ fontSize: 11 }} title="Descargar" aria-label="Descargar">
+                      <a href={cf.archivo_url} target="_blank" rel="noopener" className="btn sm ghost" title="Descargar" aria-label="Descargar">
                         <Download size={14} strokeWidth={2}/>
                       </a>
                     )}
@@ -136,43 +151,27 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      {/* Bitácora */}
+      {/* Línea de tiempo */}
       {bitacora && bitacora.length > 0 && (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <div className="card-title" style={{ marginBottom: 14 }}>Línea de tiempo</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-            {bitacora.map((b: any, i: number) => (
-              <div key={b.id} style={{ display: "flex", gap: 14, paddingBottom: i < bitacora.length - 1 ? 16 : 0,
-                position: "relative" }}>
-                {i < bitacora.length - 1 && (
-                  <div style={{ position: "absolute", left: 11, top: 24, width: 2,
-                    height: "calc(100% - 8px)", background: "var(--border)" }} />
-                )}
-                <div style={{ width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
-                  background: b.accion === "rechazado" ? "var(--danger)" :
-                               b.accion === "comprobado" ? "var(--success)" : "var(--accent)",
-                  display: "grid", placeItems: "center", fontSize: 10, color: "#111",
-                  fontWeight: 700, position: "relative", zIndex: 1 }}>
-                  {i + 1}
-                </div>
-                <div style={{ flex: 1, paddingTop: 3 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, textTransform: "capitalize" }}>
-                    {b.accion}
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 1 }}>
-                    {b.actor?.nombre || "Sistema"} · {fmtFecha(b.ts)}
-                  </div>
-                  {b.detalle && (
-                    <div style={{ fontSize: 11, color: "var(--text-2)", marginTop: 2 }}>{b.detalle}</div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="card">
+          <div className="card-title" style={{ marginBottom: 16 }}>Línea de tiempo</div>
+          <Timeline eventos={bitacora.map((b: any) => ({ id: b.id, accion: b.accion, ts: b.ts, actor: b.actor?.nombre, detalle: b.detalle }))}/>
+        </div>
+      )}
+
+      {/* Acciones del rol: fijas abajo en móvil */}
+      {acciones.length > 0 && (
+        <div className="form-actions">
+          {acciones.map(a => {
+            const Icon = a.icon
+            return (
+              <Link key={a.href} href={a.href} className={`btn ${a.primary ? "primary" : ""}`}>
+                <Icon size={15} strokeWidth={2}/> {a.label}
+              </Link>
+            )
+          })}
         </div>
       )}
     </div>
   )
 }
-
-
