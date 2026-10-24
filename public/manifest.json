@@ -1,22 +1,45 @@
 {
-  "name": "Viáticos Tu empresa AQUI",
-  "short_name": "Viáticos GZ",
+  "name": "Demo Viáticos",
+  "short_name": "Viáticos",
   "description": "Sistema de gestión de viáticos y gastos corporativos",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0d0d0d",
-  "theme_color": "#0d0d0d",
+  "background_color": "#05070a",
+  "theme_color": "#05070a",
   "lang": "es-MX",
   "dir": "ltr",
-  "categories": ["business", "finance", "productivity"],
+  "categories": [
+    "business",
+    "finance",
+    "productivity"
+  ],
   "prefer_related_applications": false,
   "icons": [
-    { "src": "/icon-192.png",          "sizes": "192x192", "type": "image/png", "purpose": "any"      },
-    { "src": "/icon-512.png",          "sizes": "512x512", "type": "image/png", "purpose": "any"      },
-    { "src": "/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
-

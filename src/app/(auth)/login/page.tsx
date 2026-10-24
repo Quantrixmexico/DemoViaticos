@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import Image from "next/image"
 import { triggerNotifSetup } from "@/components/ui/PushNotifications"
 import { Download, Mail, ArrowLeft } from "lucide-react"
+import { BRAND } from "@/lib/brand"
 
 function InstallButton() {
   const [canInstall, setCanInstall] = useState(false)
@@ -71,11 +72,11 @@ export default function LoginPage() {
           <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:28 }}>
             <div style={{ width:48, height:48, borderRadius:14, overflow:"hidden", background:"white",
               padding:3, boxShadow:"0 8px 24px -8px rgba(0,0,0,.4)", flexShrink:0 }}>
-              <Image src="/logo.png" alt="Tu empresa AQUI" width={42} height={42}
+              <Image src="/logo.png" alt={BRAND.empresa} width={42} height={42}
                 style={{ width:"100%", height:"100%", objectFit:"contain" }}/>
             </div>
             <div style={{ lineHeight:1.25 }}>
-              <div style={{ fontSize:17, fontWeight:650, letterSpacing:"-0.02em" }}>Tu empresa AQUI</div>
+              <div style={{ fontSize:17, fontWeight:650, letterSpacing:"-0.02em" }}>{BRAND.empresa}</div>
               <div style={{ fontSize:13, color:"var(--text-3)" }}>Sistema de viáticos</div>
             </div>
           </div>
@@ -88,7 +89,7 @@ export default function LoginPage() {
                 <label htmlFor="email">Correo electrónico</label>
                 <input id="email" className="input" type="email" value={email}
                   onChange={e=>setEmail(e.target.value)} required
-                  placeholder="usuario@grupozapata.com.mx" autoComplete="email"/>
+                  placeholder={BRAND.correoEjemplo} autoComplete="email"/>
               </div>
               <div className="auth-field">
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline" }}>
@@ -142,7 +143,7 @@ export default function LoginPage() {
               <label htmlFor="email-rec">Correo electrónico</label>
               <input id="email-rec" className="input" type="email" value={email}
                 onChange={e=>setEmail(e.target.value)} required
-                placeholder="usuario@grupozapata.com.mx" autoComplete="email"/>
+                placeholder={BRAND.correoEjemplo} autoComplete="email"/>
             </div>
             {error && (
               <div role="alert" className="popover" style={{ padding:"10px 14px", background:"var(--danger-soft)",

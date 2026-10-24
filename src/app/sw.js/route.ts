@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 const SW_CONTENT = `
-const CACHE = "viaticos-gz-v5"
+const CACHE = "viaticos-v6"
 const PRECACHE = ["/", "/login", "/icon-192.png", "/manifest.json"]
 
 self.addEventListener("install", e => {

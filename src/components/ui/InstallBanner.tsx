@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
+import { BRAND } from "@/lib/brand"
 import Image from "next/image"
 import { Download } from "lucide-react"
 
@@ -89,11 +90,11 @@ export function InstallBanner() {
           <div style={{ width:60, height:60, borderRadius:16, overflow:"hidden",
             background:"white", padding:4, flexShrink:0,
             boxShadow:"0 4px 16px rgba(0,0,0,.2)" }}>
-            <Image src="/logo.png" alt="Viáticos GZ" width={52} height={52}
+            <Image src="/logo.png" alt={BRAND.producto} width={52} height={52}
               style={{ width:"100%", height:"100%", objectFit:"contain" }}/>
           </div>
           <div>
-            <div style={{ fontWeight:700, fontSize:17, marginBottom:2 }}>Viáticos Tu empresa AQUI</div>
+            <div style={{ fontWeight:700, fontSize:17, marginBottom:2 }}>{BRAND.producto}</div>
             <div style={{ fontSize:13, color:"var(--text-3)" }}>
               Instala la app para acceso rápido
             </div>

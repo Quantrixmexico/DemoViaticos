@@ -1,5 +1,6 @@
 "use client"
 import { createContext, useContext, useState, useEffect } from "react"
+import { BRAND } from "@/lib/brand"
 
 type Mode = "dark" | "light"
 type Accent = "aurora" | "azul" | "ambar" | "violeta"
@@ -48,6 +49,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else {
       root.classList.remove("light")
     }
+    // Barra de estado del sistema (PWA/Android) del color del fondo actual
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m =>
+      m.setAttribute("content", mode === "light" ? BRAND.colorClaro : BRAND.colorOscuro))
   }, [mode, accent])
 
   const setMode = (m: Mode) => { setModeState(m); localStorage.setItem("vz-mode", m) }

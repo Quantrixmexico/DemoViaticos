@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client"
 import { UsuarioProvider } from "@/lib/UsuarioContext"
 import { useTheme } from "@/contexts/ThemeContext"
 import { ConfirmProvider } from "@/components/ui/Confirm"
+import { BRAND } from "@/lib/brand"
 import type { LucideIcon } from "lucide-react"
 import {
   Home, LayoutDashboard, CheckCircle2, ShieldCheck, Banknote, HandCoins,
@@ -271,8 +272,8 @@ export function AppShell({ user, children }: Props) {
           <Image src="/logo.png" alt="Logo" width={36} height={36}
             style={{ borderRadius:10, boxShadow:"0 0 0 1px var(--border-soft), 0 6px 18px -6px rgba(0,0,0,.5)" }}/>
           <div style={{ lineHeight:1.2 }}>
-            <div style={{ fontSize:14, fontWeight:650, letterSpacing:"-0.02em" }}>Demo Viáticos</div>
-            <div style={{ fontSize:12, color:"var(--text-3)" }}>Gastos de viaje</div>
+            <div style={{ fontSize:14, fontWeight:650, letterSpacing:"-0.02em" }}>{BRAND.producto}</div>
+            <div style={{ fontSize:12, color:"var(--text-3)" }}>{BRAND.lema}</div>
           </div>
         </div>
 
@@ -332,7 +333,7 @@ export function AppShell({ user, children }: Props) {
       <div style={mobileTopbarStyle} className="glass">
         <div style={{ display:"flex", alignItems:"center", gap:9 }}>
           <Image src="/logo.png" alt="Logo" width={28} height={28} style={{ borderRadius:8 }}/>
-          <span style={{ fontSize:16, fontWeight:650, letterSpacing:"-0.02em" }}>Viáticos</span>
+          <span style={{ fontSize:16, fontWeight:650, letterSpacing:"-0.02em" }}>{BRAND.nombreCorto}</span>
         </div>
         <div style={{ display:"flex", gap:8 }}>
           <button className="icon-btn" onClick={() => router.push("/notificaciones")} aria-label="Notificaciones">
