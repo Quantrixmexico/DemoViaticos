@@ -18,6 +18,22 @@
   // (Settings → Variables and Secrets). Sin esto, cada despliegue con wrangler
   // borra las que no estén declaradas en este archivo.
   "keep_vars": true,
+  // Variables públicas (van al navegador por diseño). Se declaran aquí porque
+  // `wrangler versions upload` solo conserva las variables de este archivo;
+  // las que viven únicamente en el panel se pierden en cada despliegue.
+  // Los secretos (SUPABASE_SERVICE_ROLE_KEY, FIREBASE_SERVICE_ACCOUNT) sí
+  // persisten y siguen en Settings → Variables and Secrets.
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://metclnboesejltvgolng.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ldGNsbmJvZXNlamx0dmdvbG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NTE3MzksImV4cCI6MjA5NjUyNzczOX0.NVhrOToS-7vc0SulFicAOIyubwf7o5qejjB5fGFLpbM",
+    "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyCIX5mov5YbPw5vHdn5B855tvLLm_bm3q8",
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "demoviaticos-27c9b.firebaseapp.com",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "demoviaticos-27c9b",
+    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "demoviaticos-27c9b.firebasestorage.app",
+    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "245067145240",
+    "NEXT_PUBLIC_FIREBASE_APP_ID": "1:245067145240:web:8ee863df4c062c823ba36d",
+    "NEXT_PUBLIC_FIREBASE_VAPID_KEY": "BOGFs7GoE_occKXXoptx82JOIjftqQMWPl_zbTr4JKSXv9MwC2i3nxXCe8fdaMzglWpQF29LjImdEdiyXK2WyZg"
+  },
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",

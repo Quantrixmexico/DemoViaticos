@@ -45,7 +45,7 @@ La app envía las push directamente a Firebase Cloud Messaging (API HTTP v1) des
 3. Configuración del proyecto → Cloud Messaging → "Certificados push web": genera el par de claves y copia la clave pública (VAPID).
 4. Configuración del proyecto → Cuentas de servicio → "Generar nueva clave privada": descarga el JSON.
 
-Variables públicas (en Cloudflare van en Settings → Variables and Secrets; el servidor las expone al navegador en tiempo de ejecución):
+Variables públicas (en Cloudflare se declaran en `vars` de `wrangler.jsonc`; el servidor las expone al navegador en tiempo de ejecución):
 
 ```
 NEXT_PUBLIC_FIREBASE_API_KEY=
@@ -100,4 +100,4 @@ src/contexts          ThemeContext (modo claro/oscuro y acento)
 
 - La caché persistente de Turbopack está desactivada en `next.config.ts` (`turbopackFileSystemCacheForBuild/Dev: false`): con ella activa, Cloudflare Workers Builds y `next dev` servían un `globals.css` anterior tras editarlo.
 - Cloudflare Workers Builds ejecuta `npm run build` y después `npx wrangler versions upload`, que necesita `.open-next/worker.js`. Por eso `npm run build` corre OpenNext y no solo `next build`.
-- Las variables `NEXT_PUBLIC_*` se leen en tiempo de ejecución: el servidor las toma de Settings → Variables and Secrets y las expone al navegador en `/env.js` (`src/lib/public-env.ts`). No hace falta ponerlas en las variables de Build. `wrangler.jsonc` lleva `keep_vars: true` para que el despliegue no borre las del panel.
+- Las variables `NEXT_PUBLIC_*` son públicas y están declaradas en `vars` de `wrangler.jsonc`; para cambiarlas edita ese archivo. Cloudflare despliega con `wrangler versions upload`, que solo conserva las variables del archivo y borra las que existan solo en el panel. Los secretos (`SUPABASE_SERVICE_ROLE_KEY`, `FIREBASE_SERVICE_ACCOUNT`) sí persisten en Settings → Variables and Secrets. El servidor expone las públicas al navegador en `/env.js` (`src/lib/public-env.ts`).
