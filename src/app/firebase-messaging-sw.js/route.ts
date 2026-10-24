@@ -15,6 +15,8 @@ firebase.initializeApp(${JSON.stringify({
 const messaging = firebase.messaging()
 
 messaging.onBackgroundMessage(payload => {
+  // Si el mensaje trae bloque de notificación, el SDK ya lo muestra.
+  if (payload.notification) return
   const { t: title, b: body, url } = payload.data || {}
   self.registration.showNotification(title || ${JSON.stringify(BRAND.nombreCorto)}, {
     body: body || "",

@@ -73,9 +73,16 @@ export async function enviarFcm(sa: ServiceAccount, token: string, m: PushMensaj
     body: JSON.stringify({
       message: {
         token,
-        // El service worker y la app leen t/b/url de payload.data
+        // La app en primer plano lee t/b/url de payload.data.
         data: { t: m.title, b: m.body, url: m.url },
-        webpush: { fcm_options: { link: m.url } },
+        // Bloque de notificación explícito: Safari en iPhone solo muestra
+        // avisos con este bloque; en Chrome/Android el SDK lo pinta solo.
+        notification: { title: m.title, body: m.body },
+        webpush: {
+          headers: { Urgency: "high" },
+          notification: { icon: "/icon-192.png", badge: "/icon-192.png" },
+          fcm_options: { link: m.url },
+        },
       },
     }),
   })
