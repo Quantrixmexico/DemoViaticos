@@ -218,6 +218,7 @@ export default function TodasSolicitudesPage() {
                 <th style={{ cursor: "pointer", textAlign: "right" }} onClick={() => handleSort("monto")}>
                   Monto{SortIcon({ field: "monto" })}
                 </th>
+                <th className="num">Comprobado</th>
                 <th className="num">Saldo</th>
                 <th style={{ cursor: "pointer" }} onClick={() => handleSort("status")}>
                   Status{SortIcon({ field: "status" })}
@@ -312,6 +313,7 @@ export default function TodasSolicitudesPage() {
                   {filtradas.length} solicitudes
                 </td>
                 <td className="num" style={{ color: "var(--accent)" }}>{fmtMXN(totalFiltrado)}</td>
+                <td />
                 <td className="num" style={{ color: saldoPendiente > 0 ? "var(--warn)" : undefined }}>
                   {saldoPendiente > 0 ? fmtMXN(saldoPendiente) : "—"}
                 </td>
