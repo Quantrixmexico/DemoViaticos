@@ -39,8 +39,9 @@ returns boolean language sql stable security definer set search_path = public as
   select exists (select 1 from public.usuarios u where u.id = p_usuario and u.gerente_id = auth.uid())
 $$;
 
--- ¿Puedo ver esta solicitud?
-create or replace function public.puedo_ver_solicitud(p_solicitud uuid)
+-- ¿Puedo ver esta solicitud? (los folios de solicitudes son texto, p. ej. ANT-2026-1234)
+drop function if exists public.puedo_ver_solicitud(uuid);
+create or replace function public.puedo_ver_solicitud(p_solicitud text)
 returns boolean language sql stable security definer set search_path = public as $$
   select exists (
     select 1 from public.solicitudes s
@@ -50,9 +51,9 @@ returns boolean language sql stable security definer set search_path = public as
 $$;
 
 revoke all on function public.mi_rol(), public.es_staff(), public.es_admin(),
-  public.es_mi_equipo(uuid), public.puedo_ver_solicitud(uuid) from public, anon;
+  public.es_mi_equipo(uuid), public.puedo_ver_solicitud(text) from public, anon;
 grant execute on function public.mi_rol(), public.es_staff(), public.es_admin(),
-  public.es_mi_equipo(uuid), public.puedo_ver_solicitud(uuid) to authenticated;
+  public.es_mi_equipo(uuid), public.puedo_ver_solicitud(text) to authenticated;
 
 -- ── Activar RLS y cortar el acceso anónimo ──────────────────────────
 do $$
