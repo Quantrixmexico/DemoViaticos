@@ -3,17 +3,7 @@ import { useEffect, useState, useRef, useCallback } from "react"
 import { Bell, X } from "lucide-react"
 import { stripEmoji } from "@/lib/text"
 import { Toast } from "@/components/ui/Toast"
-
-// Firebase public config - safe to hardcode (client-side values, not secrets)
-const VAPID_KEY = "BC4H1SRGR-megh4PQ-N4BpczTZkkZF3F8cfmS7bW1WL0Zp5rnfsN59Q7L9cKkUBaoo7NZ-2x0H_ja23MtUWinmQ"
-const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyD5WCpMWnQkwLJplAtbOXrjU2_5gwSRI2w",
-  authDomain:        "viaticos-zapata.firebaseapp.com",
-  projectId:         "viaticos-zapata",
-  storageBucket:     "viaticos-zapata.appspot.com",
-  messagingSenderId: "318139943193",
-  appId:             "1:318139943193:web:3fade17ff5c1e89a805d88",
-}
+import { FIREBASE_WEB, FIREBASE_VAPID_KEY, PUSH_DISPONIBLE } from "@/lib/firebase-public"
 
 interface Props { userId: string }
 type Status = "idle" | "asking" | "granted" | "denied"
@@ -22,6 +12,12 @@ let globalSetup: (() => void) | null = null
 export function triggerNotifSetup() { globalSetup?.() }
 
 export function PushNotifications({ userId }: Props) {
+  // Sin proyecto de Firebase configurado no se ofrece push (ver src/lib/firebase-public.ts)
+  if (!PUSH_DISPONIBLE) return null
+  return <PushNotificationsInner userId={userId}/>
+}
+
+function PushNotificationsInner({ userId }: Props) {
   const [status, setStatus]   = useState<Status>("idle")
   const [banner, setBanner]   = useState(false)
   const [toast, setToast]     = useState<{ title: string; body: string } | null>(null)
@@ -42,7 +38,7 @@ export function PushNotifications({ userId }: Props) {
       .then(() => {
         const fb = (window as any).firebase
         if (!fb) { reject(new Error("Firebase not available")); return }
-        if (!fb.apps?.length) fb.initializeApp(FIREBASE_CONFIG)
+        if (!fb.apps?.length) fb.initializeApp(FIREBASE_WEB)
         messagingRef.current = fb.messaging()
         fbReadyRef.current = true
         messagingRef.current.onMessage((payload: any) => {
@@ -61,7 +57,7 @@ export function PushNotifications({ userId }: Props) {
       // Explicitly register Firebase SW and pass it to getToken
       let swReg: ServiceWorkerRegistration | undefined
       try {
-        swReg = await navigator.serviceWorker.register("/firebase-messaging-sw.js", { scope: "/" })
+        swReg = await navigator.serviceWorker.register("/firebase-messaging-sw.js", { scope: "/firebase-cloud-messaging-push-scope/" })
         await navigator.serviceWorker.ready
         console.log("[FCM] Firebase SW registered:", swReg.scope)
       } catch(e) {
@@ -69,7 +65,7 @@ export function PushNotifications({ userId }: Props) {
       }
 
       const token = await messagingRef.current?.getToken({
-        vapidKey: VAPID_KEY,
+        vapidKey: FIREBASE_VAPID_KEY,
         ...(swReg ? { serviceWorkerRegistration: swReg } : {}),
       })
 
