@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Demo Viáticos
 
-## Getting Started
+Sistema de gestión de viáticos y gastos corporativos: anticipos, reembolsos, comprobación con CFDI, autorización por gerente y administración, liberación de pagos por tesorería y pólizas para contabilidad. Funciona como PWA instalable en el teléfono.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) con React 19 y TypeScript.
+- **Supabase** para autenticación, base de datos y almacenamiento de comprobantes.
+- **Cloudflare Workers** vía OpenNext (`@opennextjs/cloudflare`) para el despliegue.
+- **Firebase Cloud Messaging** para notificaciones push.
+- CSS propio con tokens de diseño en `src/app/globals.css`; iconos de `lucide-react`; gráficas con `recharts`.
+
+## Desarrollo
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
+npm run lint
+npm run build        # build de Next
+npm run preview      # build de OpenNext y vista previa local del Worker
+npm run deploy       # build de OpenNext y despliegue a Cloudflare
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Variables de entorno necesarias (en `.env.local` para desarrollo y como secretos del Worker en producción):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Los secretos del lado servidor (Supabase service role, Firebase) se leen en tiempo de ejecución con `getCloudflareContext()`.
 
-## Learn More
+## Personalizar la marca
 
-To learn more about Next.js, take a look at the following resources:
+Todo el texto de marca sale de `src/lib/brand.ts` (empresa, nombre del producto, nombre corto para el icono, lema, correo de ejemplo del login y colores del sistema). `public/manifest.json` no puede importar TypeScript: mantén `name`, `short_name`, `theme_color` y `background_color` con los mismos valores. El logotipo es `public/logo.png` y los iconos de la PWA están en `public/icon-*.png`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Roles
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Rol | Qué ve |
+| --- | --- |
+| `usuario` | Sus solicitudes: anticipos, reembolsos, comprobaciones. |
+| `gerente` | Bandeja de autorización de su equipo, además de lo anterior. |
+| `tesoreria` | Liberación de pagos, pagados y deudores. |
+| `contador` | Pólizas, trazabilidad, validación y conciliación SAT, catálogo. |
+| `admin` | Todo: validación, usuarios, centros, divisiones, límites y ajustes. |
+| `demo` | Como `admin`, pero con las acciones destructivas bloqueadas (ver `src/lib/permisos.ts`). |
 
-## Deploy on Vercel
+## Estructura
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/app/(auth)        login y restablecer contraseña
+src/app/(app)         pantallas autenticadas, agrupadas por rol
+src/app/api           rutas: alta de usuarios, registro de push, validación SAT
+src/components/ui     componentes compartidos (Dialog, Toast, EmptyState, StatCards, Timeline…)
+src/components/layout AppShell: barra lateral, barra de pestañas móvil, tema
+src/lib               Supabase, formato, permisos, notificaciones, CFDI, marca
+src/contexts          ThemeContext (modo claro/oscuro y acento)
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notas de despliegue
+
+- La caché persistente de Turbopack está desactivada en `next.config.ts` (`turbopackFileSystemCacheForBuild/Dev: false`): con ella activa, Cloudflare Workers Builds y `next dev` servían un `globals.css` anterior tras editarlo.
+- Cloudflare construye y despliega `main` en cada merge. Los builds de ramas (vista previa) fallan por configuración del proyecto en Cloudflare, no por el código; si molestan en los PR, desactívalos en Workers → Settings → Builds.

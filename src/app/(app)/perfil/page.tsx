@@ -2,6 +2,14 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { fmtMXN } from "@/lib/format"
 import { NotifButton } from "@/components/ui/NotifButton"
+import { Avatar } from "@/components/ui/Avatar"
+import { StatCards } from "@/components/ui/StatCards"
+import { Apariencia } from "@/components/ui/Apariencia"
+import { Building2, Users, Landmark, Info } from "lucide-react"
+
+const ROL_LABEL: Record<string, string> = {
+  admin: "Administración", gerente: "Gerente", tesoreria: "Tesorería", contador: "Contador", usuario: "Colaborador", demo: "Invitado (demo)",
+}
 
 export default async function PerfilPage() {
   const sb = await createClient()
@@ -19,80 +27,73 @@ export default async function PerfilPage() {
     .filter(s => ["liberado","parcial"].includes(s.status) && parseFloat(s.saldo_pendiente) > 0)
     .reduce((a, s) => a + parseFloat(s.saldo_pendiente), 0)
 
-  const ROL_COLOR: Record<string, string> = {
-    admin: "var(--accent)", gerente: "var(--success)", tesoreria: "#60a5fa",
-    contador: "#c084fc", usuario: "var(--text-3)",
-  }
+  const abiertos = (sols || []).filter(s => s.tipo === "anticipo" && parseFloat(s.saldo_pendiente) > 0).length
 
   return (
-    <div style={{ maxWidth: 620 }}>
-      <div className="page-head">
-        <h1 className="page-title">Mi perfil</h1>
+    <div className="form" style={{ maxWidth: 680 }}>
+      <div className="page-head" style={{ marginBottom: 4 }}>
+        <div><h1 className="page-title">Mi perfil</h1><div className="page-sub">Tu cuenta, tus notificaciones y cómo se ve la app en este dispositivo.</div></div>
       </div>
 
-      {/* Avatar + name */}
-      <div className="card" style={{ textAlign: "center", marginBottom: 16, padding: "28px 20px" }}>
-        <div style={{ width: 68, height: 68, borderRadius: "50%", margin: "0 auto 14px",
-          background: "var(--accent-soft)", color: "var(--accent)",
-          display: "grid", placeItems: "center", fontSize: 24, fontWeight: 700 }}>
-          {u.iniciales}
+      {/* Identidad */}
+      <div className="card" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <Avatar iniciales={u.iniciales} size={64}/>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>{u.nombre}</div>
+          <div style={{ fontSize: 13.5, color: "var(--text-2)", overflow: "hidden", textOverflow: "ellipsis" }}>{u.correo}</div>
         </div>
-        <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>{u.nombre}</div>
-        <div style={{ fontSize: 13, color: "var(--text-3)", marginBottom: 10 }}>{u.correo}</div>
-        <span style={{ fontSize: 12, padding: "3px 14px", borderRadius: 20, fontWeight: 600,
-          background: ROL_COLOR[u.rol] + "22", color: ROL_COLOR[u.rol] }}>
-          {u.rol}
-        </span>
+        <span className={`badge rol ${u.rol}`}>{ROL_LABEL[u.rol] || u.rol}</span>
       </div>
 
-      {/* Info */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-title" style={{ marginBottom: 14 }}>Cuenta</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      {/* Actividad */}
+      <StatCards style={{ marginBottom: 0 }} items={[
+        { label: "Solicitudes", value: (sols || []).length },
+        { label: "Anticipos abiertos", value: abiertos, color: abiertos > 0 ? "var(--warn)" : undefined },
+        { label: "Saldo por comprobar", value: fmtMXN(totalAbierto), color: totalAbierto > 0 ? "var(--warn)" : "var(--success)" },
+      ]}/>
+
+      {/* Cuenta */}
+      <div className="card form-section">
+        <div className="form-section-head">
+          <div className="card-title">Cuenta</div>
+          <div className="form-section-desc">Datos que administra tu organización.</div>
+        </div>
+        <dl className="info-grid">
           {[
-            { label: "Centro de beneficio", value: u.centro ? `${u.centro.id} · ${u.centro.nombre}` : "—" },
+            { label: "Centro de beneficio", value: u.centro ? `${u.centro.id}, ${u.centro.nombre}` : "—", icon: Building2 },
             { label: "Departamento", value: u.centro?.depto || "—" },
-            { label: "Gerente", value: (u.gerente as any)?.nombre || "—" },
+            { label: "Gerente", value: (u.gerente as any)?.nombre || "—", icon: Users },
             { label: "División SAP", value: u.division || "4105" },
-            { label: "Banco", value: u.banco || "—" },
+            { label: "Banco", value: u.banco || "—", icon: Landmark },
             { label: "CLABE", value: u.clabe ? "•••• " + u.clabe.slice(-4) : "—" },
-          ].map(({ label, value }) => (
+          ].map(({ label, value, icon: Icon }) => (
             <div key={label}>
-              <div style={{ fontSize: 11, color: "var(--text-3)", textTransform: "uppercase",
-                letterSpacing: ".05em", marginBottom: 3 }}>{label}</div>
-              <div style={{ fontSize: 13, fontWeight: 500 }}>{value}</div>
+              <dt style={{ display: "flex", alignItems: "center", gap: 5 }}>{Icon && <Icon size={12} strokeWidth={2}/>}{label}</dt>
+              <dd style={{ fontSize: 14 }}>{value}</dd>
             </div>
           ))}
-        </div>
-        <div style={{ marginTop: 10, fontSize: 11.5, color: "var(--text-3)", fontStyle: "italic" }}>
-          Para cambiar CLABE o banco, contacta a Tesorería.
-        </div>
-        <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
-          <NotifButton/>
-        </div>
-        <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)", fontSize: 12, color: "var(--text-3)" }}>
-          Las notificaciones push se activan automáticamente al usar la app.
-          Si no las recibiste, cierra y vuelve a abrir la app para ver el banner.
+        </dl>
+        <div className="field-hint" style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 14 }}>
+          <Info size={13} strokeWidth={2}/> Para cambiar banco o CLABE, escribe a Tesorería.
         </div>
       </div>
 
-      {/* Activity summary */}
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-title" style={{ marginBottom: 14 }}>Resumen de actividad</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-          {[
-            { label: "Total solicitudes", value: (sols || []).length },
-            { label: "Anticipos abiertos", value: (sols || []).filter(s => s.tipo === "anticipo" && parseFloat(s.saldo_pendiente) > 0).length },
-            { label: "Saldo por comprobar", value: fmtMXN(totalAbierto), color: totalAbierto > 0 ? "var(--warn)" : undefined },
-          ].map(k => (
-            <div key={k.label} className="card" style={{ margin: 0, textAlign: "center", padding: "12px 8px" }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: k.color }}>{k.value}</div>
-              <div style={{ fontSize: 10.5, color: "var(--text-3)", marginTop: 3 }}>{k.label}</div>
-            </div>
-          ))}
+      {/* Notificaciones */}
+      <div className="card form-section">
+        <div className="form-section-head">
+          <div className="card-title">Notificaciones</div>
+          <div className="form-section-desc">Avisos en este dispositivo cuando cambie una de tus solicitudes.</div>
         </div>
+        <NotifButton/>
+      </div>
+
+      {/* Apariencia */}
+      <div className="card form-section">
+        <div className="form-section-head">
+          <div className="card-title">Apariencia</div>
+        </div>
+        <Apariencia/>
       </div>
     </div>
   )
 }
-
