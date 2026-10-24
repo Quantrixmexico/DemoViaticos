@@ -792,3 +792,49 @@ a.btn, a.btn:hover, a.nav-item { text-decoration: none; }
 .notice.danger { background: var(--danger-soft); color: var(--danger); }
 .notice.warn { background: var(--warn-soft); color: var(--warn); }
 .notice b { font-weight: 600; }
+
+/* ── Perfil: apariencia ───────────────────────────────────────────────────── */
+.swatches { display: flex; gap: 10px; }
+.swatch {
+  width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer; padding: 0;
+  display: grid; place-items: center; color: #04110d;
+  background: var(--sw-d); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px transparent;
+  transition: transform .25s var(--ease-spring), box-shadow .2s;
+}
+.light .swatch { background: var(--sw-l); color: #fff; }
+.swatch:hover { transform: scale(1.08); }
+.swatch[aria-checked="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
+.badge.rol { background: var(--surface-2); color: var(--text-2); }
+.badge.rol.admin { background: var(--accent-soft); color: var(--accent); }
+.badge.rol.gerente { background: var(--success-soft); color: var(--success); }
+.badge.rol.tesoreria { background: color-mix(in srgb, var(--st-blue) 14%, transparent); color: var(--st-blue); }
+.badge.rol.contador { background: color-mix(in srgb, var(--st-violet) 14%, transparent); color: var(--st-violet); }
+.badge.rol.demo { background: var(--warn-soft); color: var(--warn); }
+
+/* ── Avisos de notificaciones push ────────────────────────────────────────── */
+.notif-banner {
+  position: fixed; z-index: 250; left: 16px; right: 16px;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+  border-radius: 18px; border: 1px solid var(--border-soft); box-shadow: var(--shadow-pop);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  animation: toastIn .45s var(--ease-spring) both;
+}
+@media (min-width: 769px) { .notif-banner { left: auto; right: 24px; bottom: 24px; width: 400px; } }
+.notif-banner-icon { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.notif-banner-title { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+.notif-banner-text { font-size: 12.5px; color: var(--text-2); margin-top: 1px; line-height: 1.4; }
+.notif-banner-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+
+.notif-pop {
+  position: fixed; z-index: 350; top: 16px; right: 16px; left: 16px;
+  display: flex; gap: 12px; align-items: flex-start; padding: 14px 14px 14px 16px;
+  border-radius: 16px; border: 1px solid var(--border-soft); box-shadow: var(--shadow-pop);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  animation: popIn .35s var(--ease-spring) both; transform-origin: top right;
+}
+@media (min-width: 769px) { .notif-pop { left: auto; width: 360px; top: 20px; right: 20px; } }
+.notif-pop-title { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+.notif-pop-body { font-size: 13px; color: var(--text-2); margin-top: 2px; line-height: 1.45; }

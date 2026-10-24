@@ -8,6 +8,8 @@ import { UsuarioProvider } from "@/lib/UsuarioContext"
 import { useTheme } from "@/contexts/ThemeContext"
 import { ConfirmProvider } from "@/components/ui/Confirm"
 import { BRAND } from "@/lib/brand"
+import { Avatar } from "@/components/ui/Avatar"
+import { PushNotifications } from "@/components/ui/PushNotifications"
 import type { LucideIcon } from "lucide-react"
 import {
   Home, LayoutDashboard, CheckCircle2, ShieldCheck, Banknote, HandCoins,
@@ -107,7 +109,7 @@ const NAV_BY_ROL: Record<string, NavGroup[]> = {
 }
 
 interface Props {
-  user: { nombre: string; rol: string; iniciales: string }
+  user: { id?: string; nombre: string; rol: string; iniciales: string }
   children: React.ReactNode
 }
 
@@ -362,6 +364,7 @@ export function AppShell({ user, children }: Props) {
         <div key={pathname} className="page-enter" style={{ maxWidth: 1280, margin: "0 auto" }}>
           <UsuarioProvider usuario={user}><ConfirmProvider>{children}</ConfirmProvider></UsuarioProvider>
         </div>
+        {user.id && <PushNotifications userId={user.id}/>}
       </main>
 
       {/* BOTTOM NAV MOBILE */}
@@ -460,17 +463,6 @@ export function AppShell({ user, children }: Props) {
         </div>
       )}
     </div>
-  )
-}
-
-function Avatar({ iniciales, size }: { iniciales: string; size: number }) {
-  return (
-    <div style={{
-      width:size, height:size, borderRadius:"50%", flexShrink:0,
-      display:"grid", placeItems:"center", fontSize: Math.round(size * .34), fontWeight:700,
-      color:"#04110d", letterSpacing:"-0.02em",
-      background:"linear-gradient(135deg, var(--aurora-1), var(--aurora-2) 60%, var(--aurora-3))",
-    }}>{iniciales}</div>
   )
 }
 

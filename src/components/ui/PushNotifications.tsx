@@ -1,7 +1,8 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react"
-import { Bell, Hourglass } from "lucide-react"
+import { Bell, X } from "lucide-react"
 import { stripEmoji } from "@/lib/text"
+import { Toast } from "@/components/ui/Toast"
 
 // Firebase public config - safe to hardcode (client-side values, not secrets)
 const VAPID_KEY = "BC4H1SRGR-megh4PQ-N4BpczTZkkZF3F8cfmS7bW1WL0Zp5rnfsN59Q7L9cKkUBaoo7NZ-2x0H_ja23MtUWinmQ"
@@ -24,6 +25,7 @@ export function PushNotifications({ userId }: Props) {
   const [status, setStatus]   = useState<Status>("idle")
   const [banner, setBanner]   = useState(false)
   const [toast, setToast]     = useState<{ title: string; body: string } | null>(null)
+  const [aviso, setAviso]     = useState<string | null>(null)
   const fbReadyRef            = useRef(false)
   const messagingRef          = useRef<any>(null)
 
@@ -92,7 +94,7 @@ export function PushNotifications({ userId }: Props) {
   }, [userId, loadFirebase])
 
   const handleActivar = useCallback(async () => {
-    if (!("Notification" in window)) { alert("Tu navegador no soporta notificaciones"); return }
+    if (!("Notification" in window)) { setAviso("⚠ Este navegador no admite notificaciones push"); setTimeout(() => setAviso(null), 4000); return }
     setStatus("asking"); setBanner(false)
     try {
       const perm = await Notification.requestPermission()
@@ -135,70 +137,33 @@ export function PushNotifications({ userId }: Props) {
   return (
     <>
       {banner && status === "idle" && (
-        <div style={{
-          position:"fixed", bottom:"calc(72px + env(safe-area-inset-bottom, 0px))",
-          left:16, right:16, zIndex:200,
-          background:"var(--surface)", border:"1px solid var(--border)",
-          borderRadius:16, padding:"14px 16px",
-          boxShadow:"0 8px 32px rgba(0,0,0,.5)",
-          display:"flex", alignItems:"center", gap:12,
-          animation:"slideUp .3s ease-out",
-        }}>
-          <Bell size={26} strokeWidth={1.75} style={{flexShrink:0,color:"var(--accent)"}}/>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontWeight:700,fontSize:13,marginBottom:2}}>Activar notificaciones</div>
-            <div style={{fontSize:11.5,color:"var(--text-3)",lineHeight:1.4}}>
-              Recibe alertas al autorizar o liberar solicitudes
-            </div>
+        <div className="notif-banner" role="dialog" aria-label="Activar notificaciones">
+          <div className="notif-banner-icon"><Bell size={19} strokeWidth={1.75}/></div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="notif-banner-title">¿Te avisamos de tus solicitudes?</div>
+            <div className="notif-banner-text">Una notificación cuando se autorice, libere o devuelva una solicitud.</div>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:5,flexShrink:0}}>
-            <button onClick={handleActivar} style={{
-              padding:"7px 13px",borderRadius:8,border:"none",
-              background:"var(--accent)",color:"#111",
-              fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",
-            }}>Activar</button>
-            <button onClick={handleDismiss} style={{
-              padding:"5px 13px",borderRadius:8,border:"1px solid var(--border)",
-              background:"none",color:"var(--text-3)",fontSize:11,cursor:"pointer",
-            }}>Ahora no</button>
+          <div className="notif-banner-actions">
+            <button className="btn primary sm" onClick={handleActivar}>Activar</button>
+            <button className="btn ghost sm" onClick={handleDismiss}>Ahora no</button>
           </div>
         </div>
       )}
 
-      {status==="asking" && (
-        <div style={{
-          position:"fixed", bottom:"calc(72px + env(safe-area-inset-bottom, 0px))",
-          left:16, right:16, zIndex:200,
-          background:"var(--surface)", border:"1px solid var(--accent)",
-          borderRadius:16, padding:"12px 16px",
-          display:"flex", alignItems:"center", gap:12,
-        }}>
-          <Hourglass size={18} strokeWidth={2} style={{flexShrink:0,color:"var(--accent)"}}/>
-          <span style={{fontSize:13,color:"var(--text-2)"}}>
-            Acepta el permiso en el mensaje del sistema…
-          </span>
-        </div>
-      )}
+      <Toast message={status === "asking" ? "ℹ Acepta el permiso en el mensaje del navegador" : aviso}/>
 
       {toast && (
-        <div style={{
-          position:"fixed",top:20,right:20,zIndex:300,
-          background:"var(--surface)",border:"1px solid var(--border)",
-          borderLeft:"4px solid var(--accent)",borderRadius:12,
-          padding:"14px 18px",boxShadow:"0 8px 32px rgba(0,0,0,.4)",
-          maxWidth:320,animation:"slideUp .3s ease-out",
-          display:"flex",gap:10,alignItems:"flex-start",
-        }}>
-          <div style={{flex:1}}>
-            <div style={{fontWeight:700,fontSize:14,marginBottom:3}}><Bell size={14} strokeWidth={2} className="inline-icon"/>{stripEmoji(toast.title)}</div>
-            {toast.body&&<div style={{fontSize:12,color:"var(--text-2)"}}>{toast.body}</div>}
+        <div className="notif-pop" role="status">
+          <div className="notif-banner-icon" style={{ width: 34, height: 34 }}><Bell size={16} strokeWidth={1.75}/></div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="notif-pop-title">{stripEmoji(toast.title)}</div>
+            {toast.body && <div className="notif-pop-body">{stripEmoji(toast.body)}</div>}
           </div>
-          <button onClick={()=>setToast(null)} style={{
-            background:"none",border:"none",color:"var(--text-3)",cursor:"pointer",fontSize:18,lineHeight:1
-          }}>×</button>
+          <button className="icon-btn" style={{ width: 30, height: 30 }} onClick={() => setToast(null)} aria-label="Cerrar">
+            <X size={14} strokeWidth={2}/>
+          </button>
         </div>
       )}
     </>
   )
 }
-

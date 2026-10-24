@@ -1,45 +1,46 @@
 "use client"
 import { useState, useEffect } from "react"
 import { triggerNotifSetup } from "@/components/ui/PushNotifications"
-import { Bell, CheckCircle2, XCircle } from "lucide-react"
+import { Bell, BellOff, BellRing } from "lucide-react"
 
+type Perm = "default" | "granted" | "denied" | "unsupported"
+
+/** Estado de las notificaciones push de este dispositivo y botón para activarlas. */
 export function NotifButton() {
-  const [perm, setPerm] = useState<string>("default")
+  const [perm, setPerm] = useState<Perm>("default")
 
   useEffect(() => {
-    if ("Notification" in window) setPerm(Notification.permission)
+    // Lee el permiso del navegador al montar; cambia solo por acción del usuario
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPerm("Notification" in window ? (Notification.permission as Perm) : "unsupported")
   }, [])
 
   const handleClick = () => {
-    const saved = localStorage.getItem("notif-status")
-    // Reset so the setup can run again
-    if (saved) localStorage.removeItem("notif-status")
+    localStorage.removeItem("notif-status") // permite volver a mostrar el aviso
     triggerNotifSetup()
   }
 
+  const estado = {
+    granted:     { icon: BellRing, tone: "var(--success)", soft: "var(--success-soft)", titulo: "Activadas en este dispositivo", texto: "Te avisamos al autorizar, liberar o devolver una solicitud." },
+    denied:      { icon: BellOff,  tone: "var(--danger)",  soft: "var(--danger-soft)",  titulo: "Bloqueadas por el navegador",  texto: "Habilítalas en los ajustes del sitio y vuelve a esta pantalla." },
+    default:     { icon: Bell,     tone: "var(--text-2)",  soft: "var(--surface-2)",    titulo: "Sin activar",                  texto: "Recibe alertas aunque la app esté cerrada." },
+    unsupported: { icon: BellOff,  tone: "var(--text-3)",  soft: "var(--surface-2)",    titulo: "No disponibles aquí",          texto: "Este navegador no admite notificaciones push." },
+  }[perm]
+  const Icon = estado.icon
+
   return (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-      <div>
-        <div style={{ fontSize:13, fontWeight:600, marginBottom:2 }}>Notificaciones push</div>
-        <div style={{ fontSize:11.5, color:"var(--text-3)" }}>
-          {perm==="granted" ? <><CheckCircle2 size={14} strokeWidth={2} color="var(--success)" style={{verticalAlign:"-0.15em"}}/> Activadas</> :
-           perm==="denied"  ? <><XCircle size={14} strokeWidth={2} color="var(--danger)" style={{verticalAlign:"-0.15em"}}/> Bloqueadas — habilítalas en los ajustes del navegador</> :
-           "Sin configurar"}
+    <div className="spread" style={{ gap: 12, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+        <span style={{ width: 36, height: 36, borderRadius: "50%", display: "grid", placeItems: "center", flexShrink: 0, background: estado.soft, color: estado.tone }}>
+          <Icon size={17} strokeWidth={1.75}/>
+        </span>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>{estado.titulo}</div>
+          <div style={{ fontSize: 13, color: "var(--text-2)" }}>{estado.texto}</div>
         </div>
       </div>
-      {perm !== "denied" && (
-        <button onClick={handleClick}
-          className="btn sm"
-          style={{
-            background: perm==="granted" ? "var(--success-soft)" : "var(--accent)",
-            border: "none",
-            color: perm==="granted" ? "var(--success)" : "#111",
-            fontWeight: 600,
-          }}>
-          {perm==="granted" ? "Reactivar" : <><Bell size={14} strokeWidth={2}/> Activar</>}
-        </button>
-      )}
+      {perm === "default" && <button onClick={handleClick} className="btn primary sm"><Bell size={14} strokeWidth={2}/> Activar</button>}
+      {perm === "granted" && <button onClick={handleClick} className="btn sm">Volver a vincular</button>}
     </div>
   )
 }
-
