@@ -2,13 +2,15 @@
 import { createContext, useContext, useState, useEffect } from "react"
 
 type Mode = "dark" | "light"
-type Accent = "lime" | "blue" | "orange" | "purple"
+type Accent = "aurora" | "azul" | "ambar" | "violeta"
 
-const ACCENTS: Record<Accent, { name:string; color:string; soft:string }> = {
-  lime:   { name:"Verde lima", color:"#c5f24d", soft:"rgba(197,242,77,.12)" },
-  blue:   { name:"Azul",       color:"#60a5fa", soft:"rgba(96,165,250,.12)" },
-  orange: { name:"Naranja",    color:"#f97316", soft:"rgba(249,115,22,.12)" },
-  purple: { name:"Morado",     color:"#c084fc", soft:"rgba(192,132,252,.12)" },
+// Cada acento tiene una versión para fondo oscuro y otra para fondo claro;
+// globals.css elige la correcta según el modo.
+const ACCENTS: Record<Accent, { name:string; color:string; soft:string; light:string; softLight:string }> = {
+  aurora:  { name:"Aurora",  color:"#5ee6c3", soft:"rgba(94,230,195,.12)",  light:"#0b8f78", softLight:"rgba(11,143,120,.10)" },
+  azul:    { name:"Azul",    color:"#4da3ff", soft:"rgba(77,163,255,.13)",  light:"#0066cc", softLight:"rgba(0,102,204,.09)" },
+  ambar:   { name:"Ámbar",   color:"#ffb340", soft:"rgba(255,179,64,.13)",  light:"#b25000", softLight:"rgba(178,80,0,.09)" },
+  violeta: { name:"Violeta", color:"#bf8bff", soft:"rgba(191,139,255,.13)", light:"#7a44d6", softLight:"rgba(122,68,214,.09)" },
 }
 
 interface ThemeCtx {
@@ -22,11 +24,12 @@ const ThemeContext = createContext<ThemeCtx|null>(null)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setModeState] = useState<Mode>("dark")
-  const [accent, setAccentState] = useState<Accent>("lime")
+  const [accent, setAccentState] = useState<Accent>("aurora")
 
   // Load from localStorage
   useEffect(() => {
-    const m = localStorage.getItem("vz-mode") as Mode
+    // "theme" es la llave que usaba la barra lateral antes de unificar el tema
+    const m = (localStorage.getItem("vz-mode") || localStorage.getItem("theme")) as Mode
     const a = localStorage.getItem("vz-accent") as Accent
     if (m === "light" || m === "dark") setModeState(m)
     if (a && ACCENTS[a]) setAccentState(a)
@@ -36,8 +39,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const root = document.documentElement
     const ac = ACCENTS[accent]
-    root.style.setProperty("--accent", ac.color)
-    root.style.setProperty("--accent-soft", ac.soft)
+    root.style.setProperty("--accent-d", ac.color)
+    root.style.setProperty("--accent-soft-d", ac.soft)
+    root.style.setProperty("--accent-l", ac.light)
+    root.style.setProperty("--accent-soft-l", ac.softLight)
     if (mode === "light") {
       root.classList.add("light")
     } else {

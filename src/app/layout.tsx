@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next"
+import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/contexts/ThemeContext"
 import { InstallBanner } from "@/components/ui/InstallBanner"
 import { PWARegister } from "@/components/ui/PWARegister"
 import "./globals.css"
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" })
 
 export const metadata: Metadata = {
   title: "Viáticos Tu empresa AQUI",
@@ -17,7 +20,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0d0d0d",
+  themeColor: "#05070a",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -26,7 +29,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" className={inter.variable} suppressHydrationWarning>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

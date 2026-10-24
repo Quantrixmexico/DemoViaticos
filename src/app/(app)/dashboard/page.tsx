@@ -1,7 +1,7 @@
 "use client"
 import type { LucideIcon } from "lucide-react"
-import { Inbox, Clock, ShieldCheck, Banknote, FileText, Trophy, XCircle, RotateCcw, Paperclip } from "lucide-react"
-import { useState, useEffect, useMemo } from "react"
+import { Inbox, Clock, ShieldCheck, Banknote, FileText, Trophy, XCircle, RotateCcw, Paperclip, ChevronDown, X, MousePointerClick, Receipt, Download } from "lucide-react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
@@ -11,10 +11,10 @@ type Status = "solicitado"|"autorizado"|"validado"|"liberado"|"parcial"|"comprob
 
 const STATUS_CONFIG: Record<Status,{label:string,icon:LucideIcon,color:string,bg:string}> = {
   solicitado:  { label:"Por aprobar",    icon: Inbox, color:"var(--warn)",    bg:"var(--warn-soft)"    },
-  autorizado:  { label:"Pend. Admin",    icon: Clock, color:"#c084fc",        bg:"rgba(192,132,252,.12)"},
+  autorizado:  { label:"Pend. Admin",    icon: Clock, color:"var(--st-violet)", bg:"color-mix(in srgb, var(--st-violet) 13%, transparent)"},
   validado:    { label:"Aut. Admin",     icon: ShieldCheck, color:"var(--accent)",  bg:"var(--accent-soft)"  },
-  liberado:    { label:"Liberados",      icon: Banknote, color:"#60a5fa",        bg:"rgba(96,165,250,.12)"},
-  parcial:     { label:"Parcial",        icon: FileText, color:"#f97316",        bg:"rgba(249,115,22,.12)"},
+  liberado:    { label:"Liberados",      icon: Banknote, color:"var(--st-blue)",   bg:"color-mix(in srgb, var(--st-blue) 13%, transparent)"},
+  parcial:     { label:"Parcial",        icon: FileText, color:"var(--st-orange)", bg:"color-mix(in srgb, var(--st-orange) 13%, transparent)"},
   comprobado:  { label:"Comprobados",    icon: Trophy, color:"var(--success)", bg:"var(--success-soft)" },
   rechazado:   { label:"Rechazados",     icon: XCircle, color:"var(--danger)",  bg:"var(--danger-soft)"  },
 }
@@ -80,66 +80,72 @@ export default function DashboardPage() {
       <div className="page-head">
         <div>
           <h1 className="page-title">Workflow</h1>
-          <div className="page-sub">Vista interactiva por estatus · {solicitudes.filter(s=>s.status!=="rechazado").length} activas</div>
+          <div className="page-sub">
+            {loading ? "Cargando solicitudes…" : `${solicitudes.filter(s=>s.status!=="rechazado").length} solicitudes activas, agrupadas por estatus`}
+          </div>
         </div>
         {saldoPendiente > 0 && (
-          <div style={{textAlign:"right"}}>
-            <div style={{fontSize:20,fontWeight:700,color:"var(--warn)"}}>{fmtMXN(saldoPendiente)}</div>
-            <div style={{fontSize:11,color:"var(--text-3)"}}>saldo por comprobar</div>
+          <div className="popover head-figure">
+            <div style={{fontSize:28,fontWeight:700,letterSpacing:"-0.03em",color:"var(--warn)",fontVariantNumeric:"tabular-nums"}}>
+              <CountUp value={saldoPendiente} format={fmtMXN}/>
+            </div>
+            <div style={{fontSize:13,color:"var(--text-2)"}}>saldo por comprobar</div>
           </div>
         )}
       </div>
 
       {loading ? (
-        <div style={{padding:60,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(136px,1fr))",gap:12}}>
+          {Array.from({length:7}).map((_,i)=>(
+            <div key={i} className="skeleton" style={{height:112,borderRadius:"var(--r-lg)"}}/>
+          ))}
+        </div>
       ) : (
         <>
           {/* ── KPI Status Cards ── */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
-            {(Object.entries(STATUS_CONFIG) as [Status,any][]).map(([status,cfg])=>{
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(136px,1fr))",gap:12,marginBottom:16}}>
+            {(Object.entries(STATUS_CONFIG) as [Status,any][]).map(([status,cfg],i)=>{
               const items = byStatus[status]
               const monto = items.reduce((a:number,s:any)=>a+parseFloat(s.monto||0),0)
               const isActive = activeStatus===status
+              const StatusIcon = cfg.icon
               return (
-                <button key={status}
+                <button key={status} className="status-tile" aria-pressed={isActive}
                   onClick={()=>setActiveStatus(isActive?null:status)}
-                  style={{
-                    padding:"14px 16px", borderRadius:12, border:"2px solid",
-                    borderColor:isActive?cfg.color:"var(--border)",
-                    background:isActive?cfg.bg:"var(--surface)",
-                    cursor:"pointer", textAlign:"left", transition:"all .15s",
-                    boxShadow:isActive?`0 0 0 3px ${cfg.color}22`:"none",
-                  }}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
-                    <span style={{fontSize:20}}>{(() => { const StatusIcon = cfg.icon; return <StatusIcon size={20} strokeWidth={1.75} color={cfg.color}/> })()}</span>
-                    <span style={{fontSize:24,fontWeight:800,color:cfg.color}}>
-                      {items.length}
+                  style={{ "--tile": cfg.color, "--i": i } as React.CSSProperties}>
+                  <div className="tile-icon" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{width:32,height:32,borderRadius:10,display:"grid",placeItems:"center",background:cfg.bg}}>
+                      <StatusIcon size={17} strokeWidth={2} color={cfg.color}/>
                     </span>
                   </div>
-                  <div style={{fontSize:12,fontWeight:600,color:isActive?cfg.color:"var(--text-2)"}}>{cfg.label}</div>
-                  {monto > 0 && <div style={{fontSize:11,color:"var(--text-3)",marginTop:2}}>{fmtMXN(monto)}</div>}
+                  <div className="tile-num" style={{color:isActive?cfg.color:"var(--text)"}}>
+                    <CountUp value={items.length}/>
+                  </div>
+                  <div style={{fontSize:13,fontWeight:500,color:isActive?cfg.color:"var(--text-2)",marginTop:6}}>{cfg.label}</div>
+                  <div style={{fontSize:12,color:"var(--text-3)",marginTop:2,minHeight:16,fontVariantNumeric:"tabular-nums"}}>{monto > 0 ? fmtMXN(monto) : "Sin monto"}</div>
                 </button>
               )
             })}
           </div>
 
           {/* ── Total bar ── */}
-          <div className="card" style={{marginBottom:16,padding:"10px 16px"}}>
-            <div style={{display:"flex",gap:0,height:12,borderRadius:6,overflow:"hidden"}}>
+          <div className="card" style={{marginBottom:24,padding:"16px 20px"}}>
+            <div style={{fontSize:13,fontWeight:600,marginBottom:10}}>Flujo activo</div>
+            <div className="flow-bar">
               {(Object.entries(STATUS_CONFIG) as [Status,any][]).map(([status,cfg])=>{
                 // Exclude rechazado from progress bar (it distorts active flow)
                 if (status === "rechazado") return null
                 const validTotal = solicitudes.filter(s => s.status !== "rechazado").length
                 const pct = validTotal ? byStatus[status].length/validTotal*100 : 0
                 if (!pct) return null
-                return <div key={status} title={`${cfg.label}: ${byStatus[status].length}`}
-                  style={{width:`${pct}%`,background:cfg.color,transition:"width .5s"}}/>
+                return <span key={status} title={`${cfg.label}: ${byStatus[status].length}`}
+                  style={{width:`${pct}%`,background:cfg.color,transition:"width .8s var(--ease-out)"}}/>
               })}
             </div>
-            <div style={{display:"flex",gap:16,marginTop:8,flexWrap:"wrap"}}>
+            <div style={{display:"flex",gap:"6px 18px",marginTop:12,flexWrap:"wrap"}}>
               {(Object.entries(STATUS_CONFIG) as [Status,any][]).map(([status,cfg])=>(
                 byStatus[status].length > 0 &&
-                <span key={status} style={{fontSize:11,color:"var(--text-3)",display:"flex",alignItems:"center",gap:4}}>
+                <span key={status} style={{fontSize:12,color:"var(--text-2)",display:"flex",alignItems:"center",gap:6}}>
                   <span style={{width:8,height:8,borderRadius:"50%",background:cfg.color,display:"inline-block"}}/>
                   {cfg.label}: {byStatus[status].length}
                 </span>
@@ -149,28 +155,41 @@ export default function DashboardPage() {
 
           {/* ── Drilldown ── */}
           {activeStatus && (
-            <div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                <div style={{fontWeight:700,fontSize:15,color:STATUS_CONFIG[activeStatus].color}}>
-                  {(() => { const StIcon = STATUS_CONFIG[activeStatus].icon; return <StIcon size={16} strokeWidth={1.75} color={STATUS_CONFIG[activeStatus].color} style={{verticalAlign:"middle"}}/> })()} {STATUS_CONFIG[activeStatus].label}
-                  <span style={{fontWeight:400,color:"var(--text-3)",marginLeft:8,fontSize:13}}>
-                    · {drillItems.length} solicitudes · {fmtMXN(drillItems.reduce((a,s)=>a+parseFloat(s.monto||0),0))}
-                  </span>
+            <div key={activeStatus} className="page-enter">
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:14,gap:12}}>
+                <div>
+                  <h2 style={{fontWeight:700,fontSize:22,letterSpacing:"-0.03em",display:"flex",alignItems:"center",gap:8}}>
+                    {(() => { const StIcon = STATUS_CONFIG[activeStatus].icon; return <StIcon size={20} strokeWidth={2} color={STATUS_CONFIG[activeStatus].color}/> })()}
+                    {STATUS_CONFIG[activeStatus].label}
+                  </h2>
+                  <div style={{color:"var(--text-2)",fontSize:13,marginTop:2}}>
+                    {drillItems.length} {drillItems.length===1?"solicitud":"solicitudes"}, {fmtMXN(drillItems.reduce((a,s)=>a+parseFloat(s.monto||0),0))} en total
+                  </div>
                 </div>
-                <button onClick={()=>setActiveStatus(null)}
-                  style={{background:"none",border:"none",color:"var(--text-3)",cursor:"pointer",fontSize:18}}>×</button>
+                <button className="icon-btn" onClick={()=>setActiveStatus(null)} aria-label="Cerrar detalle">
+                  <X size={16} strokeWidth={2}/>
+                </button>
               </div>
 
+              {drillItems.length === 0 && (
+                <div className="card" style={{padding:28,textAlign:"center",color:"var(--text-2)",fontSize:14}}>
+                  No hay solicitudes en este estatus.
+                </div>
+              )}
+
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {drillItems.map(s => {
+                {drillItems.map((s, idx) => {
                   const u = findUser(s.usuario_id)
                   const isExpanded = expandedId===s.id
                   const cfdis = s.cfdi||[]
                   return (
-                    <div key={s.id} className="card" style={{padding:0,overflow:"hidden"}}>
+                    <div key={s.id} className="card list-item-in" style={{padding:0,overflow:"hidden","--i": Math.min(idx, 12),
+                      borderColor: isExpanded ? "var(--border)" : undefined, transition:"border-color .2s"} as React.CSSProperties}>
                       {/* Header row */}
-                      <div style={{padding:"12px 16px",display:"flex",gap:12,alignItems:"center",cursor:"pointer"}}
-                        onClick={()=>setExpandedId(isExpanded?null:s.id)}>
+                      <div role="button" tabIndex={0} aria-expanded={isExpanded} className="row-press"
+                        style={{padding:"14px 18px",display:"flex",gap:14,alignItems:"center",cursor:"pointer"}}
+                        onClick={()=>setExpandedId(isExpanded?null:s.id)}
+                        onKeyDown={e=>{ if (e.key==="Enter"||e.key===" ") { e.preventDefault(); setExpandedId(isExpanded?null:s.id) } }}>
                         <TipoBadge tipo={s.tipo}/>
                         <div style={{flex:1,minWidth:0}}>
                           <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -182,16 +201,19 @@ export default function DashboardPage() {
                           </div>
                         </div>
                         <div style={{textAlign:"right",flexShrink:0}}>
-                          <div style={{fontWeight:700,fontSize:15}}>{fmtMXN(parseFloat(s.monto))}</div>
-                          <div style={{fontSize:11,color:"var(--text-3)"}}>{fmtFecha(s.fecha)}</div>
+                          <div style={{fontWeight:650,fontSize:15,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{fmtMXN(parseFloat(s.monto))}</div>
+                          <div style={{fontSize:12,color:"var(--text-3)"}}>{fmtFecha(s.fecha)}</div>
                         </div>
-                        <span style={{color:"var(--text-3)",fontSize:13}}>{isExpanded?"▲":"▼"}</span>
+                        <ChevronDown size={18} strokeWidth={2} color="var(--text-3)"
+                          style={{flexShrink:0,transition:"transform .4s var(--ease-spring)",transform:isExpanded?"rotate(180deg)":"none"}}/>
                       </div>
 
                       {/* Expanded detail */}
-                      {isExpanded && (
-                        <div style={{borderTop:"1px solid var(--border)",padding:"12px 16px",
-                          background:"var(--surface-2)",display:"flex",flexDirection:"column",gap:12}}>
+                      <div className={`expand ${isExpanded ? "open" : ""}`}>
+                      <div inert={!isExpanded}>
+                      {(
+                        <div style={{borderTop:"1px solid var(--border-soft)",padding:"16px 18px",
+                          background:"var(--surface-2)",display:"flex",flexDirection:"column",gap:14}}>
                           {/* Meta */}
                           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:10}}>
                             {[
@@ -203,7 +225,7 @@ export default function DashboardPage() {
                               ...(s.anticipo_ref?[{label:"Anticipo ref.",value:<span className="mono" style={{fontSize:11}}>{s.anticipo_ref}</span>}]:[]),
                             ].map(({label,value})=>(
                               <div key={label}>
-                                <div style={{fontSize:10,color:"var(--text-3)",textTransform:"uppercase",letterSpacing:".05em",marginBottom:3}}>{label}</div>
+                                <div style={{fontSize:12,color:"var(--text-3)",marginBottom:3}}>{label}</div>
                                 <div style={{fontSize:13,fontWeight:500}}>{value}</div>
                               </div>
                             ))}
@@ -212,18 +234,18 @@ export default function DashboardPage() {
                           {/* CFDIs + Adjuntos */}
                           {cfdis.length>0&&(
                             <div>
-                              <div style={{fontSize:11,fontWeight:600,textTransform:"uppercase",letterSpacing:".06em",color:"var(--text-3)",marginBottom:8}}>Comprobantes</div>
+                              <div style={{fontSize:13,fontWeight:600,marginBottom:8}}>Comprobantes</div>
                               <div style={{display:"flex",flexDirection:"column",gap:4}}>
                                 {cfdis.map((cf:any)=>(
-                                  <div key={cf.id} style={{display:"flex",alignItems:"center",gap:10,padding:"7px 10px",
-                                    background:"var(--surface)",borderRadius:8,fontSize:12}}>
-                                    <span style={{fontSize:15}}>🧾</span>
+                                  <div key={cf.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",
+                                    background:"var(--surface)",borderRadius:12,fontSize:13}}>
+                                    <Receipt size={15} strokeWidth={1.75} color="var(--text-3)" style={{flexShrink:0}}/>
                                     <span style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cf.emisor||"—"}</span>
                                     <span className="mono" style={{fontSize:10,color:"var(--text-3)"}}>{cf.cuenta}</span>
                                     <span style={{fontWeight:600}}>{fmtMXN(parseFloat(cf.total))}</span>
                                     {cf.archivo_url&&(
                                       <a href={cf.archivo_url} target="_blank" rel="noopener"
-                                        className="btn sm ghost" style={{fontSize:10,padding:"2px 8px"}}>↓</a>
+                                        className="btn sm ghost" style={{padding:"4px 8px"}} aria-label="Descargar comprobante"><Download size={14} strokeWidth={1.75}/></a>
                                     )}
                                   </div>
                                 ))}
@@ -232,9 +254,9 @@ export default function DashboardPage() {
                           )}
 
                           {/* Actions */}
-                          <div style={{display:"flex",gap:8}}>
-                            <button className="btn sm ghost" onClick={()=>router.push(`/solicitudes/${s.id}`)}>
-                              Ver detalle completo →
+                          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                            <button className="btn sm" onClick={()=>router.push(`/solicitudes/${s.id}`)}>
+                              Ver detalle completo
                             </button>
                             {s.status==="solicitado"&&(userRol==="gerente"||userRol==="admin")&&(
                               <button className="btn sm primary" onClick={()=>router.push("/gerente")}>
@@ -242,9 +264,9 @@ export default function DashboardPage() {
                               </button>
                             )}
                             {s.status==="autorizado"&&(userRol==="admin")&&(
-                              <button className="btn sm" style={{background:"#c084fc",border:"none",color:"#111",fontWeight:600}}
+                              <button className="btn sm" style={{background:"var(--st-violet)",border:"none",color:"var(--on-accent)",fontWeight:600}}
                                 onClick={()=>router.push("/admin/validar")}>
-                                <ShieldCheck size={14} strokeWidth={2} color="#111" style={{marginRight:4,verticalAlign:"middle"}}/>Validar →
+                                <ShieldCheck size={14} strokeWidth={2}/>Validar
                               </button>
                             )}
                             {s.status==="validado"&&(userRol==="tesoreria"||userRol==="admin")&&(
@@ -255,19 +277,21 @@ export default function DashboardPage() {
                             {s.status==="liberado"&&s.tipo==="anticipo"&&(
                               <button className="btn sm primary"
                                 onClick={()=>router.push(`/solicitudes/comprobacion?anticipo=${s.id}`)}>
-                                <Paperclip size={14} strokeWidth={2} style={{marginRight:4,verticalAlign:"middle"}}/>Comprobar →
+                                <Paperclip size={14} strokeWidth={2}/>Comprobar
                               </button>
                             )}
                             {s.status==="parcial"&&s.tipo==="anticipo"&&(
                               <button className="btn sm"
-                                style={{background:"var(--warn)",border:"none",color:"#111",fontWeight:600}}
+                                style={{background:"var(--warn)",border:"none",color:"#1f1300",fontWeight:600}}
                                 onClick={()=>router.push(`/solicitudes/comprobacion?anticipo=${s.id}`)}>
-                                <Paperclip size={14} strokeWidth={2} style={{marginRight:4,verticalAlign:"middle"}}/>Comprobar saldo →
+                                <Paperclip size={14} strokeWidth={2}/>Comprobar saldo
                               </button>
                             )}
                           </div>
                         </div>
                       )}
+                      </div>
+                      </div>
                     </div>
                   )
                 })}
@@ -277,10 +301,13 @@ export default function DashboardPage() {
 
           {/* Empty state when no status selected */}
           {!activeStatus && (
-            <div className="card" style={{padding:32,textAlign:"center",color:"var(--text-3)"}}>
-              <div style={{fontSize:36,marginBottom:12}}>☝️</div>
-              <div style={{fontWeight:600,fontSize:15,marginBottom:6}}>Selecciona un estatus</div>
-              <div style={{fontSize:13}}>Toca cualquier tarjeta para ver el detalle de las solicitudes</div>
+            <div className="card page-enter" style={{padding:"40px 24px",textAlign:"center",color:"var(--text-2)"}}>
+              <div style={{width:52,height:52,borderRadius:"50%",margin:"0 auto 14px",display:"grid",placeItems:"center",
+                background:"var(--accent-soft)",color:"var(--accent)"}}>
+                <MousePointerClick size={24} strokeWidth={1.75}/>
+              </div>
+              <div style={{fontWeight:650,fontSize:17,letterSpacing:"-0.02em",color:"var(--text)",marginBottom:4}}>Elige un estatus</div>
+              <div style={{fontSize:14}}>Toca una tarjeta para ver sus solicitudes.</div>
             </div>
           )}
         </>
@@ -290,3 +317,24 @@ export default function DashboardPage() {
 }
 
 
+
+// Anima un número desde su valor anterior hasta el nuevo (ease-out, ~0.9 s)
+function CountUp({ value, format }: { value: number; format?: (n: number) => string }) {
+  const [shown, setShown] = useState(0)
+  const from = useRef(0)
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    const start = performance.now(), a = from.current, dur = reduce ? 1 : 900
+    let raf = 0
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / dur)
+      const v = a + (value - a) * (1 - Math.pow(1 - p, 4))
+      setShown(v)
+      if (p < 1) raf = requestAnimationFrame(tick)
+      else from.current = value
+    }
+    raf = requestAnimationFrame(tick)
+    return () => { cancelAnimationFrame(raf); from.current = value }
+  }, [value])
+  return <>{format ? format(shown) : Math.round(shown)}</>
+}
