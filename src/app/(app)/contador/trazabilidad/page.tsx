@@ -119,19 +119,19 @@ export default function TrazabilidadPage() {
           {sol.cfdi?.length>0&&(
             <div className="card" style={{marginBottom:12}}>
               <div style={{fontWeight:600,fontSize:13,marginBottom:12}}>Comprobantes · {sol.cfdi.length}</div>
-              <table className="t">
+              <table className="t cards">
                 <thead><tr><th>UUID</th><th>Emisor</th><th>Cuenta</th><th className="num">Total</th><th>SAT</th><th></th></tr></thead>
                 <tbody>
                   {sol.cfdi.map((cf:any)=>(
                     <tr key={cf.id}>
-                      <td className="mono" style={{fontSize:10}}>{cf.uuid?cf.uuid.slice(0,20)+"…":"—"}</td>
-                      <td style={{fontSize:11}}>{cf.emisor||"—"}</td>
-                      <td className="mono" style={{fontSize:10}}>{cf.cuenta}</td>
-                      <td className="num">{fmtMXN(parseFloat(cf.total))}</td>
-                      <td>{cf.sat_estado&&<span style={{fontSize:10,padding:"2px 6px",borderRadius:8,
+                      <td className="mono uuid cell-sub" style={{fontSize:10}}>{cf.uuid?cf.uuid.slice(0,20)+"…":"—"}</td>
+                      <td className="cell-title" style={{fontSize:11}}>{cf.emisor||"—"}</td>
+                      <td className="mono cell-sub" style={{fontSize:10}}>{cf.cuenta}</td>
+                      <td className="num cell-amount" data-label="Total">{fmtMXN(parseFloat(cf.total))}</td>
+                      <td data-label="SAT">{cf.sat_estado&&<span style={{fontSize:10,padding:"2px 6px",borderRadius:8,
                         background:cf.sat_estado==="Vigente"?"var(--success-soft)":"var(--warn-soft)",
                         color:cf.sat_estado==="Vigente"?"var(--success)":"var(--warn)"}}>{cf.sat_estado}</span>}</td>
-                      <td>{cf.archivo_url&&<a href={cf.archivo_url} target="_blank" rel="noopener" className="btn sm ghost" style={{fontSize:11}} title="Descargar" aria-label="Descargar"><Download size={14} strokeWidth={2}/></a>}</td>
+                      <td className="cell-actions">{cf.archivo_url&&<a href={cf.archivo_url} target="_blank" rel="noopener" className="btn sm ghost" style={{fontSize:11}} title="Descargar" aria-label="Descargar"><Download size={14} strokeWidth={2}/></a>}</td>
                     </tr>
                   ))}
                 </tbody>

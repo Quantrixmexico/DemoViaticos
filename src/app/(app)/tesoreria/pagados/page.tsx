@@ -72,7 +72,7 @@ export default function TesoreriaPagadosPage() {
         {loading ? (
           <div style={{ padding:40, textAlign:"center", color:"var(--text-3)" }}>Cargando…</div>
         ) : (
-          <table className="t" style={{minWidth:700}}>
+          <table className="t cards" style={{minWidth:700}}>
             <thead>
               <tr>
                 <th>Folio</th>
@@ -90,8 +90,8 @@ export default function TesoreriaPagadosPage() {
                 return (
                   <tr key={s.id} style={{ cursor:"pointer" }}
                     onClick={() => router.push(`/solicitudes/${s.id}`)}>
-                    <td className="mono" style={{ fontSize:11 }}>{s.id}</td>
-                    <td>
+                    <td className="mono cell-sub" style={{ fontSize:11 }}>{s.id}</td>
+                    <td className="cell-sub">
                       {u ? (
                         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                           <div style={{ width:24, height:24, borderRadius:"50%", flexShrink:0,
@@ -103,13 +103,13 @@ export default function TesoreriaPagadosPage() {
                         </div>
                       ) : <span className="muted">—</span>}
                     </td>
-                    <td><TipoBadge tipo={s.tipo}/></td>
-                    <td style={{ maxWidth:200, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontSize:12 }}>
+                    <td className="cell-sub"><TipoBadge tipo={s.tipo}/></td>
+                    <td className="cell-title" style={{ maxWidth:200, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontSize:12 }}>
                       {s.concepto}
                     </td>
-                    <td className="muted" style={{ fontSize:12 }}>{fmtFecha(s.fecha)}</td>
-                    <td className="num" style={{ fontWeight:600 }}>{fmtMXN(parseFloat(s.monto))}</td>
-                    <td><StatusBadge status={s.status}/></td>
+                    <td className="muted cell-sub" style={{ fontSize:12 }}>{fmtFecha(s.fecha)}</td>
+                    <td className="num cell-amount" data-label="Monto" style={{ fontWeight:600 }}>{fmtMXN(parseFloat(s.monto))}</td>
+                    <td data-label="Status"><StatusBadge status={s.status}/></td>
                   </tr>
                 )
               })}

@@ -108,7 +108,7 @@ export default function MisSolicitudesPage() {
                 action={<button className="btn primary" onClick={() => router.push("/solicitudes/anticipo")}><Plus size={15} strokeWidth={2.25}/> Nuevo anticipo</button>}/>
             : <EmptyState variant="plain" compact icon={SearchX} title="Sin resultados" text="Ninguna solicitud coincide con ese filtro."/>
         ) : (
-          <table className="t">
+          <table className="t cards">
             <thead>
               <tr>
                 <th>Folio</th><th>Tipo</th><th>Concepto</th>
@@ -120,20 +120,20 @@ export default function MisSolicitudesPage() {
               {filtradas.map(s => (
                 <tr key={s.id} style={{ cursor: "pointer" }}
                   onClick={() => router.push(`/solicitudes/${s.id}`)}>
-                  <td className="mono" style={{ fontSize: 11 }}>{s.id}</td>
-                  <td><TipoBadge tipo={s.tipo} /></td>
-                  <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <td className="mono cell-sub" style={{ fontSize: 11 }}>{s.id}</td>
+                  <td className="cell-sub"><TipoBadge tipo={s.tipo} /></td>
+                  <td className="cell-title" style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {s.concepto}
                   </td>
-                  <td className="muted mono" style={{ fontSize: 12 }}>{fmtFecha(s.fecha)}</td>
-                  <td className="num">{fmtMXN(s.monto)}</td>
-                  <td className="num">
+                  <td className="muted mono" data-label="Fecha" style={{ fontSize: 12 }}>{fmtFecha(s.fecha)}</td>
+                  <td className="num cell-amount" data-label="Monto">{fmtMXN(s.monto)}</td>
+                  <td className="num" data-label="Saldo">
                     {s.tipo === "anticipo" && (s.saldoPendiente || 0) > 0
                       ? <span style={{ color: "var(--warn)", fontWeight: 600 }}>{fmtMXN(s.saldoPendiente!)}</span>
                       : <span className="muted">—</span>}
                   </td>
-                  <td><StatusBadge status={s.status} /></td>
-                  <td className="num" onClick={e => e.stopPropagation()}>
+                  <td data-label="Estatus"><StatusBadge status={s.status} /></td>
+                  <td className="num cell-actions" onClick={e => e.stopPropagation()}>
                     {s.motivoRechazo && (
                       <span title={s.motivoRechazo} style={{ color: "var(--danger)", cursor: "help" }}><AlertTriangle size={14} strokeWidth={2} style={{ verticalAlign: "-0.15em" }}/></span>
                     )}

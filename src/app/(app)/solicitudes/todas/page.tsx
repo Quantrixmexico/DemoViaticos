@@ -204,7 +204,7 @@ export default function TodasSolicitudesPage() {
           <EmptyState variant="plain" compact icon={SearchX} title="Sin resultados" text="Ninguna solicitud coincide con esos filtros."
             action={<button className="btn sm" onClick={resetFiltros}><RotateCcw size={14} strokeWidth={2}/> Limpiar filtros</button>}/>
         ) : (
-          <table className="t" style={{ minWidth: 860 }}>
+          <table className="t cards" style={{ minWidth: 860 }}>
             <thead>
               <tr>
                 <th>Folio</th>
@@ -237,8 +237,8 @@ export default function TodasSolicitudesPage() {
                 return (
                   <React.Fragment key={s.id}>
                     <tr style={{ cursor:"pointer" }} onClick={() => router.push(`/solicitudes/${s.id}`)}>
-                      <td className="mono" style={{ fontSize:11, whiteSpace:"nowrap" }}>{s.id}</td>
-                      <td>
+                      <td className="mono cell-sub" style={{ fontSize:11, whiteSpace:"nowrap" }}>{s.id}</td>
+                      <td className="cell-sub">
                         {u ? (
                           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                             <div style={{ width:26, height:26, borderRadius:"50%", flexShrink:0,
@@ -253,26 +253,26 @@ export default function TodasSolicitudesPage() {
                           </div>
                         ) : <span className="muted">—</span>}
                       </td>
-                      <td><TipoBadge tipo={s.tipo} /></td>
-                      <td style={{ maxWidth:220, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontSize:12 }}>
+                      <td className="cell-sub"><TipoBadge tipo={s.tipo} /></td>
+                      <td className="cell-title" style={{ maxWidth:220, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontSize:12 }}>
                         {s.concepto}
                       </td>
-                      <td className="muted" style={{ fontSize:12, whiteSpace:"nowrap" }}>{fmtFecha(s.fecha)}</td>
-                      <td className="num" style={{ whiteSpace:"nowrap" }}>
+                      <td className="muted cell-sub" style={{ fontSize:12, whiteSpace:"nowrap" }}>{fmtFecha(s.fecha)}</td>
+                      <td className="num cell-amount" data-label="Monto" style={{ whiteSpace:"nowrap" }}>
                         <div style={{ fontWeight:600 }}>{fmtMXN(parseFloat(s.monto))}</div>
                       </td>
-                      <td className="num" style={{ whiteSpace:"nowrap" }}>
+                      <td className="num" data-label="Comprobado" style={{ whiteSpace:"nowrap" }}>
                         {s.tipo==="anticipo" && comps.length > 0
                           ? <span style={{ fontWeight:600, color:compColor }}>{fmtMXN(totalComp)}</span>
                           : <span className="muted">—</span>}
                       </td>
-                      <td className="num" style={{ whiteSpace:"nowrap" }}>
+                      <td className="num" data-label="Saldo" style={{ whiteSpace:"nowrap" }}>
                         {s.tipo==="anticipo" && saldo > 0
                           ? <span style={{ color:"var(--warn)", fontWeight:600 }}>{fmtMXN(saldo)}</span>
                           : <span className="muted">—</span>}
                       </td>
-                      <td><StatusBadge status={s.status} /></td>
-                      <td className="mono" style={{ fontSize:11, color:"var(--text-3)" }}>
+                      <td data-label="Status"><StatusBadge status={s.status} /></td>
+                      <td className="mono" data-label="División" style={{ fontSize:11, color:"var(--text-3)" }}>
                         {u?.division || "—"}
                       </td>
                     </tr>
@@ -281,8 +281,8 @@ export default function TodasSolicitudesPage() {
                       return (
                         <tr key={cmp.id} style={{ cursor:"pointer", background:"var(--surface-2)" }}
                           onClick={() => router.push(`/solicitudes/${cmp.id}`)}>
-                          <td className="mono" style={{ fontSize:10, paddingLeft:28, color:"var(--text-3)" }}><CornerDownRight size={14} style={{ verticalAlign:"-0.2em", marginRight:2 }}/>{cmp.id}</td>
-                          <td>{cu ? (
+                          <td className="mono cell-sub" style={{ fontSize:10, paddingLeft:28, color:"var(--text-3)" }}><CornerDownRight size={14} style={{ verticalAlign:"-0.2em", marginRight:2 }}/>{cmp.id}</td>
+                          <td className="cell-sub">{cu ? (
                             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                               <div style={{ width:20, height:20, borderRadius:"50%",
                                 background:"var(--surface)", border:"1px solid var(--border)",
@@ -292,14 +292,14 @@ export default function TodasSolicitudesPage() {
                               <span style={{ fontSize:11 }}>{cu.nombre}</span>
                             </div>
                           ) : <span className="muted">—</span>}</td>
-                          <td><TipoBadge tipo={cmp.tipo}/></td>
-                          <td style={{ fontSize:11, color:"var(--text-3)", maxWidth:180, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{cmp.concepto}</td>
-                          <td className="muted" style={{ fontSize:11 }}>{fmtFecha(cmp.fecha)}</td>
-                          <td className="num" style={{ fontWeight:600 }}>{fmtMXN(parseFloat(cmp.monto))}</td>
-                          <td className="muted num">—</td>
-                          <td className="muted num">—</td>
-                          <td><StatusBadge status={cmp.status}/></td>
-                          <td className="mono" style={{ fontSize:10, color:"var(--text-3)" }}>{cu?.division||"—"}</td>
+                          <td className="cell-sub"><TipoBadge tipo={cmp.tipo}/></td>
+                          <td className="cell-title" style={{ fontSize:11, color:"var(--text-3)", maxWidth:180, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{cmp.concepto}</td>
+                          <td className="muted cell-sub" style={{ fontSize:11 }}>{fmtFecha(cmp.fecha)}</td>
+                          <td className="num cell-amount" data-label="Monto" style={{ fontWeight:600 }}>{fmtMXN(parseFloat(cmp.monto))}</td>
+                          <td className="muted num cell-hide">—</td>
+                          <td className="muted num cell-hide">—</td>
+                          <td data-label="Status"><StatusBadge status={cmp.status}/></td>
+                          <td className="mono" data-label="División" style={{ fontSize:10, color:"var(--text-3)" }}>{cu?.division||"—"}</td>
                         </tr>
                       )
                     })}

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Toast } from "@/components/ui/Toast"
+import { Dialog } from "@/components/ui/Dialog"
 import { Download, Plus } from "lucide-react"
 
 const GRUPOS = ["Transporte","Hospedaje","Alimentos","Combustible","Estacionamiento","Peaje","Servicios","No Deducibles","Otros"]
@@ -25,6 +26,7 @@ export default function AdminCatalogoPage() {
   const openNuevo = () => setEditing({ cuenta:"", nombre:"", grupo:"Transporte", activo:true })
 
   const guardar = async () => {
+    if (!editing) return
     if (!editing.cuenta.trim() || !editing.nombre.trim()) { showToast("⚠ Cuenta y nombre requeridos"); return }
     setGuardando(true)
     const sb = createClient()
@@ -56,6 +58,8 @@ export default function AdminCatalogoPage() {
     (filtroGrupo==="todos"||c.grupo===filtroGrupo) &&
     (!busqueda || c.cuenta?.includes(busqueda) || c.nombre?.toLowerCase().includes(busqueda.toLowerCase())))
 
+  const esEdicion = !!editing && !!cuentas.find(c=>c.cuenta===editing.cuenta)
+
   return (
     <>
       <div className="page-head">
@@ -68,35 +72,39 @@ export default function AdminCatalogoPage() {
 
       <Toast message={toast}/>
 
-      {editing && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:100,display:"grid",placeItems:"center",padding:20}}>
-          <div className="card" style={{width:"100%",maxWidth:460}}>
-            <div style={{fontWeight:700,fontSize:16,marginBottom:16}}>{cuentas.find(c=>c.cuenta===editing.cuenta)?"Editar":"Nueva"} cuenta</div>
-            <div style={{display:"grid",gap:12}}>
-              {[
-                {label:"Número de cuenta",key:"cuenta",disabled:!!cuentas.find(c=>c.cuenta===editing.cuenta)},
-                {label:"Nombre",key:"nombre"},
-              ].map(({label,key,disabled})=>(
-                <div key={key}>
-                  <label style={{fontSize:11,color:"var(--text-3)",display:"block",marginBottom:4}}>{label}</label>
-                  <input className="input mono" value={editing[key]||""} disabled={disabled}
-                    onChange={e=>setEditing({...editing,[key]:e.target.value})}/>
-                </div>
-              ))}
-              <div>
-                <label style={{fontSize:11,color:"var(--text-3)",display:"block",marginBottom:4}}>Grupo</label>
-                <select className="select" value={editing.grupo||""} onChange={e=>setEditing({...editing,grupo:e.target.value})}>
-                  {GRUPOS.map(g=><option key={g}>{g}</option>)}
-                </select>
+      <Dialog
+        open={!!editing}
+        onClose={()=>setEditing(null)}
+        title={`${esEdicion?"Editar":"Nueva"} cuenta`}
+        description="Número, nombre y grupo de la cuenta contable"
+        size="md"
+        dismissible={!guardando}
+        footer={<>
+          <button className="btn ghost" onClick={()=>setEditing(null)} disabled={guardando}>Cancelar</button>
+          <button className="btn primary" onClick={guardar} disabled={guardando}>{guardando?"Guardando…":"Guardar"}</button>
+        </>}
+      >
+        {editing && (
+          <div className="form-grid">
+            {[
+              {label:"Número de cuenta",key:"cuenta",disabled:esEdicion},
+              {label:"Nombre",key:"nombre"},
+            ].map(({label,key,disabled})=>(
+              <div key={key} className="field">
+                <label>{label}</label>
+                <input className="input mono" value={editing[key]||""} disabled={disabled}
+                  onChange={e=>setEditing({...editing,[key]:e.target.value})}/>
               </div>
-            </div>
-            <div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:16}}>
-              <button className="btn ghost" onClick={()=>setEditing(null)}>Cancelar</button>
-              <button className="btn primary" onClick={guardar} disabled={guardando}>{guardando?"Guardando…":"Guardar"}</button>
+            ))}
+            <div className="field">
+              <label>Grupo</label>
+              <select className="select" value={editing.grupo||""} onChange={e=>setEditing({...editing,grupo:e.target.value})}>
+                {GRUPOS.map(g=><option key={g}>{g}</option>)}
+              </select>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Dialog>
 
       <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
         <input className="input" placeholder="Buscar por número o nombre…" value={busqueda}
@@ -107,18 +115,18 @@ export default function AdminCatalogoPage() {
       </div>
 
       <div className="card" style={{padding:0,overflow:"auto"}}>
-        <table className="t" style={{minWidth:650}}>
+        <table className="t cards" style={{minWidth:650}}>
           <thead><tr><th>Cuenta</th><th>Nombre</th><th>Grupo</th><th>Activo</th><th></th></tr></thead>
           <tbody>
             {filtradas.map((c:any)=>(
               <tr key={c.cuenta} style={{opacity:c.activo?1:.5}}>
-                <td className="mono" style={{fontWeight:700,color:"var(--accent)"}}>{c.cuenta}</td>
-                <td style={{fontWeight:500}}>{c.nombre}</td>
-                <td><span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:"var(--surface-2)",color:"var(--text-2)"}}>{c.grupo}</span></td>
-                <td><span style={{fontSize:11,padding:"2px 8px",borderRadius:10,fontWeight:600,
+                <td className="mono cell-sub" style={{fontWeight:700,color:"var(--accent)"}}>{c.cuenta}</td>
+                <td className="cell-title" style={{fontWeight:500}}>{c.nombre}</td>
+                <td data-label="Grupo"><span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:"var(--surface-2)",color:"var(--text-2)"}}>{c.grupo}</span></td>
+                <td data-label="Activo"><span style={{fontSize:11,padding:"2px 8px",borderRadius:10,fontWeight:600,
                   background:c.activo?"var(--success-soft)":"var(--surface-2)",
                   color:c.activo?"var(--success)":"var(--text-3)"}}>{c.activo?"Activa":"Inactiva"}</span></td>
-                <td><div style={{display:"flex",gap:6}}>
+                <td className="cell-actions"><div style={{display:"flex",gap:6}}>
                   <button className="btn sm ghost" onClick={()=>setEditing({...c})}>Editar</button>
                   <button className="btn sm ghost" style={{color:c.activo?"var(--danger)":"var(--success)"}} onClick={()=>toggleActivo(c)}>
                     {c.activo?"Desactivar":"Activar"}

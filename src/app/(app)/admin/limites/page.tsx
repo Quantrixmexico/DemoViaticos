@@ -1,11 +1,19 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, type ReactNode } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN } from "@/lib/format"
 import { Toast } from "@/components/ui/Toast"
+import { Dialog } from "@/components/ui/Dialog"
 import { Plus } from "lucide-react"
 
 const ROLES = ["(todos)","usuario","gerente","tesoreria","contador","admin"]
+
+const Field = ({ label, children }: { label: string; children: ReactNode }) => (
+  <div className="field">
+    <label>{label}</label>
+    {children}
+  </div>
+)
 
 export default function LimitesPage() {
   const [limites, setLimites] = useState<any[]>([])
@@ -28,6 +36,7 @@ export default function LimitesPage() {
   const openNuevo = () => setEditing({ nombre:"", cuenta:null, limite_monto:null, limite_diario:null, aplica_rol:null, activo:true })
 
   const guardar = async () => {
+    if (!editing) return
     if (!editing.nombre.trim()) { showToast("⚠ Nombre requerido"); return }
     setGuardando(true)
     const sb = createClient()
@@ -53,13 +62,6 @@ export default function LimitesPage() {
     await load()
   }
 
-  const Field = ({ label, children }: any) => (
-    <div>
-      <label style={{fontSize:11,color:"var(--text-3)",display:"block",marginBottom:4}}>{label}</label>
-      {children}
-    </div>
-  )
-
   return (
     <>
       <div className="page-head">
@@ -72,59 +74,63 @@ export default function LimitesPage() {
 
       <Toast message={toast}/>
 
-      {editing&&(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:100,display:"grid",placeItems:"center",padding:20}}>
-          <div className="card" style={{width:"100%",maxWidth:500}}>
-            <div style={{fontWeight:700,fontSize:16,marginBottom:16}}>{editing.id?"Editar":"Nuevo"} límite</div>
-            <div style={{display:"grid",gap:12}}>
-              <Field label="Nombre del límite *">
-                <input className="input" value={editing.nombre||""} onChange={e=>setEditing({...editing,nombre:e.target.value})} placeholder="Ej: Alimentos por viaje"/>
+      <Dialog
+        open={!!editing}
+        onClose={()=>setEditing(null)}
+        title={`${editing?.id?"Editar":"Nuevo"} límite`}
+        description="Tope por solicitud o por día para una cuenta contable y rol"
+        size="md"
+        dismissible={!guardando}
+        footer={<>
+          <button className="btn ghost" onClick={()=>setEditing(null)} disabled={guardando}>Cancelar</button>
+          <button className="btn primary" onClick={guardar} disabled={guardando}>{guardando?"Guardando…":"Guardar"}</button>
+        </>}
+      >
+        {editing && (
+          <div className="form-grid">
+            <Field label="Nombre del límite *">
+              <input className="input" value={editing.nombre||""} onChange={e=>setEditing({...editing,nombre:e.target.value})} placeholder="Ej: Alimentos por viaje"/>
+            </Field>
+            <div className="form-grid cols-2">
+              <Field label="Cuenta contable (opcional)">
+                <select className="select" value={editing.cuenta||""} onChange={e=>setEditing({...editing,cuenta:e.target.value||null})}>
+                  <option value="">— Todas las cuentas —</option>
+                  {cuentas.map((c:any)=><option key={c.cuenta} value={c.cuenta}>{c.cuenta} · {c.nombre}</option>)}
+                </select>
               </Field>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-                <Field label="Cuenta contable (opcional)">
-                  <select className="select" value={editing.cuenta||""} onChange={e=>setEditing({...editing,cuenta:e.target.value||null})}>
-                    <option value="">— Todas las cuentas —</option>
-                    {cuentas.map((c:any)=><option key={c.cuenta} value={c.cuenta}>{c.cuenta} · {c.nombre}</option>)}
-                  </select>
-                </Field>
-                <Field label="Aplica a rol">
-                  <select className="select" value={editing.aplica_rol||""} onChange={e=>setEditing({...editing,aplica_rol:e.target.value||null})}>
-                    {ROLES.map(r=><option key={r} value={r==="(todos)"?"":r}>{r}</option>)}
-                  </select>
-                </Field>
-                <Field label="Límite por solicitud ($)">
-                  <input className="input mono" type="number" min="0" value={editing.limite_monto||""} onChange={e=>setEditing({...editing,limite_monto:e.target.value})} placeholder="Sin límite"/>
-                </Field>
-                <Field label="Límite diario ($)">
-                  <input className="input mono" type="number" min="0" value={editing.limite_diario||""} onChange={e=>setEditing({...editing,limite_diario:e.target.value})} placeholder="Sin límite"/>
-                </Field>
-              </div>
-            </div>
-            <div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:16}}>
-              <button className="btn ghost" onClick={()=>setEditing(null)}>Cancelar</button>
-              <button className="btn primary" onClick={guardar} disabled={guardando}>{guardando?"Guardando…":"Guardar"}</button>
+              <Field label="Aplica a rol">
+                <select className="select" value={editing.aplica_rol||""} onChange={e=>setEditing({...editing,aplica_rol:e.target.value||null})}>
+                  {ROLES.map(r=><option key={r} value={r==="(todos)"?"":r}>{r}</option>)}
+                </select>
+              </Field>
+              <Field label="Límite por solicitud ($)">
+                <input className="input mono" type="number" min="0" value={editing.limite_monto||""} onChange={e=>setEditing({...editing,limite_monto:e.target.value})} placeholder="Sin límite"/>
+              </Field>
+              <Field label="Límite diario ($)">
+                <input className="input mono" type="number" min="0" value={editing.limite_diario||""} onChange={e=>setEditing({...editing,limite_diario:e.target.value})} placeholder="Sin límite"/>
+              </Field>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Dialog>
 
       <div className="card" style={{padding:0,overflow:"auto"}}>
-        <table className="t" style={{minWidth:700}}>
+        <table className="t cards" style={{minWidth:700}}>
           <thead><tr><th>Nombre</th><th>Cuenta</th><th>Rol</th><th className="num">Por solicitud</th><th className="num">Diario</th><th>Estado</th><th></th></tr></thead>
           <tbody>
             {limites.map((l:any)=>{
               const c = cuentas.find((x:any)=>x.cuenta===l.cuenta)
               return (
                 <tr key={l.id} style={{opacity:l.activo?1:.5}}>
-                  <td style={{fontWeight:500}}>{l.nombre}</td>
-                  <td style={{fontSize:11,color:"var(--text-3)"}}>{c?`${c.cuenta} · ${c.nombre}`:"Todas"}</td>
-                  <td><span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:"var(--surface-2)"}}>{l.aplica_rol||"Todos"}</span></td>
-                  <td className="num">{l.limite_monto?fmtMXN(l.limite_monto):"—"}</td>
-                  <td className="num">{l.limite_diario?fmtMXN(l.limite_diario):"—"}</td>
-                  <td><span style={{fontSize:11,padding:"2px 8px",borderRadius:10,fontWeight:600,
+                  <td className="cell-title" style={{fontWeight:500}}>{l.nombre}</td>
+                  <td className="cell-sub" style={{fontSize:11,color:"var(--text-3)"}}>{c?`${c.cuenta} · ${c.nombre}`:"Todas"}</td>
+                  <td data-label="Rol"><span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:"var(--surface-2)"}}>{l.aplica_rol||"Todos"}</span></td>
+                  <td className="num cell-amount" data-label="Por solicitud">{l.limite_monto?fmtMXN(l.limite_monto):"—"}</td>
+                  <td className="num" data-label="Diario">{l.limite_diario?fmtMXN(l.limite_diario):"—"}</td>
+                  <td data-label="Estado"><span style={{fontSize:11,padding:"2px 8px",borderRadius:10,fontWeight:600,
                     background:l.activo?"var(--success-soft)":"var(--surface-2)",
                     color:l.activo?"var(--success)":"var(--text-3)"}}>{l.activo?"Activo":"Inactivo"}</span></td>
-                  <td><div style={{display:"flex",gap:6}}>
+                  <td className="cell-actions"><div style={{display:"flex",gap:6}}>
                     <button className="btn sm ghost" onClick={()=>setEditing({...l})}>Editar</button>
                     <button className="btn sm ghost" style={{color:l.activo?"var(--danger)":"var(--success)"}} onClick={()=>toggleActivo(l)}>
                       {l.activo?"Desactivar":"Activar"}
@@ -139,5 +145,3 @@ export default function LimitesPage() {
     </>
   )
 }
-
-

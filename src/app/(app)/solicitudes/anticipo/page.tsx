@@ -129,7 +129,7 @@ export default function SolicitarAnticipoPage() {
           </button>
         </div>
         <div style={{ margin: "0 -20px", overflowX: "auto" }}>
-        <table className="t" style={{ minWidth: 560 }}>
+        <table className="t cards" style={{ minWidth: 560 }}>
           <thead>
             <tr>
               <th style={{ width: "45%" }}>Cuenta contable</th>
@@ -141,7 +141,7 @@ export default function SolicitarAnticipoPage() {
           <tbody>
             {desglose.map(d => (
               <tr key={d.id}>
-                <td>
+                <td className="cell-field" data-label="Cuenta contable">
                   <select className="select" value={d.cuenta}
                     onChange={e => updItem(d.id, "cuenta", e.target.value)}
                     style={{
@@ -154,18 +154,18 @@ export default function SolicitarAnticipoPage() {
                     ))}
                   </select>
                 </td>
-                <td>
+                <td className="cell-field" data-label="Descripción">
                   <input className="input" style={{ fontSize: 12, padding: "7px 8px", minHeight: 36 }} value={d.desc}
                     onChange={e => updItem(d.id, "desc", e.target.value)}
                     placeholder="Descripción opcional" />
                 </td>
-                <td>
+                <td className="cell-field" data-label="Monto">
                   <input className="input" type="number" min="0" step="0.01" inputMode="decimal"
                     style={{ textAlign: "right", fontSize: 13, fontVariantNumeric: "tabular-nums" }}
                     value={d.monto || ""}
                     onChange={e => updItem(d.id, "monto", parseFloat(e.target.value) || 0)} />
                 </td>
-                <td>
+                <td className="cell-actions">
                   {desglose.length > 1 && (
                     <button className="line-remove" aria-label="Quitar línea"
                       onClick={() => setDesglose(prev => prev.filter(x => x.id !== d.id))}>

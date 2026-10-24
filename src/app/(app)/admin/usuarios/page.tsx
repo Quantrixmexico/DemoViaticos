@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/client"
 import { useUsuario } from "@/lib/UsuarioContext"
 import { esDemo, MSG_DEMO_BLOQUEADO } from "@/lib/permisos"
 import { Toast } from "@/components/ui/Toast"
+import { Dialog } from "@/components/ui/Dialog"
+import { useConfirm } from "@/components/ui/Confirm"
 import { Plus, KeyRound, X } from "lucide-react"
 
 const ROLES = ["usuario","gerente","tesoreria","contador","admin","demo"]
@@ -25,34 +27,25 @@ const ROL_COLOR: Record<string,string> = {
 
 
 const FormField = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div>
-    <label style={{fontSize:11,color:"var(--text-3)",display:"block",marginBottom:4}}>{label}</label>
+  <div className="field">
+    <label>{label}</label>
     {children}
-  </div>
-)
-
-const Modal = ({ title, onClose, onSave, guardando, children }: any) => (
-  <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:100,display:"grid",placeItems:"center",padding:20}}>
-    <div className="card" style={{width:"100%",maxWidth:520,maxHeight:"90vh",overflowY:"auto"}}>
-      <div style={{fontWeight:700,fontSize:16,marginBottom:16}}>{title}</div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>{children}</div>
-      <div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:16}}>
-        <button className="btn ghost" onClick={onClose}>Cancelar</button>
-        <button className="btn primary" onClick={onSave} disabled={guardando}>{guardando?"Guardando…":"Guardar"}</button>
-      </div>
-    </div>
   </div>
 )
 
 export default function AdminUsuariosPage() {
   const usuarioActual = useUsuario()
   const soyDemo = esDemo(usuarioActual.rol)
+  const confirm = useConfirm()
   const [usuarios, setUsuarios] = useState<any[]>([])
   const [centros, setCentros] = useState<any[]>([])
   const [divisiones, setDivisiones] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [editando, setEditando] = useState<any|null>(null)
   const [creando, setCreando] = useState(false)
+  const [pwdUser, setPwdUser] = useState<{ id:string; nombre:string }|null>(null)
+  const [pwdNueva, setPwdNueva] = useState("")
+  const [pwdGuardando, setPwdGuardando] = useState(false)
   const [nuevoForm, setNuevoForm] = useState({ nombre:"", correo:"", password:"", rol:"usuario", centro_id:"", gerente_id:"", division:"4105" })
   const [guardando, setGuardando] = useState(false)
   const [busqueda, setBusqueda] = useState("")
@@ -72,7 +65,7 @@ export default function AdminUsuariosPage() {
 
   const guardar = async () => {
     if (!editando) return
-    if (!editando.centro_id) { alert("Debe asignar un Centro de beneficio al usuario"); return }
+    if (!editando.centro_id) { showToast("⚠ Debe asignar un Centro de beneficio al usuario"); return }
     setGuardando(true)
     const sb = createClient()
     const row = {
@@ -89,8 +82,8 @@ export default function AdminUsuariosPage() {
 
   const crearUsuario = async () => {
     const { nombre,correo,password,rol,centro_id,gerente_id,division } = nuevoForm
-    if (!centro_id) { alert("Debe asignar un Centro de beneficio al usuario"); return }
-    if (!nombre.trim() || !correo.trim() || !password) { alert("Nombre, correo y contraseña son obligatorios"); return }
+    if (!centro_id) { showToast("⚠ Debe asignar un Centro de beneficio al usuario"); return }
+    if (!nombre.trim() || !correo.trim() || !password) { showToast("⚠ Nombre, correo y contraseña son obligatorios"); return }
     if (!nombre.trim()||!correo.trim()||!password.trim()) { showToast("⚠ Nombre, correo y contraseña requeridos"); return }
     setGuardando(true)
     try {
@@ -103,19 +96,25 @@ export default function AdminUsuariosPage() {
     setGuardando(false)
   }
 
-  const resetPassword = async (userId:string) => {
+  const resetPassword = (userId:string, nombre:string) => {
     if (soyDemo) { showToast(MSG_DEMO_BLOQUEADO); return }
-    const pwd = prompt("Nueva contraseña (mínimo 6 caracteres):")
-    if (!pwd || pwd.length < 6) return
+    setPwdNueva(""); setPwdUser({ id:userId, nombre })
+  }
+
+  const guardarPassword = async () => {
+    if (!pwdUser || pwdNueva.length < 6) return
+    setPwdGuardando(true)
     try {
-      await callWorker("resetPassword", { userId, newPassword:pwd })
+      await callWorker("resetPassword", { userId:pwdUser.id, newPassword:pwdNueva })
       showToast("✓ Contraseña actualizada")
+      setPwdUser(null)
     } catch(e:any) { showToast("⚠ "+e.message) }
+    setPwdGuardando(false)
   }
 
   const desactivar = async (id:string, nombre:string) => {
     if (soyDemo) { showToast(MSG_DEMO_BLOQUEADO); return }
-    if (!confirm(`¿Desactivar a ${nombre}?`)) return
+    if (!(await confirm({ title:`¿Desactivar a ${nombre}?`, text:"Dejará de poder entrar; puedes reactivarle después.", confirmLabel:"Desactivar", tone:"danger" }))) return
     const sb = createClient()
     await sb.from("usuarios").update({ activo:false }).eq("id",id)
     showToast("Usuario desactivado")
@@ -139,8 +138,12 @@ export default function AdminUsuariosPage() {
       <Toast message={toast}/>
 
       {/* Modal nuevo usuario */}
-      {creando && (
-        <Modal title="Nuevo usuario" onClose={()=>setCreando(false)} onSave={crearUsuario} guardando={guardando}>
+      <Dialog open={creando} onClose={()=>setCreando(false)} title="Nuevo usuario" dismissible={!guardando}
+        footer={<>
+          <button className="btn ghost" onClick={()=>setCreando(false)}>Cancelar</button>
+          <button className="btn primary" onClick={crearUsuario} disabled={guardando}>{guardando?"Guardando…":"Guardar"}</button>
+        </>}>
+        <div className="form-grid cols-2">
           <FormField label="Nombre completo">
             <input className="input" value={nuevoForm.nombre} onChange={e=>setNuevoForm({...nuevoForm,nombre:e.target.value})}/>
           </FormField>
@@ -172,12 +175,16 @@ export default function AdminUsuariosPage() {
               {usuarios.filter(u=>["gerente","admin"].includes(u.rol)).map((u:any)=><option key={u.id} value={u.id}>{u.nombre}</option>)}
             </select>
           </FormField>
-        </Modal>
-      )}
+        </div>
+      </Dialog>
 
       {/* Modal editar */}
-      {editando && (
-        <Modal title={`Editar · ${editando.nombre}`} onClose={()=>setEditando(null)} onSave={guardar} guardando={guardando}>
+      <Dialog open={!!editando} onClose={()=>setEditando(null)} title={`Editar · ${editando?.nombre ?? ""}`} dismissible={!guardando}
+        footer={<>
+          <button className="btn ghost" onClick={()=>setEditando(null)}>Cancelar</button>
+          <button className="btn primary" onClick={guardar} disabled={guardando}>{guardando?"Guardando…":"Guardar"}</button>
+        </>}>
+        {editando && <div className="form-grid cols-2">
           <FormField label="Nombre">
             <input className="input" value={editando.nombre||""} onChange={e=>setEditando({...editando,nombre:e.target.value})}/>
           </FormField>
@@ -212,8 +219,25 @@ export default function AdminUsuariosPage() {
           <FormField label="Banco">
             <input className="input" value={editando.banco||""} onChange={e=>setEditando({...editando,banco:e.target.value})}/>
           </FormField>
-        </Modal>
-      )}
+        </div>}
+      </Dialog>
+
+      <Dialog open={!!pwdUser} onClose={()=>setPwdUser(null)} size="sm" dismissible={!pwdGuardando}
+        title="Cambiar contraseña" description={pwdUser ? `Para ${pwdUser.nombre}. Tendrá que usarla en su próximo inicio de sesión.` : ""}
+        footer={<>
+          <button className="btn ghost" onClick={()=>setPwdUser(null)}>Cancelar</button>
+          <button className="btn primary" onClick={guardarPassword} disabled={pwdGuardando || pwdNueva.length < 6}>
+            {pwdGuardando ? "Guardando…" : "Guardar contraseña"}
+          </button>
+        </>}>
+        <div className="field">
+          <label htmlFor="pwd-nueva">Nueva contraseña</label>
+          <input id="pwd-nueva" className="input" type="password" autoComplete="new-password" value={pwdNueva}
+            onChange={e=>setPwdNueva(e.target.value)}
+            onKeyDown={e=>{ if (e.key==="Enter") guardarPassword() }}/>
+          <div className="field-hint">Mínimo 6 caracteres.</div>
+        </div>
+      </Dialog>
 
       <input className="input" placeholder="Buscar por nombre, correo o rol…" value={busqueda}
         onChange={e=>setBusqueda(e.target.value)} style={{marginBottom:14,maxWidth:380}}/>
@@ -222,22 +246,22 @@ export default function AdminUsuariosPage() {
         {loading ? (
           <div style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
         ) : (
-          <table className="t">
+          <table className="t cards">
             <thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>División</th><th>Centro</th><th></th></tr></thead>
             <tbody>
               {filtrados.map((u:any)=>(
                 <tr key={u.id}>
-                  <td><div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <td className="cell-title"><div style={{display:"flex",alignItems:"center",gap:10}}>
                     <div style={{width:30,height:30,borderRadius:"50%",background:"var(--surface-2)",border:"1px solid var(--border)",display:"grid",placeItems:"center",fontSize:11,fontWeight:700,flexShrink:0}}>{u.iniciales||"??"}</div>
                     <span style={{fontWeight:500}}>{u.nombre}</span>
                   </div></td>
-                  <td style={{fontSize:12,color:"var(--text-3)"}}>{u.correo}</td>
-                  <td><span style={{fontSize:11,padding:"2px 10px",borderRadius:12,background:ROL_COLOR[u.rol]+"22",color:ROL_COLOR[u.rol],fontWeight:600}}>{u.rol}</span></td>
-                  <td className="mono" style={{fontSize:12}}>{u.division||"4105"}</td>
-                  <td style={{fontSize:12,color:"var(--text-3)"}}>{centros.find((c:any)=>c.id===u.centro_id)?.nombre||"—"}</td>
-                  <td><div style={{display:"flex",gap:4}}>
+                  <td className="cell-sub" style={{fontSize:12,color:"var(--text-3)"}}>{u.correo}</td>
+                  <td data-label="Rol"><span style={{fontSize:11,padding:"2px 10px",borderRadius:12,background:ROL_COLOR[u.rol]+"22",color:ROL_COLOR[u.rol],fontWeight:600}}>{u.rol}</span></td>
+                  <td className="mono" data-label="División" style={{fontSize:12}}>{u.division||"4105"}</td>
+                  <td data-label="Centro" style={{fontSize:12,color:"var(--text-3)"}}>{centros.find((c:any)=>c.id===u.centro_id)?.nombre||"—"}</td>
+                  <td className="cell-actions"><div style={{display:"flex",gap:4}}>
                     <button className="btn sm ghost" onClick={()=>setEditando({...u})}>Editar</button>
-                    <button className="icon-btn" onClick={()=>resetPassword(u.id)} title="Cambiar contraseña" aria-label="Cambiar contraseña"><KeyRound size={15} strokeWidth={1.75}/></button>
+                    <button className="icon-btn" onClick={()=>resetPassword(u.id, u.nombre)} title="Cambiar contraseña" aria-label="Cambiar contraseña"><KeyRound size={15} strokeWidth={1.75}/></button>
                     <button className="icon-btn" style={{color:"var(--danger)"}} onClick={()=>desactivar(u.id,u.nombre)} title="Desactivar usuario" aria-label="Desactivar usuario"><X size={15} strokeWidth={1.75}/></button>
                   </div></td>
                 </tr>

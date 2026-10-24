@@ -90,7 +90,7 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
           <div className="card-title" style={{ marginBottom: 12 }}>
             Comprobantes · {s.cfdi.length}
           </div>
-          <table className="t">
+          <table className="t cards">
             <thead>
               <tr>
                 <th>UUID</th><th>Emisor</th><th>Cuenta / Nombre</th><th>Comentarios</th>
@@ -100,19 +100,19 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
             <tbody>
               {s.cfdi.map((cf: any) => (
                 <tr key={cf.id}>
-                  <td className="mono" style={{ fontSize: 10 }}>
+                  <td className="mono uuid cell-sub" style={{ fontSize: 10 }}>
                     {cf.uuid ? cf.uuid.slice(0, 20) + "…" : "—"}
                   </td>
-                  <td style={{ fontSize: 12 }}>{cf.emisor || "—"}</td>
-                  <td style={{ fontSize: 11 }}>
+                  <td className="cell-title" style={{ fontSize: 12 }}>{cf.emisor || "—"}</td>
+                  <td data-label="Cuenta / Nombre" style={{ fontSize: 11 }}>
                     <div className="mono" style={{ color:"var(--text-3)" }}>{cf.cuenta}</div>
                     {cf.nombre_cuenta && <div style={{ fontSize:10, color:"var(--text-3)", marginTop:1 }}>{cf.nombre_cuenta}</div>}
                   </td>
-                  <td style={{ fontSize: 11, color: cf.observaciones ? "var(--text-2)" : "var(--text-3)", maxWidth:180 }}>
+                  <td data-label="Comentarios" style={{ fontSize: 11, color: cf.observaciones ? "var(--text-2)" : "var(--text-3)", maxWidth:180 }}>
                     {cf.observaciones || <span className="muted">—</span>}
                   </td>
-                  <td className="num">{fmtMXN(parseFloat(cf.total))}</td>
-                  <td>
+                  <td className="num cell-amount" data-label="Total">{fmtMXN(parseFloat(cf.total))}</td>
+                  <td data-label="SAT">
                     {cf.sat_estado && (
                       <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 10, fontWeight: 600,
                         background: cf.sat_estado === "Vigente" ? "var(--success-soft)" : "var(--warn-soft)",
@@ -121,7 +121,7 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
                       </span>
                     )}
                   </td>
-                  <td>
+                  <td className="cell-actions">
                     {cf.archivo_url && (
                       <a href={cf.archivo_url} target="_blank" rel="noopener"
                         className="btn sm ghost" style={{ fontSize: 11 }} title="Descargar" aria-label="Descargar">

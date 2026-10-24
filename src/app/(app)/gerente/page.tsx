@@ -9,6 +9,7 @@ import { TipoBadge } from "@/components/ui/StatusBadge"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { CheckCircle2, Check, RefreshCw, RotateCcw, Inbox, Banknote, Clock } from "lucide-react"
 import { StatCards } from "@/components/ui/StatCards"
+import { Dialog } from "@/components/ui/Dialog"
 import type { Solicitud } from "@/types"
 
 export default function GerenteBandejaPage() {
@@ -18,6 +19,7 @@ export default function GerenteBandejaPage() {
   const [loading, setLoading] = useState(true)
   const [procesando, setProcesando] = useState<string | null>(null)
   const [motivoRechazo, setMotivoRechazo] = useState("")
+  const [motivoError, setMotivoError] = useState(false)
   const [rechazandoId, setRechazandoId] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [rol, setRol] = useState<string>("")
@@ -118,7 +120,7 @@ export default function GerenteBandejaPage() {
   }
 
   const rechazar = async (id: string, devolver = false) => {
-    if (!motivoRechazo.trim()) { alert("Escribe el motivo de rechazo"); return }
+    if (!motivoRechazo.trim()) { setMotivoError(true); return }
     setProcesando(id)
     const sb = createClient()
     const s = solicitudes.find(x => x.id === id)
@@ -170,33 +172,31 @@ export default function GerenteBandejaPage() {
       ]}/>
 
       {/* Modal rechazo */}
-      {rechazandoId && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:100,display:"grid",placeItems:"center"}}>
-          <div className="card" style={{width:400,maxWidth:"90vw"}}>
-            <div style={{fontWeight:700,fontSize:16,marginBottom:14}}>Motivo de rechazo</div>
-            <div style={{marginBottom:10,fontSize:13,color:"var(--text-3)"}}>
-              {solicitudes.find(s=>s.id===rechazandoId)?.concepto}
-            </div>
-            <textarea className="input" rows={3} value={motivoRechazo}
-              onChange={e=>setMotivoRechazo(e.target.value)}
-              placeholder="Explica brevemente el motivo…"
-              style={{resize:"vertical",marginBottom:12}}/>
-            <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-              <button className="btn ghost" onClick={()=>{setRechazandoId(null);setMotivoRechazo("")}}>Cancelar</button>
-              {solicitudes.find(s=>s.id===rechazandoId)?.tipo !== "anticipo" && (
-                <button className="btn" style={{background:"var(--warn)",border:"none",color:"#fff",fontWeight:600}}
-                  onClick={()=>rechazar(rechazandoId, true)} disabled={!!procesando}>
-                  <RotateCcw size={15} strokeWidth={2}/> Devolver para corrección
-                </button>
-              )}
-              <button className="btn" style={{background:"var(--danger)",border:"none",color:"#fff"}}
-                onClick={()=>rechazar(rechazandoId, false)} disabled={!!procesando}>
-                {procesando?"Procesando…":"Rechazar definitivo"}
-              </button>
-            </div>
-          </div>
+      <Dialog open={!!rechazandoId} size="md" dismissible={!procesando}
+        onClose={()=>{setRechazandoId(null);setMotivoRechazo("");setMotivoError(false)}}
+        title="Rechazar solicitud"
+        description={solicitudes.find(s=>s.id===rechazandoId)?.concepto}
+        footer={<>
+          <button className="btn ghost" onClick={()=>{setRechazandoId(null);setMotivoRechazo("");setMotivoError(false)}}>Cancelar</button>
+          {rechazandoId && solicitudes.find(s=>s.id===rechazandoId)?.tipo !== "anticipo" && (
+            <button className="btn warn" onClick={()=>rechazar(rechazandoId, true)} disabled={!!procesando}>
+              <RotateCcw size={15} strokeWidth={2}/> Devolver para corrección
+            </button>
+          )}
+          <button className="btn danger" onClick={()=>rechazandoId && rechazar(rechazandoId, false)} disabled={!!procesando}>
+            {procesando?"Procesando…":"Rechazar definitivo"}
+          </button>
+        </>}>
+        <div className="field">
+          <label htmlFor="motivo-rechazo">Motivo<span className="req">*</span></label>
+          <textarea id="motivo-rechazo" className="input" rows={3} value={motivoRechazo}
+            onChange={e=>{setMotivoRechazo(e.target.value); if (e.target.value.trim()) setMotivoError(false)}}
+            placeholder="Explica brevemente el motivo; la persona lo verá en su solicitud."
+            aria-invalid={motivoError}
+            style={{resize:"vertical", borderColor: motivoError ? "var(--danger)" : undefined}}/>
+          {motivoError && <div className="field-hint" style={{color:"var(--danger)"}}>Escribe el motivo para continuar.</div>}
         </div>
-      )}
+      </Dialog>
 
       {/* Lista */}
       {loading ? (

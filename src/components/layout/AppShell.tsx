@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { UsuarioProvider } from "@/lib/UsuarioContext"
 import { useTheme } from "@/contexts/ThemeContext"
+import { ConfirmProvider } from "@/components/ui/Confirm"
 import type { LucideIcon } from "lucide-react"
 import {
   Home, LayoutDashboard, CheckCircle2, ShieldCheck, Banknote, HandCoins,
@@ -358,7 +359,7 @@ export function AppShell({ user, children }: Props) {
           </div>
         )}
         <div key={pathname} className="page-enter" style={{ maxWidth: 1280, margin: "0 auto" }}>
-          <UsuarioProvider usuario={user}>{children}</UsuarioProvider>
+          <UsuarioProvider usuario={user}><ConfirmProvider>{children}</ConfirmProvider></UsuarioProvider>
         </div>
       </main>
 
