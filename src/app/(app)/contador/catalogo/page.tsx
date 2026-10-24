@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { SkeletonTable } from "@/components/ui/Skeleton"
 
 export default function ContadorCatalogoPage() {
   const [cuentas, setCuentas] = useState<any[]>([])
@@ -32,7 +33,7 @@ export default function ContadorCatalogoPage() {
         </select>
       </div>
       <div className="card" style={{padding:0,overflow:"auto"}}>
-        {loading ? <div style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div> : (
+        {loading ? <SkeletonTable rows={8} cols={3}/> : (
           <table className="t cards" style={{minWidth:650}}>
             <thead><tr><th>Cuenta</th><th>Nombre</th><th>Grupo</th></tr></thead>
             <tbody>{filtradas.map((c:any)=>(

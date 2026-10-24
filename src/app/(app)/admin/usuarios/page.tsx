@@ -7,6 +7,7 @@ import { Toast } from "@/components/ui/Toast"
 import { Dialog } from "@/components/ui/Dialog"
 import { useConfirm } from "@/components/ui/Confirm"
 import { Plus, KeyRound, X } from "lucide-react"
+import { SkeletonList } from "@/components/ui/Skeleton"
 
 const ROLES = ["usuario","gerente","tesoreria","contador","admin","demo"]
 
@@ -244,7 +245,7 @@ export default function AdminUsuariosPage() {
 
       <div className="card" style={{padding:0,overflow:"hidden"}}>
         {loading ? (
-          <div style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
+          <SkeletonList rows={6} card={false}/>
         ) : (
           <table className="t cards">
             <thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>División</th><th>Centro</th><th></th></tr></thead>

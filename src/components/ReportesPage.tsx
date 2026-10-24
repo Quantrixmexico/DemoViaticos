@@ -8,8 +8,11 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, CartesianGrid, PieChart, Pie, Cell, Legend,
 } from "recharts"
+import { CHART_COLORS, AGING_COLORS, ChartTooltip, ChartLegend, axisTick, gridProps, barRadius, barCursor, lineCursor } from "@/components/ui/chart"
+import { SkeletonCards, SkeletonTable } from "@/components/ui/Skeleton"
 
-const COLORS = ["#c5f24d","#60a5fa","#f97316","#c084fc","#4ade80","#fb923c","#38bdf8","#a78bfa"]
+const COLORS = CHART_COLORS
+const SERIES = { anticipos: "Anticipos", reembolsos: "Reembolsos", comprobaciones: "Comprobaciones" }
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]
 const MESES_LARGOS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 
@@ -243,10 +246,10 @@ export default function ReportesPage() {
   // ── Antigüedad ────────────────────────────────────────────────────────
   const antiguedad = useMemo(() => {
     const buckets = [
-      { label:"0-15 días",  rango:[0,15],    count:0, monto:0, color:"var(--success)" },
-      { label:"16-30 días", rango:[16,30],   count:0, monto:0, color:"#fbbf24" },
-      { label:"31-60 días", rango:[31,60],   count:0, monto:0, color:"var(--warn)" },
-      { label:"60+ días",   rango:[61,9999], count:0, monto:0, color:"var(--danger)" },
+      { label:"0-15 días",  rango:[0,15],    count:0, monto:0, color:AGING_COLORS[0] },
+      { label:"16-30 días", rango:[16,30],   count:0, monto:0, color:AGING_COLORS[1] },
+      { label:"31-60 días", rango:[31,60],   count:0, monto:0, color:AGING_COLORS[2] },
+      { label:"60+ días",   rango:[61,9999], count:0, monto:0, color:AGING_COLORS[3] },
     ]
     solicitudes.filter(s => s.tipo==="anticipo" && parseFloat(s.saldo_pendiente)>0 && ["liberado","parcial"].includes(s.status))
       .forEach(s => {
@@ -265,7 +268,16 @@ export default function ReportesPage() {
     { id:"antiguedad",label:"Antigüedad",    icon: Clock },
   ]
 
-  if (loading) return <div style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando reportes…</div>
+  if (loading) return (
+    <>
+      <div className="page-head">
+        <div><h1 className="page-title">Reportes</h1><div className="page-sub">Cargando datos del periodo…</div></div>
+      </div>
+      <SkeletonCards count={4} h={96} min={160}/>
+      <div style={{height:16}}/>
+      <SkeletonTable rows={6} cols={4}/>
+    </>
+  )
 
   return (
     <>
@@ -308,7 +320,7 @@ export default function ReportesPage() {
           {filtroMes !== "todos" && (
             <div className="card" style={{padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",background:"var(--accent-soft)",borderColor:"var(--accent)"}}>
               <div style={{fontSize:13,color:"var(--accent)",fontWeight:600}}>
-                <Calendar size={14} strokeWidth={2} color="var(--accent, #c5f24d)" style={{marginRight:6,verticalAlign:"middle"}}/>Filtrando por {MESES_LARGOS[parseInt(filtroMes)]} {anio}
+                <Calendar size={14} strokeWidth={2} color="var(--accent)" style={{marginRight:6,verticalAlign:"middle"}}/>Filtrando por {MESES_LARGOS[parseInt(filtroMes)]} {anio}
               </div>
               <button className="btn sm ghost" onClick={()=>setFiltroMes("todos")}>
                 Ver todo el año
@@ -330,12 +342,8 @@ export default function ReportesPage() {
           {/* Línea interactiva: clic en mes filtra KPIs */}
           <div className="card">
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
-              <div className="card-title" style={{margin:0,textTransform:"uppercase",fontSize:11,letterSpacing:".05em"}}>
-                Gastos por mes — {anio}
-              </div>
-              <div style={{fontSize:11,color:"var(--text-3)"}}>
-                Haz clic en un mes para filtrar los KPIs
-              </div>
+              <div className="card-title" style={{margin:0}}>Gastos por mes, {anio}</div>
+              <div style={{fontSize:12,color:"var(--text-3)"}}>Toca un mes para filtrar las cifras</div>
             </div>
             <ResponsiveContainer width="100%" height={320}>
               <LineChart data={porMes} margin={{left:-10,right:10}}
@@ -345,7 +353,7 @@ export default function ReportesPage() {
                     if (idx >= 0) setFiltroMes(filtroMes === String(idx) ? "todos" : String(idx))
                   }
                 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)"/>
+                <CartesianGrid {...gridProps}/>
                 <XAxis dataKey="mes" tick={(props:any) => {
                   const m = MESES.indexOf(props.payload.value)
                   const isSelected = String(m) === filtroMes
@@ -359,22 +367,19 @@ export default function ReportesPage() {
                       }}>{props.payload.value}</text>
                   )
                 }}/>
-                <YAxis tick={{fontSize:11,fill:"var(--text-3)"}} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
-                <Tooltip
-                  formatter={(v:any)=>fmtMXN(v)}
-                  contentStyle={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}
-                  cursor={{stroke:"var(--accent)",strokeWidth:1,strokeDasharray:"3 3"}}/>
-                <Legend wrapperStyle={{fontSize:12,cursor:"pointer"}}/>
-                <Line type="monotone" dataKey="anticipos"      stroke="var(--accent)" strokeWidth={2}
+                <YAxis tick={axisTick} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
+                <Tooltip content={<ChartTooltip formatter={fmtMXN} names={SERIES}/>} cursor={lineCursor}/>
+                <Legend content={<ChartLegend names={SERIES}/>}/>
+                <Line type="monotone" dataKey="anticipos"      stroke="var(--accent)" strokeWidth={2.5} dot={false}
                   activeDot={{r:7, onClick:(_:any,e:any) => {
                     const payload = e?.payload || e
                     const idx = MESES.indexOf(payload?.mes || payload?.activeLabel)
                     if (idx >= 0) setFiltroMes(filtroMes === String(idx) ? "todos" : String(idx))
                   }}}/>
-                <Line type="monotone" dataKey="reembolsos"     stroke="#60a5fa"       strokeWidth={2}
-                  activeDot={{r:7}}/>
-                <Line type="monotone" dataKey="comprobaciones" stroke="#c084fc"       strokeWidth={2}
-                  activeDot={{r:7}}/>
+                <Line type="monotone" dataKey="reembolsos"     stroke="var(--st-blue)"   strokeWidth={2.5} dot={false}
+                  activeDot={{r:6}}/>
+                <Line type="monotone" dataKey="comprobaciones" stroke="var(--st-violet)" strokeWidth={2.5} dot={false}
+                  activeDot={{r:6}}/>
               </LineChart>
             </ResponsiveContainer>
             <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:12,paddingTop:12,borderTop:"1px solid var(--border)"}}>
@@ -415,7 +420,7 @@ export default function ReportesPage() {
               Total: <strong style={{color:"var(--accent)"}}>{fmtMXN(porArea.reduce((a,x)=>a+x.total,0))}</strong>
             </span>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(300px, 1fr))",gap:16}}>
             <div className="card">
               <div className="card-title" style={{marginBottom:16}}>Distribución por área</div>
               {porArea.length===0 ? (
@@ -423,10 +428,11 @@ export default function ReportesPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
-                    <Pie data={porArea.slice(0,8)} dataKey="total" nameKey="label" cx="50%" cy="50%" outerRadius={100} label={({percent}:{percent?:number})=>`${((percent||0)*100).toFixed(0)}%`}>
+                    <Pie data={porArea.slice(0,8)} dataKey="total" nameKey="label" cx="50%" cy="50%" outerRadius={100} innerRadius={56} paddingAngle={2} stroke="var(--surface)" strokeWidth={2}
+                      label={({percent}:{percent?:number})=>`${((percent||0)*100).toFixed(0)}%`}>
                       {porArea.slice(0,8).map((_:any,i:number)=><Cell key={i} fill={COLORS[i%COLORS.length]}/>)}
                     </Pie>
-                    <Tooltip formatter={(v:any)=>fmtMXN(v)} contentStyle={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}/>
+                    <Tooltip content={<ChartTooltip formatter={fmtMXN}/>} cursor={barCursor}/>
                   </PieChart>
                 </ResponsiveContainer>
               )}
@@ -438,10 +444,10 @@ export default function ReportesPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={porArea.slice(0,8)} layout="vertical" margin={{left:0}}>
-                    <XAxis type="number" tick={{fontSize:10,fill:"var(--text-3)"}} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
-                    <YAxis type="category" dataKey="label" tick={{fontSize:10,fill:"var(--text-3)"}} width={120}/>
-                    <Tooltip formatter={(v:any)=>fmtMXN(v)} contentStyle={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}/>
-                    <Bar dataKey="total" fill="var(--accent)" radius={[0,4,4,0]}/>
+                    <XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
+                    <YAxis type="category" dataKey="label" tick={axisTick} axisLine={false} tickLine={false} width={120}/>
+                    <Tooltip content={<ChartTooltip formatter={fmtMXN}/>} cursor={barCursor}/>
+                    <Bar dataKey="total" fill="var(--accent)" radius={barRadius} maxBarSize={22}/>
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -510,10 +516,10 @@ export default function ReportesPage() {
             ) : (
               <ResponsiveContainer width="100%" height={Math.max(280, porCuenta.length*32)}>
                 <BarChart data={porCuenta.slice(0,15)} layout="vertical" margin={{left:0,right:20}}>
-                  <XAxis type="number" tick={{fontSize:10,fill:"var(--text-3)"}} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
-                  <YAxis type="category" dataKey="nombre" tick={{fontSize:10,fill:"var(--text-3)"}} width={140}/>
-                  <Tooltip formatter={(v:any)=>fmtMXN(v)} contentStyle={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}/>
-                  <Bar dataKey="total" fill="var(--accent)" radius={[0,4,4,0]}/>
+                  <XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
+                  <YAxis type="category" dataKey="nombre" tick={axisTick} axisLine={false} tickLine={false} width={140}/>
+                  <Tooltip content={<ChartTooltip formatter={fmtMXN}/>} cursor={barCursor}/>
+                  <Bar dataKey="total" fill="var(--accent)" radius={barRadius} maxBarSize={22}/>
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -578,10 +584,10 @@ export default function ReportesPage() {
             ) : (
               <ResponsiveContainer width="100%" height={Math.max(280, porUsuario.length*32)}>
                 <BarChart data={porUsuario.slice(0,20)} layout="vertical" margin={{left:0,right:20}}>
-                  <XAxis type="number" tick={{fontSize:10,fill:"var(--text-3)"}} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
-                  <YAxis type="category" dataKey="nombre" tick={{fontSize:10,fill:"var(--text-3)"}} width={140}/>
-                  <Tooltip formatter={(v:any)=>fmtMXN(v)} contentStyle={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}/>
-                  <Bar dataKey="total" fill="var(--accent)" radius={[0,4,4,0]}/>
+                  <XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} tickFormatter={v=>`$${(v/1000).toFixed(0)}k`}/>
+                  <YAxis type="category" dataKey="nombre" tick={axisTick} axisLine={false} tickLine={false} width={140}/>
+                  <Tooltip content={<ChartTooltip formatter={fmtMXN}/>} cursor={barCursor}/>
+                  <Bar dataKey="total" fill="var(--accent)" radius={barRadius} maxBarSize={22}/>
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -713,7 +719,7 @@ export default function ReportesPage() {
                           fontWeight:600,
                           color: d.maxDias > 60 ? "var(--danger)"
                               : d.maxDias > 30 ? "var(--warn)"
-                              : d.maxDias > 15 ? "#fbbf24"
+                              : d.maxDias > 15 ? "var(--st-orange)"
                               : "var(--success)",
                         }}>
                           {d.maxDias}d

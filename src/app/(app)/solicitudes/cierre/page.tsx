@@ -6,6 +6,7 @@ import { fmtMXN, fmtFecha } from "@/lib/format"
 import type { Solicitud } from "@/types"
 import { Paperclip, Send } from "lucide-react"
 import { Toast } from "@/components/ui/Toast"
+import { SkeletonPage } from "@/components/ui/Skeleton"
 
 function CierreInner() {
   const router = useRouter()
@@ -154,6 +155,6 @@ function CierreInner() {
 }
 
 export default function CierrePage() {
-  return <Suspense fallback={<div style={{padding:40,color:"var(--text-3)"}}>Cargando…</div>}><CierreInner/></Suspense>
+  return <Suspense fallback={<SkeletonPage/>}><CierreInner/></Suspense>
 }
 

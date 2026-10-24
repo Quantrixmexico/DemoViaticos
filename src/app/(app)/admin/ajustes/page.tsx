@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { clearAjustesCache } from "@/lib/ajustes"
 import { Toast } from "@/components/ui/Toast"
+import { Skeleton } from "@/components/ui/Skeleton"
 
 interface Ajuste { clave: string; valor: string; descripcion?: string }
 
@@ -52,7 +53,18 @@ export default function AjustesPage() {
       <Toast message={toast}/>
 
       {loading ? (
-        <div className="card" style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
+        <div role="status" aria-label="Cargando" style={{display:"grid",gap:14,maxWidth:600}}>
+          {Array.from({length:4}).map((_, i) => (
+            <div key={i} className="card" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:14}}>
+              <div style={{flex:1,minWidth:0,display:"grid",gap:10}}>
+                <Skeleton w={`${40 + ((i * 17) % 25)}%`} h={14}/>
+                <Skeleton w={`${60 + ((i * 13) % 30)}%`} h={11}/>
+                <Skeleton w={200} h={38} r={10}/>
+              </div>
+              <Skeleton w={84} h={34} r={10}/>
+            </div>
+          ))}
+        </div>
       ) : (
         <div style={{display:"grid",gap:14,maxWidth:600}}>
           {Object.values(ajustes).map(a => (

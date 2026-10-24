@@ -7,6 +7,7 @@ import { SegmentedNav, TESORERIA_TABS } from "@/components/ui/SegmentedNav"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { CheckCircle2, Check, PiggyBank } from "lucide-react"
 import type { Solicitud } from "@/types"
+import { SkeletonList } from "@/components/ui/Skeleton"
 
 export default function TesoreriaLiberarPage() {
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([])
@@ -164,7 +165,7 @@ export default function TesoreriaLiberarPage() {
       )}
 
       {loading ? (
-        <div className="card" style={{ padding:40, textAlign:"center", color:"var(--text-3)" }}>Cargando…</div>
+        <SkeletonList rows={5}/>
       ) : solicitudes.length === 0 ? (
         <EmptyState icon={CheckCircle2} tone="success" title="Todo liberado" text="No hay pagos pendientes de dispersión."/>
       ) : (

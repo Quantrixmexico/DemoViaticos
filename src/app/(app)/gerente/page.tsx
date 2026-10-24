@@ -11,6 +11,7 @@ import { CheckCircle2, Check, RefreshCw, RotateCcw, Inbox, Banknote, Clock } fro
 import { StatCards } from "@/components/ui/StatCards"
 import { Dialog } from "@/components/ui/Dialog"
 import type { Solicitud } from "@/types"
+import { SkeletonList } from "@/components/ui/Skeleton"
 
 export default function GerenteBandejaPage() {
   const router = useRouter()
@@ -200,7 +201,7 @@ export default function GerenteBandejaPage() {
 
       {/* Lista */}
       {loading ? (
-        <div className="card" style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
+        <SkeletonList rows={5}/>
       ) : solicitudes.length===0 ? (
         <EmptyState icon={CheckCircle2} tone="success" title="Bandeja al día" text="No hay solicitudes pendientes de autorizar"/>
       ) : (
