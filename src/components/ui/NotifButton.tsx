@@ -1,14 +1,19 @@
 "use client"
 import { useState, useEffect } from "react"
 import { triggerNotifSetup } from "@/components/ui/PushNotifications"
-import { Bell, BellOff, BellRing } from "lucide-react"
+import { Bell, BellOff, BellRing, Send } from "lucide-react"
 import { pushDisponible } from "@/lib/firebase-public"
+import { useUsuario } from "@/lib/UsuarioContext"
+import { Toast } from "@/components/ui/Toast"
 
 type Perm = "default" | "granted" | "denied" | "unsupported"
 
 /** Estado de las notificaciones push de este dispositivo y botón para activarlas. */
 export function NotifButton() {
   const [perm, setPerm] = useState<Perm>("default")
+  const [aviso, setAviso] = useState<string | null>(null)
+  const [probando, setProbando] = useState(false)
+  const usuario = useUsuario()
 
   useEffect(() => {
     // Lee el permiso del navegador al montar; cambia solo por acción del usuario
@@ -19,6 +24,32 @@ export function NotifButton() {
   const handleClick = () => {
     localStorage.removeItem("notif-status") // permite volver a mostrar el aviso
     triggerNotifSetup()
+  }
+
+  // Envía una push al propio usuario y muestra la respuesta del servidor:
+  // sirve para diagnosticar sin abrir la consola del navegador.
+  const enviarPrueba = async () => {
+    if (!usuario.id || probando) return
+    setProbando(true)
+    try {
+      const res = await fetch("/api/push/notify", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userIds: [usuario.id], title: "Notificación de prueba", body: "Si ves esto, las push funcionan en este dispositivo.", path: "/perfil" }),
+      })
+      const data = await res.json().catch(() => ({})) as { ok?: boolean; enviados?: number; error?: string }
+      if (res.ok && data.ok) {
+        setAviso(data.enviados ? `✓ Enviada a ${data.enviados} dispositivo${data.enviados === 1 ? "" : "s"}. Debería aparecer en unos segundos.` : "⚠ El servidor no encontró ningún dispositivo registrado para tu usuario. Pulsa Volver a vincular.")
+      } else if (res.status === 503) {
+        setAviso("⚠ El servidor no tiene configurado el envío (falta FIREBASE_SERVICE_ACCOUNT).")
+      } else {
+        setAviso(`⚠ Error ${res.status}: ${data.error || "sin detalle"}`)
+      }
+    } catch (e) {
+      setAviso(`⚠ No se pudo contactar al servidor: ${(e as Error).message}`)
+    } finally {
+      setProbando(false)
+      setTimeout(() => setAviso(null), 7000)
+    }
   }
 
   const estado = {
@@ -41,7 +72,13 @@ export function NotifButton() {
         </div>
       </div>
       {perm === "default" && <button onClick={handleClick} className="btn primary sm"><Bell size={14} strokeWidth={2}/> Activar</button>}
-      {perm === "granted" && <button onClick={handleClick} className="btn sm">Volver a vincular</button>}
+      {perm === "granted" && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button onClick={enviarPrueba} className="btn primary sm" disabled={probando}><Send size={14} strokeWidth={2}/> {probando ? "Enviando…" : "Enviar prueba"}</button>
+          <button onClick={handleClick} className="btn sm">Volver a vincular</button>
+        </div>
+      )}
+      {aviso && <Toast message={aviso}/>}
     </div>
   )
 }
