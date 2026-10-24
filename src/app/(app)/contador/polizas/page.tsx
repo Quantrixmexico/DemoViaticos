@@ -7,6 +7,7 @@ import { generarPolizas, agruparPorPoliza } from "@/lib/polizas"
 import { useCatalogos } from "@/hooks/useCatalogos"
 import type { Solicitud, PolizaLinea } from "@/types"
 import { Download, CheckCircle2, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react"
+import { StatCards } from "@/components/ui/StatCards"
 
 export default function ContadorPolizasPage() {
   const { catalogoGastos, centros, usuarios, loaded } = useCatalogos()
@@ -109,18 +110,11 @@ export default function ContadorPolizasPage() {
 
       {/* Summary */}
       {polizas.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 16 }}>
-          {[
-            { label: "Pólizas", value: polizas.length },
-            { label: "Total debe", value: fmtMXN(polizas.reduce((a, p) => a + p.debe, 0)) },
-            { label: "Total haber", value: fmtMXN(polizas.reduce((a, p) => a + p.haber, 0)) },
-          ].map(k => (
-            <div key={k.label} className="card" style={{ textAlign: "center", padding: "12px" }}>
-              <div style={{ fontSize: 20, fontWeight: 700 }}>{k.value}</div>
-              <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>{k.label}</div>
-            </div>
-          ))}
-        </div>
+        <StatCards items={[
+          { label: "Pólizas", value: polizas.length },
+          { label: "Total debe", value: fmtMXN(polizas.reduce((a, p) => a + p.debe, 0)) },
+          { label: "Total haber", value: fmtMXN(polizas.reduce((a, p) => a + p.haber, 0)) },
+        ]}/>
       )}
 
       {/* Polizas list */}

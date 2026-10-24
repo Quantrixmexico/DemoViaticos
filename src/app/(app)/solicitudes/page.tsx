@@ -6,7 +6,9 @@ import { createClient } from "@/lib/supabase/client"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import type { Solicitud, SolicitudStatus } from "@/types"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, Plus, Inbox, SearchX } from "lucide-react"
+import { StatCards } from "@/components/ui/StatCards"
+import { EmptyState } from "@/components/ui/EmptyState"
 
 export default function MisSolicitudesPage() {
   const router = useRouter()
@@ -67,23 +69,16 @@ export default function MisSolicitudesPage() {
           <div className="page-sub">Historial completo · {solicitudes.length} registros</div>
         </div>
         <button className="btn primary" onClick={() => router.push("/solicitudes/anticipo")}>
-          + Nuevo anticipo
+          <Plus size={15} strokeWidth={2.25}/> Nuevo anticipo
         </button>
       </div>
 
       {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 16 }}>
-        {[
-          { label: "Saldo por comprobar", value: fmtMXN(totalAbierto), color: totalAbierto > 0 ? "var(--warn)" : "var(--success)" },
-          { label: "En proceso", value: String(enProceso), color: undefined },
-          { label: "Rechazadas", value: String(rechazadas), color: rechazadas > 0 ? "var(--danger)" : undefined },
-        ].map(k => (
-          <div key={k.label} className="card" style={{ textAlign: "center", padding: "14px 12px" }}>
-            <div style={{ fontSize: 22, fontWeight: 700, fontVariantNumeric: "tabular-nums", color: k.color }}>{k.value}</div>
-            <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 3 }}>{k.label}</div>
-          </div>
-        ))}
-      </div>
+      <StatCards loading={loading} items={[
+        { label: "Saldo por comprobar", value: fmtMXN(totalAbierto), color: totalAbierto > 0 ? "var(--warn)" : "var(--success)" },
+        { label: "En proceso", value: enProceso },
+        { label: "Rechazadas", value: rechazadas, color: rechazadas > 0 ? "var(--danger)" : undefined },
+      ]}/>
 
       {/* Filtros */}
       <div className="row" style={{ marginBottom: 14, gap: 8, flexWrap: "wrap" }}>
@@ -108,7 +103,10 @@ export default function MisSolicitudesPage() {
         {loading ? (
           <div style={{ padding: 40, textAlign: "center", color: "var(--text-3)" }}>Cargando solicitudes…</div>
         ) : filtradas.length === 0 ? (
-          <div style={{ padding: 40, textAlign: "center", color: "var(--text-3)" }}>Sin solicitudes con ese filtro</div>
+          solicitudes.length === 0
+            ? <EmptyState variant="plain" icon={Inbox} title="Aún no tienes solicitudes" text="Pide un anticipo o registra un reembolso y aparecerá aquí."
+                action={<button className="btn primary" onClick={() => router.push("/solicitudes/anticipo")}><Plus size={15} strokeWidth={2.25}/> Nuevo anticipo</button>}/>
+            : <EmptyState variant="plain" compact icon={SearchX} title="Sin resultados" text="Ninguna solicitud coincide con ese filtro."/>
         ) : (
           <table className="t">
             <thead>
