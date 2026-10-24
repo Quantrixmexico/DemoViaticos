@@ -1,4 +1,5 @@
 "use client"
+import { BUCKET_COMPROBANTES } from "@/lib/archivos"
 import { AlertTriangle, AlarmClock, Send, X, UploadCloud } from "lucide-react"
 import { Toast } from "@/components/ui/Toast"
 import { useState, useRef, useCallback } from "react"
@@ -59,11 +60,8 @@ export default function NuevoReembolsoPage() {
       let archivoUrl: string | null = null
       const ext = file.name.split(".").pop()
       const path = `${user.id}/${Date.now()}.${ext}`
-      const { data: uploadData } = await sb.storage.from("comprobantes").upload(path, file, { upsert: true })
-      if (uploadData) {
-        const { data: { publicUrl } } = sb.storage.from("comprobantes").getPublicUrl(path)
-        archivoUrl = publicUrl
-      }
+      const { data: uploadData } = await sb.storage.from(BUCKET_COMPROBANTES).upload(path, file, { upsert: true })
+      if (uploadData) archivoUrl = uploadData.path // ruta en el bucket privado; se firma al mostrarla
 
       if (isXml) {
         const text = await file.text()

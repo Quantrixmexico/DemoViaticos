@@ -206,12 +206,10 @@ begin
 end $$;
 
 -- ── Storage: bucket "comprobantes" ──────────────────────────────────
--- PENDIENTE DE CÓDIGO: la app guarda URLs públicas (getPublicUrl) en
--- comprobantes_cfdi.archivo_url. Al hacer el bucket privado hay que servir
--- los archivos con URLs firmadas (createSignedUrl) al mostrarlos. Mientras
--- tanto, estas políticas al menos impiden subir o listar sin sesión.
--- Descomenta cuando la app use URLs firmadas:
--- update storage.buckets set public = false where id = 'comprobantes';
+-- Bucket privado: la app guarda la ruta del archivo en comprobantes_cfdi.archivo_url
+-- y genera URLs firmadas al mostrarlo (src/lib/archivos.ts). Las filas antiguas que
+-- guardan la URL pública siguen funcionando: la app extrae la ruta de esa URL.
+update storage.buckets set public = false where id = 'comprobantes';
 
 drop policy if exists comprobantes_read on storage.objects;
 create policy comprobantes_read on storage.objects for select to authenticated

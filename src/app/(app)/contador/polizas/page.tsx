@@ -1,5 +1,6 @@
 "use client"
 
+import { ArchivoLink } from "@/components/ui/ArchivoLink"
 import { useState, useEffect, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN } from "@/lib/format"
@@ -206,10 +207,9 @@ export default function ContadorPolizasPage() {
                           </div>
                           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                             {archivos.map((a: any, i: number) => (
-                              <a key={i} href={a.url} target="_blank" rel="noopener"
-                                className="btn sm ghost" style={{ fontSize: 11 }}>
+                              <ArchivoLink key={i} archivo={a.url} style={{ fontSize: 11 }} title={a.emisor || a.nombre || `Archivo ${i + 1}`}>
                                 <Download size={14} strokeWidth={2}/> {a.emisor || a.nombre || `Archivo ${i + 1}`}
-                              </a>
+                              </ArchivoLink>
                             ))}
                           </div>
                         </div>

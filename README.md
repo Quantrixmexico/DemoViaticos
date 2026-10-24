@@ -45,7 +45,7 @@ Sin `PUSH_WORKER_URL` y `PUSH_WORKER_SECRET` la app funciona, pero no envía pus
 - **Rol `demo`.** Solo puede dar de alta usuarios con rol `usuario`; no restablece contraseñas ni borra (`src/lib/permisos.ts` y `api/admin/users`).
 - **Push.** El navegador llama a `/api/push/notify`; el secreto del Worker nunca sale del servidor. El registro del token siempre se asocia al usuario con sesión.
 - **Service worker.** Solo cachea recursos estáticos y `/login`; las páginas con sesión no se guardan en el dispositivo.
-- **Pendiente.** Hacer privado el bucket `comprobantes` requiere servir los archivos con URLs firmadas en lugar de `getPublicUrl` (ver nota al final de `policies.sql`).
+- **Archivos.** El bucket `comprobantes` es privado. En `archivo_url` se guarda la ruta dentro del bucket y los enlaces se generan con URLs firmadas (`src/lib/archivos.ts`, `ArchivoLink`). Las filas antiguas con URL pública se resuelven igual.
 
 ## Personalizar la marca
 

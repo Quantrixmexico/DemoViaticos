@@ -1,10 +1,11 @@
 "use client"
+import { ArchivoLink } from "@/components/ui/ArchivoLink"
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
 import Link from "next/link"
-import { Search, User, Calendar, Banknote, Download, Landmark, History } from "lucide-react"
+import { Search, User, Calendar, Banknote, Landmark, History } from "lucide-react"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { Timeline } from "@/components/ui/Timeline"
 
@@ -111,7 +112,7 @@ export default function TrazabilidadPage() {
                       <td data-label="SAT">{cf.sat_estado&&<span style={{fontSize:10,padding:"2px 6px",borderRadius:8,
                         background:cf.sat_estado==="Vigente"?"var(--success-soft)":"var(--warn-soft)",
                         color:cf.sat_estado==="Vigente"?"var(--success)":"var(--warn)"}}>{cf.sat_estado}</span>}</td>
-                      <td className="cell-actions">{cf.archivo_url&&<a href={cf.archivo_url} target="_blank" rel="noopener" className="btn sm ghost" style={{fontSize:11}} title="Descargar" aria-label="Descargar"><Download size={14} strokeWidth={2}/></a>}</td>
+                      <td className="cell-actions">{cf.archivo_url&&<ArchivoLink archivo={cf.archivo_url} style={{fontSize:11}}/>}</td>
                     </tr>
                   ))}
                 </tbody>
