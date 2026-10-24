@@ -16,9 +16,10 @@ Sistema de gestión de viáticos y gastos corporativos: anticipos, reembolsos, c
 npm install
 npm run dev          # http://localhost:3000
 npm run lint
-npm run build        # build de Next
-npm run preview      # build de OpenNext y vista previa local del Worker
-npm run deploy       # build de OpenNext y despliegue a Cloudflare
+npm run build        # build de Next + OpenNext (genera .open-next/, lo que sube Cloudflare)
+npm run build:next   # solo next build, para comprobar que compila
+npm run preview      # build y vista previa local del Worker
+npm run deploy       # build y despliegue a Cloudflare
 ```
 
 Variables de entorno necesarias (en `.env.local` para desarrollo y como secretos del Worker en producción):
@@ -98,4 +99,4 @@ src/contexts          ThemeContext (modo claro/oscuro y acento)
 ## Notas de despliegue
 
 - La caché persistente de Turbopack está desactivada en `next.config.ts` (`turbopackFileSystemCacheForBuild/Dev: false`): con ella activa, Cloudflare Workers Builds y `next dev` servían un `globals.css` anterior tras editarlo.
-- Cloudflare construye y despliega `main` en cada merge. Los builds de ramas (vista previa) fallan por configuración del proyecto en Cloudflare, no por el código; si molestan en los PR, desactívalos en Workers → Settings → Builds.
+- Cloudflare Workers Builds ejecuta `npm run build` y después `npx wrangler versions upload`, que necesita `.open-next/worker.js`. Por eso `npm run build` corre OpenNext y no solo `next build`. Las variables `NEXT_PUBLIC_*` deben estar en Settings → Build → Variables, porque se incrustan al compilar.
