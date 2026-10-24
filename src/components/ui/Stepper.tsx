@@ -1,6 +1,7 @@
 "use client"
 import { fmtFecha } from "@/lib/format"
 import type { SolicitudStatus } from "@/types"
+import { Check, X } from "lucide-react"
 
 const STEPS = [
   { key: "solicitado", label: "Solicitado" },
@@ -19,7 +20,7 @@ export function Stepper({ status, dates }: { status: SolicitudStatus; dates?: Re
     return (
       <div className="stepper">
         <div className="step done"><div className="dot">1</div><div className="label">Solicitado</div></div>
-        <div className="step rejected"><div className="dot">✕</div><div className="label">Rechazado</div></div>
+        <div className="step rejected"><div className="dot"><X size={13} strokeWidth={3}/></div><div className="label">Rechazado</div></div>
       </div>
     )
   }
@@ -30,7 +31,7 @@ export function Stepper({ status, dates }: { status: SolicitudStatus; dates?: Re
         const cls = i < cur ? "done" : i === cur ? "active" : ""
         return (
           <div key={s.key} className={`step ${cls}`}>
-            <div className="dot">{i < cur ? "✓" : i + 1}</div>
+            <div className="dot">{i < cur ? <Check size={13} strokeWidth={3}/> : i + 1}</div>
             <div className="label">{s.label}</div>
             {dates?.[s.key] && <div className="meta">{fmtFecha(dates[s.key])}</div>}
           </div>

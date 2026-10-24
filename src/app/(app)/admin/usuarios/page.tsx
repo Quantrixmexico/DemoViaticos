@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useUsuario } from "@/lib/UsuarioContext"
 import { esDemo, MSG_DEMO_BLOQUEADO } from "@/lib/permisos"
+import { Toast } from "@/components/ui/Toast"
+import { Plus, KeyRound, X } from "lucide-react"
 
 const ROLES = ["usuario","gerente","tesoreria","contador","admin","demo"]
 
@@ -70,7 +72,7 @@ export default function AdminUsuariosPage() {
 
   const guardar = async () => {
     if (!editando) return
-    if (!editando.centro_id) { alert("⚠ Debe asignar un Centro de beneficio al usuario"); return }
+    if (!editando.centro_id) { alert("Debe asignar un Centro de beneficio al usuario"); return }
     setGuardando(true)
     const sb = createClient()
     const row = {
@@ -87,8 +89,8 @@ export default function AdminUsuariosPage() {
 
   const crearUsuario = async () => {
     const { nombre,correo,password,rol,centro_id,gerente_id,division } = nuevoForm
-    if (!centro_id) { alert("⚠ Debe asignar un Centro de beneficio al usuario"); return }
-    if (!nombre.trim() || !correo.trim() || !password) { alert("⚠ Nombre, correo y contraseña son obligatorios"); return }
+    if (!centro_id) { alert("Debe asignar un Centro de beneficio al usuario"); return }
+    if (!nombre.trim() || !correo.trim() || !password) { alert("Nombre, correo y contraseña son obligatorios"); return }
     if (!nombre.trim()||!correo.trim()||!password.trim()) { showToast("⚠ Nombre, correo y contraseña requeridos"); return }
     setGuardando(true)
     try {
@@ -131,12 +133,10 @@ export default function AdminUsuariosPage() {
     <>
       <div className="page-head">
         <div><h1 className="page-title">Usuarios</h1><div className="page-sub">{usuarios.length} registrados</div></div>
-        <button className="btn primary" onClick={()=>setCreando(true)}>+ Nuevo usuario</button>
+        <button className="btn primary" onClick={()=>setCreando(true)}><Plus size={15} strokeWidth={2}/> Nuevo usuario</button>
       </div>
 
-      {toast && <div style={{padding:"10px 14px",borderRadius:8,marginBottom:12,fontSize:13,
-        background:toast.startsWith("✓")?"var(--success-soft)":"var(--danger-soft)",
-        color:toast.startsWith("✓")?"var(--success)":"var(--danger)"}}>{toast}</div>}
+      <Toast message={toast}/>
 
       {/* Modal nuevo usuario */}
       {creando && (
@@ -237,8 +237,8 @@ export default function AdminUsuariosPage() {
                   <td style={{fontSize:12,color:"var(--text-3)"}}>{centros.find((c:any)=>c.id===u.centro_id)?.nombre||"—"}</td>
                   <td><div style={{display:"flex",gap:4}}>
                     <button className="btn sm ghost" onClick={()=>setEditando({...u})}>Editar</button>
-                    <button className="btn sm ghost" onClick={()=>resetPassword(u.id)} title="Cambiar contraseña">🔑</button>
-                    <button className="btn sm ghost" style={{color:"var(--danger)",borderColor:"var(--danger)"}} onClick={()=>desactivar(u.id,u.nombre)}>×</button>
+                    <button className="icon-btn" onClick={()=>resetPassword(u.id)} title="Cambiar contraseña" aria-label="Cambiar contraseña"><KeyRound size={15} strokeWidth={1.75}/></button>
+                    <button className="icon-btn" style={{color:"var(--danger)"}} onClick={()=>desactivar(u.id,u.nombre)} title="Desactivar usuario" aria-label="Desactivar usuario"><X size={15} strokeWidth={1.75}/></button>
                   </div></td>
                 </tr>
               ))}

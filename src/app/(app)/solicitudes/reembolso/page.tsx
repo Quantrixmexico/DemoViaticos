@@ -1,5 +1,6 @@
 "use client"
-import { AlertTriangle, AlarmClock } from "lucide-react"
+import { AlertTriangle, AlarmClock, FolderOpen, Send } from "lucide-react"
+import { Toast } from "@/components/ui/Toast"
 import { useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -147,7 +148,7 @@ export default function NuevoReembolsoPage() {
 
     // Notify gerente
     if (perfil?.gerente_id) {
-      await notifyUsers([perfil.gerente_id], "🧾 Nuevo reembolso por autorizar",
+      await notifyUsers([perfil.gerente_id], "Nuevo reembolso por autorizar",
         `${perfil.nombre} solicitó ${fmtMXN(total)}`, `/solicitudes/${id}`)
     }
 
@@ -180,7 +181,7 @@ export default function NuevoReembolsoPage() {
         onDragOver={e=>{ e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor="var(--accent)" }}
         onDragLeave={e=>{ (e.currentTarget as HTMLElement).style.borderColor="var(--border)" }}
         onDrop={e=>{ e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor="var(--border)"; handleFiles(e.dataTransfer.files) }}>
-        <div style={{ fontSize:28, marginBottom:8 }}>📂</div>
+        <div style={{ marginBottom:8, color:"var(--text-3)", display:"flex", justifyContent:"center" }}><FolderOpen size={28} strokeWidth={1.75}/></div>
         <div style={{ fontWeight:600, marginBottom:4 }}>Arrastra o haz clic para subir</div>
         <div style={{ fontSize:12, color:"var(--text-3)" }}>XML (CFDI), PDF o imágenes de ticket</div>
         <input ref={fileRef} type="file" accept=".xml,.pdf,image/*" multiple hidden
@@ -213,7 +214,7 @@ export default function NuevoReembolsoPage() {
                           fontSize:10, fontWeight:600, marginLeft:6,
                           color: (it as any).vencida ? "#fbbf24" : "var(--danger)",
                         }}>
-                          {(it as any).vencida ? "⏰" : "⚠"} {it.motivoDup}
+                          {(it as any).vencida ? <AlarmClock size={12} strokeWidth={2} style={{ verticalAlign:"-0.15em" }}/> : <AlertTriangle size={12} strokeWidth={2} style={{ verticalAlign:"-0.15em" }}/>} {it.motivoDup}
                         </span>
                       )}
                     </td>
@@ -271,20 +272,14 @@ export default function NuevoReembolsoPage() {
         </div>
       )}
 
-      {toast && (
-        <div style={{ padding:"10px 14px", borderRadius:8, marginBottom:12, fontSize:13,
-          background:toast.ok ? "var(--success-soft)" : "var(--danger-soft)",
-          color:toast.ok ? "var(--success)" : "var(--danger)" }}>
-          {toast.msg}
-        </div>
-      )}
+      <Toast message={toast?.msg} style={{ marginBottom:12 }}/>
 
       <div style={{ display:"flex", justifyContent:"flex-end", gap:10 }}>
         <button className="btn ghost" onClick={()=>router.push("/solicitudes")}>Cancelar</button>
         <button className="btn primary" onClick={handleEnviar}
           disabled={enviando || total<=0 || itemsValidos.length===0}
           style={{ opacity:enviando||total<=0||itemsValidos.length===0 ? 0.5 : 1 }}>
-          {enviando ? "Enviando…" : `Enviar reembolso · ${fmtMXN(total)} →`}
+          {enviando ? "Enviando…" : <><Send size={15} strokeWidth={2}/> Enviar reembolso · {fmtMXN(total)}</>}
         </button>
       </div>
     </div>

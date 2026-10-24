@@ -1,6 +1,8 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { Upload, AlertTriangle, XCircle, BarChart3 } from "lucide-react"
+import { EmptyState } from "@/components/ui/EmptyState"
 
 export default function ConciliacionSATPage() {
   const [sistemaCfdis, setSistemaCfdis] = useState<Set<string>>(new Set())
@@ -76,11 +78,11 @@ export default function ConciliacionSATPage() {
       <div className="card" style={{marginBottom:16}}>
         <div style={{fontSize:13,color:"var(--text-2)",marginBottom:12,lineHeight:1.6}}>
           Descarga el archivo <strong>Metadata</strong> desde el Portal del SAT:<br/>
-          <span style={{fontSize:11.5,color:"var(--text-3)"}}>Facturas → Consultar → Descarga masiva → Metadata → Exportar CSV o TXT</span>
+          <span style={{fontSize:11.5,color:"var(--text-3)"}}>Facturas &gt; Consultar &gt; Descarga masiva &gt; Metadata &gt; Exportar CSV o TXT</span>
         </div>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           <button className="btn primary" onClick={()=>fileRef.current?.click()} disabled={procesando}>
-            📂 {procesando?"Procesando…":"Subir Metadata SAT"}
+            <Upload size={15} strokeWidth={2}/> {procesando?"Procesando…":"Subir Metadata SAT"}
           </button>
           <span style={{fontSize:12,color:"var(--text-3)"}}>Formatos: .csv, .txt, .xlsx</span>
           <input ref={fileRef} type="file" accept=".csv,.txt,.xlsx" hidden
@@ -109,7 +111,7 @@ export default function ConciliacionSATPage() {
           {resultado.enSATNoSistema.length>0&&(
             <div className="card" style={{marginBottom:16}}>
               <div style={{fontWeight:600,marginBottom:10,color:"var(--warn)"}}>
-                ⚠ Facturas en SAT que no están en el sistema ({resultado.enSATNoSistema.length})
+                <AlertTriangle size={16} strokeWidth={2} className="inline-icon"/> Facturas en SAT que no están en el sistema ({resultado.enSATNoSistema.length})
               </div>
               <div style={{fontSize:12,color:"var(--text-3)",marginBottom:10}}>
                 Estas facturas fueron emitidas a tu RFC pero nadie las comprobó en el sistema.
@@ -136,7 +138,7 @@ export default function ConciliacionSATPage() {
           {resultado.enSistemaNoSAT.length>0&&(
             <div className="card">
               <div style={{fontWeight:600,marginBottom:10,color:"var(--danger)"}}>
-                ✗ Comprobantes en sistema sin CFDI en SAT ({resultado.enSistemaNoSAT.length})
+                <XCircle size={16} strokeWidth={2} className="inline-icon"/> Comprobantes en sistema sin CFDI en SAT ({resultado.enSistemaNoSAT.length})
               </div>
               <div style={{fontSize:12,color:"var(--text-3)",marginBottom:10}}>
                 Estos UUIDs están en el sistema pero no aparecen en el Metadata del SAT. Podrían ser cancelados o con UUID incorrecto.
@@ -153,11 +155,8 @@ export default function ConciliacionSATPage() {
       )}
 
       {!resultado && (
-        <div className="card" style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>
-          <div style={{fontSize:32,marginBottom:12}}>📊</div>
-          <div style={{fontWeight:600,marginBottom:6}}>Sube el Metadata del SAT para comenzar</div>
-          <div style={{fontSize:12.5}}>El sistema tiene <strong>{sistemaCfdis.size}</strong> CFDIs registrados listos para cruzar.</div>
-        </div>
+        <EmptyState icon={BarChart3} tone="accent" title="Sube el Metadata del SAT para comenzar"
+          text={<>El sistema tiene <strong>{sistemaCfdis.size}</strong> CFDIs registrados listos para cruzar.</>}/>
       )}
     </>
   )

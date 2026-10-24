@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN } from "@/lib/format"
+import { SegmentedNav, TESORERIA_TABS } from "@/components/ui/SegmentedNav"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { CheckCircle2 } from "lucide-react"
 
 export default function TesoreriaDeudoresPage() {
   const [deudores, setDeudores] = useState<any[]>([])
@@ -42,24 +45,17 @@ export default function TesoreriaDeudoresPage() {
       <div className="page-head">
         <div>
           <h1 className="page-title">Deudores</h1>
-          <div className="page-sub">Empleados con saldo de anticipo pendiente</div>
-        </div>
-        {!loading && (
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "var(--warn)" }}>{fmtMXN(totalGeneral)}</div>
-            <div style={{ fontSize: 11, color: "var(--text-3)" }}>Total pendiente</div>
+          <div className="page-sub">
+            {loading ? "Empleados con saldo de anticipo pendiente" : <>Saldo pendiente total: <strong style={{ color: "var(--warn)" }}>{fmtMXN(totalGeneral)}</strong></>}
           </div>
-        )}
+        </div>
+        <SegmentedNav items={TESORERIA_TABS} ariaLabel="Vistas de tesorería"/>
       </div>
 
       {loading ? (
         <div className="card" style={{ padding: 40, textAlign: "center", color: "var(--text-3)" }}>Cargando…</div>
       ) : deudores.length === 0 ? (
-        <div className="card" style={{ padding: 48, textAlign: "center" }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>🎉</div>
-          <div style={{ fontWeight: 600 }}>Sin deudores</div>
-          <div style={{ color: "var(--text-3)", fontSize: 13, marginTop: 6 }}>Todos los anticipos están comprobados</div>
-        </div>
+        <EmptyState icon={CheckCircle2} tone="success" title="Sin deudores" text="Todos los anticipos están comprobados."/>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {deudores.map(d => (

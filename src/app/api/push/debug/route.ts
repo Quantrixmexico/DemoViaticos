@@ -28,7 +28,7 @@ export async function GET() {
         headers: { "Content-Type": "application/json", "Authorization": "Bearer viaticos-zapata-push-2026" },
         body: JSON.stringify({
           userIds: [user.id],
-          title: "🔔 Test de notificación",
+          title: "Test de notificación",
           body: "Si recibes esto, las notificaciones funcionan correctamente",
           url: "https://viaticos-app-bice.vercel.app/dashboard",
         }),

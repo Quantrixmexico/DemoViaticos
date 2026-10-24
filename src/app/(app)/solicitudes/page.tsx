@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import type { Solicitud, SolicitudStatus } from "@/types"
+import { AlertTriangle } from "lucide-react"
 
 export default function MisSolicitudesPage() {
   const router = useRouter()
@@ -136,7 +137,7 @@ export default function MisSolicitudesPage() {
                   <td><StatusBadge status={s.status} /></td>
                   <td className="num" onClick={e => e.stopPropagation()}>
                     {s.motivoRechazo && (
-                      <span title={s.motivoRechazo} style={{ color: "var(--danger)", fontSize: 12, cursor: "help" }}>⚠</span>
+                      <span title={s.motivoRechazo} style={{ color: "var(--danger)", cursor: "help" }}><AlertTriangle size={14} strokeWidth={2} style={{ verticalAlign: "-0.15em" }}/></span>
                     )}
                     {["liberado","parcial"].includes(s.status) && s.tipo === "anticipo" && (
                       <>

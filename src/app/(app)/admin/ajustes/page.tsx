@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { clearAjustesCache } from "@/lib/ajustes"
+import { Toast } from "@/components/ui/Toast"
 
 interface Ajuste { clave: string; valor: string; descripcion?: string }
 
@@ -48,10 +49,7 @@ export default function AjustesPage() {
         </div>
       </div>
 
-      {toast && (
-        <div style={{padding:"10px 14px",borderRadius:8,marginBottom:12,fontSize:13,
-          background:"var(--success-soft)",color:"var(--success)"}}>{toast}</div>
-      )}
+      <Toast message={toast}/>
 
       {loading ? (
         <div className="card" style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>

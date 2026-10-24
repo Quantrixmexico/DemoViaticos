@@ -1,5 +1,6 @@
 "use client"
-import { AlertTriangle } from "lucide-react"
+import { Send } from "lucide-react"
+import { Toast } from "@/components/ui/Toast"
 
 import { notifyUsers } from "@/lib/notify"
 import { useState, useCallback } from "react"
@@ -73,7 +74,7 @@ export default function SolicitarAnticipoPage() {
     // Notify gerente
     const { data: pf } = await sb.from("usuarios").select("gerente_id, nombre").eq("id", user.id).single()
     if (pf?.gerente_id) {
-      await notifyUsers([pf.gerente_id], "📋 Nuevo anticipo por autorizar",
+      await notifyUsers([pf.gerente_id], "Nuevo anticipo por autorizar",
         `${pf.nombre} solicitó ${fmtMXN(totalDesg)} — ${concepto.trim()}`, `/solicitudes/${id}`)
     }
 
@@ -189,15 +190,7 @@ export default function SolicitarAnticipoPage() {
       </div>
 
       {/* Toast */}
-      {toast && (
-        <div style={{ padding: "10px 14px", borderRadius: 8, marginBottom: 12,
-          background: toast.startsWith("✓") ? "var(--success-soft)" : "var(--danger-soft)",
-          color: toast.startsWith("✓") ? "var(--success)" : "var(--danger)",
-          border: `1px solid ${toast.startsWith("✓") ? "var(--success)" : "var(--danger)"}`,
-          fontSize: 13 }}>
-          {toast}
-        </div>
-      )}
+      <Toast message={toast} style={{ marginBottom: 12 }}/>
 
       {/* Actions */}
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
@@ -205,7 +198,7 @@ export default function SolicitarAnticipoPage() {
         <button className="btn primary" onClick={handleEnviar}
           disabled={enviando || totalDesg <= 0}
           style={{ opacity: enviando || totalDesg <= 0 ? 0.5 : 1 }}>
-          {enviando ? "Enviando…" : "Enviar a autorización →"}
+          {enviando ? "Enviando…" : <><Send size={15} strokeWidth={2}/> Enviar a autorización</>}
         </button>
       </div>
     </div>

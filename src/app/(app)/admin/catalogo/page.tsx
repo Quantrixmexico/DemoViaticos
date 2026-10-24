@@ -1,6 +1,8 @@
 "use client"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { Toast } from "@/components/ui/Toast"
+import { Download, Plus } from "lucide-react"
 
 const GRUPOS = ["Transporte","Hospedaje","Alimentos","Combustible","Estacionamiento","Peaje","Servicios","No Deducibles","Otros"]
 
@@ -59,14 +61,12 @@ export default function AdminCatalogoPage() {
       <div className="page-head">
         <div><h1 className="page-title">Catálogo de gastos</h1><div className="page-sub">{cuentas.length} cuentas</div></div>
         <div style={{display:"flex",gap:8}}>
-          <button className="btn ghost" onClick={exportarCSV}>↓ CSV</button>
-          <button className="btn primary" onClick={openNuevo}>+ Nueva cuenta</button>
+          <button className="btn ghost" onClick={exportarCSV}><Download size={15} strokeWidth={2}/> CSV</button>
+          <button className="btn primary" onClick={openNuevo}><Plus size={15} strokeWidth={2}/> Nueva cuenta</button>
         </div>
       </div>
 
-      {toast && <div style={{padding:"10px 14px",borderRadius:8,marginBottom:12,fontSize:13,
-        background:toast.startsWith("✓")?"var(--success-soft)":"var(--danger-soft)",
-        color:toast.startsWith("✓")?"var(--success)":"var(--danger)"}}>{toast}</div>}
+      <Toast message={toast}/>
 
       {editing && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:100,display:"grid",placeItems:"center",padding:20}}>

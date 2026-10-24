@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
+import { SegmentedNav, TESORERIA_TABS } from "@/components/ui/SegmentedNav"
 
 export default function TesoreriaPagadosPage() {
   const router = useRouter()
@@ -49,12 +50,9 @@ export default function TesoreriaPagadosPage() {
       <div className="page-head">
         <div>
           <h1 className="page-title">Pagados</h1>
-          <div className="page-sub">Historial de solicitudes liberadas</div>
+          <div className="page-sub">{filtradas.length} solicitudes liberadas, {fmtMXN(totalFiltrado)} en total</div>
         </div>
-        <div style={{ textAlign:"right" }}>
-          <div style={{ fontSize:18, fontWeight:700 }}>{fmtMXN(totalFiltrado)}</div>
-          <div style={{ fontSize:11, color:"var(--text-3)" }}>{filtradas.length} registros</div>
-        </div>
+        <SegmentedNav items={TESORERIA_TABS} ariaLabel="Vistas de tesorería"/>
       </div>
 
       <div style={{ display:"flex", gap:8, marginBottom:14, flexWrap:"wrap" }}>

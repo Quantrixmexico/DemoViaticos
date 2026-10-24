@@ -1,15 +1,19 @@
 import Link from "next/link"
+import { Compass } from "lucide-react"
+import { EmptyState } from "@/components/ui/EmptyState"
 
 export default function NotFound() {
   return (
     <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--bg)" }}>
-      <div style={{ textAlign: "center", padding: "0 20px" }}>
-        <div style={{ fontSize: 64, marginBottom: 16 }}>🚧</div>
-        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Página en construcción</h1>
-        <p style={{ color: "var(--text-3)", fontSize: 14, marginBottom: 24 }}>
-          Esta sección se está migrando a la nueva versión.
-        </p>
-        <Link href="/dashboard" className="btn primary">← Volver al inicio</Link>
+      <div style={{ maxWidth: 420, width: "100%" }}>
+        <EmptyState
+          icon={Compass}
+          tone="neutral"
+          variant="plain"
+          title="Página en construcción"
+          text="Esta sección se está migrando a la nueva versión."
+          action={<Link href="/dashboard" className="btn primary">Ir al inicio</Link>}
+        />
       </div>
     </div>
   )

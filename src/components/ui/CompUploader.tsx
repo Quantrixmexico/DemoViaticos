@@ -5,6 +5,7 @@ import { parseCFDIXml } from "@/lib/cfdi"
 import { normalizaCuentaAsync } from "@/lib/normalizaCuenta"
 import { getDiasMaxFactura } from "@/lib/ajustes"
 import type { CfdItem } from "@/types"
+import { FolderOpen, Loader2 } from "lucide-react"
 
 const CUENTA_PATTERNS: [RegExp, string][] = [
   [/(peaje|caseta|autopista|telepeaje|iave)/i,          "__peaje__"],
@@ -203,7 +204,7 @@ export function CompUploader({ solicitudId, catalogoGastos, onAdd }: Props) {
         onDragOver={e => { e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor="var(--accent)" }}
         onDragLeave={e => { (e.currentTarget as HTMLElement).style.borderColor="var(--border)" }}
         onDrop={e => { e.preventDefault(); (e.currentTarget as HTMLElement).style.borderColor="var(--border)"; processFiles(e.dataTransfer.files) }}>
-        <div style={{ fontSize:24, marginBottom:6 }}>{uploading ? "⏳" : "📂"}</div>
+        <div style={{ marginBottom:6, color:"var(--text-3)", display:"flex", justifyContent:"center" }}>{uploading ? <Loader2 size={24} strokeWidth={1.75} className="spin"/> : <FolderOpen size={24} strokeWidth={1.75}/>}</div>
         <div style={{ fontWeight:600, marginBottom:3, fontSize:13 }}>
           {ocrProgress ? ocrProgress : uploading ? "Procesando…" : "Arrastra o clic para subir"}
         </div>

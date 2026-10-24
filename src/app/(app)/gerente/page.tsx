@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { notifyUsers } from "@/lib/notify"
 import { TipoBadge } from "@/components/ui/StatusBadge"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { CheckCircle2, Check, RefreshCw, RotateCcw } from "lucide-react"
 import type { Solicitud } from "@/types"
 
 export default function GerenteBandejaPage() {
@@ -91,7 +93,7 @@ export default function GerenteBandejaPage() {
         // Push notification
         await notifyUsers(
           admins.map((a:any) => a.id),
-          "🔐 Solicitud pendiente de validación",
+          "Solicitud pendiente de validación",
           `${solicitante?.nombre || "Usuario"} · ${fmtMXN(s.monto)} — requiere tu validación admin`,
           "/admin/validar"
         )
@@ -99,7 +101,7 @@ export default function GerenteBandejaPage() {
         await sb.from("notificaciones").insert(
           admins.map((a:any) => ({
             usuario_id: a.id,
-            titulo: "🔐 Pendiente: validación admin",
+            titulo: "Pendiente: validación admin",
             cuerpo: `${solicitante?.nombre || "Usuario"} · ${fmtMXN(s.monto)} · ${s.concepto}`,
             tipo: "aprobacion",
             leida: false,
@@ -135,7 +137,7 @@ export default function GerenteBandejaPage() {
     try {
       await sb.from("notificaciones").insert({
         usuario_id: s?.usuario,
-        titulo: devolver ? "⚠ Solicitud devuelta para corrección" : "❌ Solicitud rechazada",
+        titulo: devolver ? "Solicitud devuelta para corrección" : "Solicitud rechazada",
         cuerpo: `${id}: ${motivoRechazo.trim()}`, tipo: "rechazo",
         leida: false, created_at: new Date().toISOString(),
       })
@@ -156,7 +158,7 @@ export default function GerenteBandejaPage() {
           <h1 className="page-title">Por aprobar</h1>
           <div className="page-sub">{solicitudes.length} solicitudes pendientes</div>
         </div>
-        <button className="btn ghost" onClick={loadPendientes}>↻ Actualizar</button>
+        <button className="btn ghost" onClick={loadPendientes}><RefreshCw size={15} strokeWidth={2}/> Actualizar</button>
       </div>
 
       {/* KPIs */}
@@ -190,7 +192,7 @@ export default function GerenteBandejaPage() {
               {solicitudes.find(s=>s.id===rechazandoId)?.tipo !== "anticipo" && (
                 <button className="btn" style={{background:"var(--warn)",border:"none",color:"#fff",fontWeight:600}}
                   onClick={()=>rechazar(rechazandoId, true)} disabled={!!procesando}>
-                  ↩ Devolver para corrección
+                  <RotateCcw size={15} strokeWidth={2}/> Devolver para corrección
                 </button>
               )}
               <button className="btn" style={{background:"var(--danger)",border:"none",color:"#fff"}}
@@ -206,11 +208,7 @@ export default function GerenteBandejaPage() {
       {loading ? (
         <div className="card" style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
       ) : solicitudes.length===0 ? (
-        <div className="card" style={{padding:48,textAlign:"center"}}>
-          <div style={{fontSize:40,marginBottom:12}}>✅</div>
-          <div style={{fontWeight:600,fontSize:16,marginBottom:6}}>Bandeja al día</div>
-          <div style={{color:"var(--text-3)",fontSize:13}}>No hay solicitudes pendientes de autorizar</div>
-        </div>
+        <EmptyState icon={CheckCircle2} tone="success" title="Bandeja al día" text="No hay solicitudes pendientes de autorizar"/>
       ) : (
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {solicitudes.map(s => {
@@ -261,7 +259,7 @@ export default function GerenteBandejaPage() {
                       <button className="btn sm primary"
                         disabled={procesando===s.id}
                         onClick={()=>aprobar(s.id)}>
-                        {procesando===s.id?"…":"Aprobar ✓"}
+                        {procesando===s.id?"…":<><Check size={14} strokeWidth={2}/> Aprobar</>}
                       </button>
                     </div>
                   </div>

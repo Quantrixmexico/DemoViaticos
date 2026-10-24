@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { TipoBadge } from "@/components/ui/StatusBadge"
 import { notifyUsers } from "@/lib/notify"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { CheckCircle2, Check, RefreshCw } from "lucide-react"
 import type { Solicitud } from "@/types"
 
 export default function AdminValidarPage() {
@@ -58,13 +60,13 @@ export default function AdminValidarPage() {
     // Notify tesorería users
     const tesoUsers = Object.values(usuarios).filter((u:any)=>u.rol==="tesoreria").map((u:any)=>u.id)
     if (tesoUsers.length) {
-      await notifyUsers(tesoUsers, "💵 Nueva solicitud para liberar",
+      await notifyUsers(tesoUsers, "Nueva solicitud para liberar",
         `${usuarios[s.usuario]?.nombre||"Usuario"} · ${fmtMXN(s.monto)}`, `/tesoreria`)
     }
     // Notify the solicitante
     try {
       await sb.from("notificaciones").insert({
-        usuario_id:s.usuario, titulo:"✅ Solicitud validada por admin",
+        usuario_id:s.usuario, titulo:"Solicitud validada por admin",
         cuerpo:`Tu solicitud ${id} fue validada. Tesorería procederá con el pago.`,
         tipo:"aprobacion", leida:false, created_at:new Date().toISOString(),
       })
@@ -96,7 +98,7 @@ export default function AdminValidarPage() {
     try {
       const sb2 = createClient()
       await sb2.from("notificaciones").insert({
-        usuario_id:s?.usuario, titulo: s?.tipo==="comprobacion" ? "↩️ Comprobación devuelta para corrección" : "❌ Solicitud rechazada por Admin",
+        usuario_id:s?.usuario, titulo: s?.tipo==="comprobacion" ? "Comprobación devuelta para corrección" : "Solicitud rechazada por Admin",
         cuerpo:`${motivo.trim()}`, tipo:"rechazo", leida:false,
         created_at:new Date().toISOString(),
       })
@@ -116,7 +118,7 @@ export default function AdminValidarPage() {
           <h1 className="page-title">Validación Admin</h1>
           <div className="page-sub">Aprobación final antes de tesorería · {solicitudes.length} pendientes</div>
         </div>
-        <button className="btn ghost" onClick={load}>↻ Actualizar</button>
+        <button className="btn ghost" onClick={load}><RefreshCw size={15} strokeWidth={2}/> Actualizar</button>
       </div>
 
       {/* KPIs */}
@@ -157,11 +159,7 @@ export default function AdminValidarPage() {
       {loading?(
         <div className="card" style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
       ):solicitudes.length===0?(
-        <div className="card" style={{padding:48,textAlign:"center"}}>
-          <div style={{fontSize:40,marginBottom:12}}>✅</div>
-          <div style={{fontWeight:600,fontSize:16}}>Todo validado</div>
-          <div style={{color:"var(--text-3)",fontSize:13,marginTop:6}}>No hay solicitudes pendientes de validación admin</div>
-        </div>
+        <EmptyState icon={CheckCircle2} tone="success" title="Todo validado" text="No hay solicitudes pendientes de validación admin"/>
       ):(
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {solicitudes.map(s=>{
@@ -181,9 +179,9 @@ export default function AdminValidarPage() {
                         {dias}d
                       </span>}
                       {/* Already approved by gerente badge */}
-                      <span style={{fontSize:10,padding:"1px 7px",borderRadius:10,
+                      <span style={{fontSize:10,padding:"1px 7px",borderRadius:10,display:"inline-flex",alignItems:"center",gap:3,
                         background:"var(--success-soft)",color:"var(--success)",fontWeight:600}}>
-                        ✓ Aut. Gerente
+                        <Check size={11} strokeWidth={2.5}/> Aut. Gerente
                       </span>
                     </div>
                     {/* Solicitante */}
@@ -212,7 +210,7 @@ export default function AdminValidarPage() {
                       <button className="btn sm primary"
                         disabled={procesando===s.id}
                         onClick={()=>validar(s.id)}>
-                        {procesando===s.id?"…":"Validar ✓"}
+                        {procesando===s.id?"…":<><Check size={14} strokeWidth={2}/> Validar</>}
                       </button>
                     </div>
                   </div>

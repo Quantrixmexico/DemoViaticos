@@ -3,6 +3,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import Image from "next/image"
+import { ArrowLeft, CheckCircle2, Hourglass } from "lucide-react"
+import { EmptyState } from "@/components/ui/EmptyState"
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -61,23 +63,20 @@ export default function ResetPasswordPage() {
         </div>
 
         {success ? (
-          <div style={{ textAlign:"center", padding:"24px 0" }}>
-            <div style={{ fontSize:48, marginBottom:16 }}>✅</div>
-            <div style={{ fontWeight:700, fontSize:16, marginBottom:8 }}>¡Contraseña actualizada!</div>
-            <div style={{ fontSize:13, color:"var(--text-3)" }}>Redirigiendo al sistema…</div>
-          </div>
+          <EmptyState icon={CheckCircle2} tone="success" variant="plain"
+            title="¡Contraseña actualizada!" text="Redirigiendo al sistema…"/>
         ) : !ready ? (
-          <div style={{ textAlign:"center", padding:"24px 0", color:"var(--text-3)" }}>
-            <div style={{ fontSize:32, marginBottom:12 }}>⏳</div>
-            <div>Validando enlace de recuperación…</div>
-            <div style={{ fontSize:12, marginTop:8 }}>
-              Si esto tarda mucho,{" "}
-              <button onClick={() => router.push("/login")}
-                style={{ color:"var(--accent)", background:"none", border:"none", cursor:"pointer" }}>
-                vuelve al inicio de sesión
-              </button>
-            </div>
-          </div>
+          <EmptyState icon={Hourglass} tone="neutral" variant="plain"
+            title="Validando enlace de recuperación…"
+            text={
+              <>
+                Si esto tarda mucho,{" "}
+                <button onClick={() => router.push("/login")}
+                  style={{ color:"var(--accent)", background:"none", border:"none", cursor:"pointer", font:"inherit" }}>
+                  vuelve al inicio de sesión
+                </button>
+              </>
+            }/>
         ) : (
           <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:14 }}>
             <div>
@@ -106,12 +105,12 @@ export default function ResetPasswordPage() {
             )}
             <button className="btn primary" type="submit" disabled={loading}
               style={{ justifyContent:"center", padding:"12px" }}>
-              {loading ? "Guardando…" : "Guardar nueva contraseña →"}
+              {loading ? "Guardando…" : "Guardar nueva contraseña"}
             </button>
             <button type="button" className="btn ghost"
               onClick={() => router.push("/login")}
               style={{ justifyContent:"center" }}>
-              ← Cancelar
+              <ArrowLeft size={15} strokeWidth={2}/> Cancelar
             </button>
           </form>
         )}

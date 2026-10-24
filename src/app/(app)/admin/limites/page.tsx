@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN } from "@/lib/format"
+import { Toast } from "@/components/ui/Toast"
+import { Plus } from "lucide-react"
 
 const ROLES = ["(todos)","usuario","gerente","tesoreria","contador","admin"]
 
@@ -65,12 +67,10 @@ export default function LimitesPage() {
           <h1 className="page-title">Límites de gasto</h1>
           <div className="page-sub">Reglas de negocio por cuenta contable y por día</div>
         </div>
-        <button className="btn primary" onClick={openNuevo}>+ Nuevo límite</button>
+        <button className="btn primary" onClick={openNuevo}><Plus size={15} strokeWidth={2}/> Nuevo límite</button>
       </div>
 
-      {toast&&<div style={{padding:"10px 14px",borderRadius:8,marginBottom:12,fontSize:13,
-        background:toast.startsWith("✓")?"var(--success-soft)":"var(--danger-soft)",
-        color:toast.startsWith("✓")?"var(--success)":"var(--danger)"}}>{toast}</div>}
+      <Toast message={toast}/>
 
       {editing&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:100,display:"grid",placeItems:"center",padding:20}}>

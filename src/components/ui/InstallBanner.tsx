@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import Image from "next/image"
+import { Download } from "lucide-react"
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -111,7 +112,7 @@ export function InstallBanner() {
             fontSize:16, fontWeight:700, cursor:"pointer",
             display:"flex", alignItems:"center", justifyContent:"center", gap:10,
           }}>
-          ⬇️ Instalar aplicación
+          <Download size={18} strokeWidth={2}/> Instalar aplicación
         </button>
         <div style={{ textAlign:"center", fontSize:12, color:"var(--text-3)", marginTop:10 }}>
           Sin ocupar espacio adicional · Funciona sin conexión

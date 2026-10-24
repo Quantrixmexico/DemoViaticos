@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useUsuario } from "@/lib/UsuarioContext"
 import { esDemo, MSG_DEMO_BLOQUEADO } from "@/lib/permisos"
+import { Toast } from "@/components/ui/Toast"
 import { Layers, Plus, Edit2, Power, Trash2 } from "lucide-react"
 
 interface Division {
@@ -129,9 +130,7 @@ export default function AdminDivisionesPage() {
         </button>
       </div>
 
-      {toast && <div style={{padding:"10px 14px",borderRadius:8,marginBottom:12,fontSize:13,
-        background: toast.startsWith("✓") ? "var(--success-soft)" : "var(--danger-soft)",
-        color: toast.startsWith("✓") ? "var(--success)" : "var(--danger)"}}>{toast}</div>}
+      <Toast message={toast}/>
 
       <div className="card" style={{padding:0,overflow:"auto"}}>
         <table className="t" style={{minWidth:600}}>

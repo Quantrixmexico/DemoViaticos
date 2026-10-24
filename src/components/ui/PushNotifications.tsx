@@ -1,5 +1,7 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react"
+import { Bell, Hourglass } from "lucide-react"
+import { stripEmoji } from "@/lib/text"
 
 // Firebase public config - safe to hardcode (client-side values, not secrets)
 const VAPID_KEY = "BC4H1SRGR-megh4PQ-N4BpczTZkkZF3F8cfmS7bW1WL0Zp5rnfsN59Q7L9cKkUBaoo7NZ-2x0H_ja23MtUWinmQ"
@@ -71,7 +73,7 @@ export function PushNotifications({ userId }: Props) {
 
       if (!token) { console.warn("[FCM] No token returned - check VAPID key and permissions"); return }
 
-      console.log("[FCM] ✓ Token:", token.slice(0, 30) + "...")
+      console.log("[FCM] Token:", token.slice(0, 30) + "...")
 
       const res = await fetch("/api/push/register", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -79,7 +81,7 @@ export function PushNotifications({ userId }: Props) {
       })
       const data = await res.json()
       if (data.ok) {
-        console.log("[FCM] ✓ Token saved to DB")
+        console.log("[FCM] Token saved to DB")
         localStorage.setItem("notif-status", "granted")
       } else {
         console.error("[FCM] DB save failed:", data)
@@ -142,7 +144,7 @@ export function PushNotifications({ userId }: Props) {
           display:"flex", alignItems:"center", gap:12,
           animation:"slideUp .3s ease-out",
         }}>
-          <span style={{fontSize:26,flexShrink:0}}>🔔</span>
+          <Bell size={26} strokeWidth={1.75} style={{flexShrink:0,color:"var(--accent)"}}/>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontWeight:700,fontSize:13,marginBottom:2}}>Activar notificaciones</div>
             <div style={{fontSize:11.5,color:"var(--text-3)",lineHeight:1.4}}>
@@ -171,7 +173,7 @@ export function PushNotifications({ userId }: Props) {
           borderRadius:16, padding:"12px 16px",
           display:"flex", alignItems:"center", gap:12,
         }}>
-          <span style={{fontSize:18}}>⏳</span>
+          <Hourglass size={18} strokeWidth={2} style={{flexShrink:0,color:"var(--accent)"}}/>
           <span style={{fontSize:13,color:"var(--text-2)"}}>
             Acepta el permiso en el mensaje del sistema…
           </span>
@@ -188,7 +190,7 @@ export function PushNotifications({ userId }: Props) {
           display:"flex",gap:10,alignItems:"flex-start",
         }}>
           <div style={{flex:1}}>
-            <div style={{fontWeight:700,fontSize:14,marginBottom:3}}>🔔 {toast.title}</div>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:3}}><Bell size={14} strokeWidth={2} className="inline-icon"/>{stripEmoji(toast.title)}</div>
             {toast.body&&<div style={{fontSize:12,color:"var(--text-2)"}}>{toast.body}</div>}
           </div>
           <button onClick={()=>setToast(null)} style={{

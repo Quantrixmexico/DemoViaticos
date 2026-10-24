@@ -4,6 +4,7 @@ import { fmtMXN, fmtFecha } from "@/lib/format"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
 import { Stepper } from "@/components/ui/Stepper"
 import Link from "next/link"
+import { ArrowLeft, Landmark, XCircle, Download } from "lucide-react"
 
 export default async function DetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -41,14 +42,14 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
             {s.notas?.includes("CIERRE_DEPOSITO") && (
               <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 12,
                 background: "var(--accent-soft)", color: "var(--accent)", fontWeight: 600 }}>
-                🏦 CIERRE
+                <Landmark size={12} strokeWidth={2} style={{ verticalAlign: "-0.15em", marginRight: 4 }}/>CIERRE
               </span>
             )}
           </div>
           <h1 className="page-title" style={{ fontSize: 20 }}>{id}</h1>
           <p className="page-sub">{s.concepto}</p>
         </div>
-        <Link href="/solicitudes" className="btn ghost">← Mis solicitudes</Link>
+        <Link href="/solicitudes" className="btn ghost"><ArrowLeft size={15} strokeWidth={2}/> Mis solicitudes</Link>
       </div>
 
       {/* Stepper */}
@@ -78,7 +79,7 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
         {s.motivo_rechazo && (
           <div style={{ marginTop: 14, padding: "10px 12px", borderRadius: 8,
             background: "var(--danger-soft)", color: "var(--danger)", fontSize: 13 }}>
-            ✕ Motivo de rechazo: {s.motivo_rechazo}
+            <XCircle size={14} strokeWidth={2} style={{ verticalAlign: "-0.15em", marginRight: 6 }}/>Motivo de rechazo: {s.motivo_rechazo}
           </div>
         )}
       </div>
@@ -123,8 +124,8 @@ export default async function DetallePage({ params }: { params: Promise<{ id: st
                   <td>
                     {cf.archivo_url && (
                       <a href={cf.archivo_url} target="_blank" rel="noopener"
-                        className="btn sm ghost" style={{ fontSize: 11 }}>
-                        ↓
+                        className="btn sm ghost" style={{ fontSize: 11 }} title="Descargar" aria-label="Descargar">
+                        <Download size={14} strokeWidth={2}/>
                       </a>
                     )}
                   </td>

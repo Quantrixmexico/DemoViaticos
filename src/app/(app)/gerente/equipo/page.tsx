@@ -3,6 +3,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { fmtMXN } from "@/lib/format"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { Users } from "lucide-react"
 
 export default function GerenteEquipoPage() {
   const router = useRouter()
@@ -27,11 +29,7 @@ export default function GerenteEquipoPage() {
       {loading ? (
         <div style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
       ) : equipo.length===0 ? (
-        <div className="card" style={{padding:48,textAlign:"center"}}>
-          <div style={{fontSize:36,marginBottom:12}}>👥</div>
-          <div style={{fontWeight:600}}>Sin equipo asignado</div>
-          <div style={{color:"var(--text-3)",fontSize:13,marginTop:6}}>No tienes usuarios bajo tu gerencia</div>
-        </div>
+        <EmptyState icon={Users} title="Sin equipo asignado" text="No tienes usuarios bajo tu gerencia"/>
       ) : (
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
           {equipo.map((u:any)=>{

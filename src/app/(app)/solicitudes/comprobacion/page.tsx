@@ -1,5 +1,6 @@
 "use client"
-import { AlertTriangle, AlarmClock } from "lucide-react"
+import { AlertTriangle, AlarmClock, Send } from "lucide-react"
+import { Toast } from "@/components/ui/Toast"
 
 import { notifyUsers } from "@/lib/notify"
 import { useState, useEffect } from "react"
@@ -109,7 +110,7 @@ function NuevaComprobacionInner() {
     // Notify gerente
     const { data: pf } = await sb.from("usuarios").select("gerente_id, nombre").eq("id", user.id).single()
     if (pf?.gerente_id) {
-      await notifyUsers([pf.gerente_id], "📎 Nueva comprobación por autorizar",
+      await notifyUsers([pf.gerente_id], "Nueva comprobación por autorizar",
         `${pf.nombre} comprobó ${fmtMXN(total)} del anticipo ${anticipoSel.id}`, `/solicitudes/${id}`)
     }
 
@@ -202,7 +203,7 @@ function NuevaComprobacionInner() {
                         color: (it as any).vencida ? "#fbbf24" : "var(--danger)",
                         fontSize: 10, marginLeft: 6, fontWeight: 600,
                       }}>
-                        {(it as any).vencida ? "⏰" : "⚠"} {it.motivoDup}
+                        {(it as any).vencida ? <AlarmClock size={12} strokeWidth={2} style={{ verticalAlign:"-0.15em" }}/> : <AlertTriangle size={12} strokeWidth={2} style={{ verticalAlign:"-0.15em" }}/>} {it.motivoDup}
                       </span>
                     )}
                   </td>
@@ -258,20 +259,14 @@ function NuevaComprobacionInner() {
       )}
 
       {/* Toast */}
-      {toast && (
-        <div style={{ padding: "10px 14px", borderRadius: 8, marginBottom: 12, fontSize: 13,
-          background: toast.ok ? "var(--success-soft)" : "var(--danger-soft)",
-          color: toast.ok ? "var(--success)" : "var(--danger)" }}>
-          {toast.msg}
-        </div>
-      )}
+      <Toast message={toast?.msg} style={{ marginBottom: 12 }}/>
 
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <button className="btn ghost" onClick={() => router.push("/solicitudes")}>Cancelar</button>
         <button className="btn primary" onClick={handleEnviar}
           disabled={enviando || !anticipoSel || total <= 0}
           style={{ opacity: enviando || !anticipoSel || total <= 0 ? 0.5 : 1 }}>
-          {enviando ? "Enviando…" : "Enviar comprobación →"}
+          {enviando ? "Enviando…" : <><Send size={15} strokeWidth={2}/> Enviar comprobación</>}
         </button>
       </div>
     </div>

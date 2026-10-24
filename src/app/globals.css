@@ -487,3 +487,46 @@ textarea.input { min-height: 84px; resize: vertical; }
   .tile-num { font-size: 26px; }
   .tile-icon { margin-bottom: 10px; }
 }
+
+/* ── Enlaces con aspecto de botón ─────────────────────────────────────────── */
+a.btn, a.btn:hover, a.nav-item { text-decoration: none; }
+
+/* ── Control segmentado (vistas hermanas de una sección) ──────────────────── */
+.segmented {
+  display: inline-flex; gap: 2px; padding: 3px;
+  background: var(--surface-2); border: 1px solid var(--border-soft);
+  border-radius: var(--r-pill);
+}
+.segmented a, .segmented button {
+  padding: 7px 14px; border-radius: var(--r-pill); border: none; cursor: pointer;
+  background: transparent; color: var(--text-2); font: inherit; font-size: 13px; font-weight: 500;
+  text-decoration: none; white-space: nowrap;
+  transition: background .25s var(--ease-out), color .2s, box-shadow .25s;
+}
+.segmented a:hover, .segmented button:hover { color: var(--text); }
+.segmented [aria-current="page"], .segmented [aria-pressed="true"] {
+  background: var(--surface); color: var(--text); font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25), 0 0 0 1px var(--border-soft);
+}
+.light .segmented [aria-current="page"], .light .segmented [aria-pressed="true"] { box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 0 0 1px var(--border-soft); }
+
+/* ── Estado vacío ─────────────────────────────────────────────────────────── */
+.empty-state { text-align: center; display: flex; flex-direction: column; align-items: center; }
+.empty-state-icon { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 14px; }
+.empty-state-title { font-size: 16px; font-weight: 650; letter-spacing: -0.02em; color: var(--text); }
+.empty-state-text { font-size: 14px; color: var(--text-2); margin-top: 4px; max-width: 36ch; line-height: 1.5; }
+
+/* ── Aviso en línea ───────────────────────────────────────────────────────── */
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: var(--r-md); margin-bottom: 12px;
+  font-size: 13px; font-weight: 500; border: 1px solid transparent;
+}
+.toast.success { background: var(--success-soft); color: var(--success); border-color: color-mix(in srgb, var(--success) 30%, transparent); }
+.toast.danger  { background: var(--danger-soft);  color: var(--danger);  border-color: color-mix(in srgb, var(--danger) 30%, transparent); }
+.toast.info    { background: var(--accent-soft);  color: var(--accent);  border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+
+/* Iconos dentro de botones y texto en línea */
+.btn svg { flex-shrink: 0; }
+.inline-icon { display: inline-block; vertical-align: -0.15em; margin-right: 6px; }
+.badge:has(> svg)::before { display: none; }

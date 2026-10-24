@@ -1,6 +1,8 @@
 "use client"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { Toast } from "@/components/ui/Toast"
+import { Plus } from "lucide-react"
 
 const DIVISIONES = ["4105","4106","4111","4113"]
 const DEPTOS = ["Operaciones","Administración","Ventas","Finanzas","Recursos Humanos","Sistemas","Dirección"]
@@ -52,12 +54,10 @@ export default function AdminCentrosPage() {
     <>
       <div className="page-head">
         <div><h1 className="page-title">Centros de beneficio</h1><div className="page-sub">{centros.length} registrados</div></div>
-        <button className="btn primary" onClick={openNuevo}>+ Nuevo centro</button>
+        <button className="btn primary" onClick={openNuevo}><Plus size={15} strokeWidth={2}/> Nuevo centro</button>
       </div>
 
-      {toast && <div style={{padding:"10px 14px",borderRadius:8,marginBottom:12,fontSize:13,
-        background:toast.startsWith("✓")?"var(--success-soft)":"var(--danger-soft)",
-        color:toast.startsWith("✓")?"var(--success)":"var(--danger)"}}>{toast}</div>}
+      <Toast message={toast}/>
 
       {editing && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:100,display:"grid",placeItems:"center",padding:20}}>
