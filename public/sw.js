@@ -1,8 +1,10 @@
-const CACHE = "viaticos-v7"
-const PRECACHE = ["/", "/login", "/icon-192.png", "/manifest.json"]
+const CACHE = "viaticos-v8"
+// Solo se cachean recursos estáticos y públicos. Las páginas con sesión
+// nunca se guardan: en un equipo compartido quedarían legibles tras cerrar sesión.
+const PRECACHE = ["/login", "/icon-192.png", "/manifest.json"]
+const CACHEABLE = /^\/(_next\/static\/|icon[^/]*\.png$|apple-touch-icon[^/]*\.png$|logo\.png$|manifest\.json$|login$)/
 
 self.addEventListener("install", e => {
-  console.log("[SW] Installing v4")
   e.waitUntil(
     caches.open(CACHE)
       .then(c => c.addAll(PRECACHE).catch(() => {}))
@@ -11,7 +13,6 @@ self.addEventListener("install", e => {
 })
 
 self.addEventListener("activate", e => {
-  console.log("[SW] Activated v4")
   e.waitUntil(
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
@@ -22,23 +23,13 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return
   const url = new URL(e.request.url)
-  // Skip API calls, Supabase, Firebase, external CDN
-  if (
-    url.pathname.startsWith("/api/") ||
-    url.pathname.includes("sw.js") ||
-    url.pathname.includes("firebase") ||
-    url.hostname.includes("supabase") ||
-    url.hostname.includes("googleapis") ||
-    url.hostname.includes("gstatic") ||
-    url.hostname !== self.location.hostname
-  ) return
+  if (url.hostname !== self.location.hostname || !CACHEABLE.test(url.pathname)) return
 
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        // Only cache successful same-origin responses
-        if (res.ok && res.status < 400 && res.type === "basic") {
-          const clone = res.clone() // clone BEFORE returning
+        if (res.ok && res.type === "basic") {
+          const clone = res.clone()
           caches.open(CACHE).then(c => c.put(e.request, clone)).catch(() => {})
         }
         return res
@@ -46,5 +37,3 @@ self.addEventListener("fetch", e => {
       .catch(() => caches.match(e.request).then(r => r || Response.error()))
   )
 })
-
-

@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server"
 
 const SW_CONTENT = `
-const CACHE = "viaticos-v7"
-const PRECACHE = ["/", "/login", "/icon-192.png", "/manifest.json"]
+const CACHE = "viaticos-v8"
+// Solo se cachean recursos estáticos y públicos. Las páginas con sesión
+// nunca se guardan: en un equipo compartido quedarían legibles tras cerrar sesión.
+const PRECACHE = ["/login", "/icon-192.png", "/manifest.json"]
+const CACHEABLE = /^\/(_next\/static\/|icon[^/]*\.png$|apple-touch-icon[^/]*\.png$|logo\.png$|manifest\.json$|login$)/
 
 self.addEventListener("install", e => {
-  console.log("[SW] Installing v3")
   e.waitUntil(
     caches.open(CACHE)
       .then(c => c.addAll(PRECACHE).catch(() => {}))
@@ -14,7 +16,6 @@ self.addEventListener("install", e => {
 })
 
 self.addEventListener("activate", e => {
-  console.log("[SW] Activated v3")
   e.waitUntil(
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
@@ -25,14 +26,18 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return
   const url = new URL(e.request.url)
-  if (url.pathname.startsWith("/api/") || url.hostname.includes("supabase")) return
+  if (url.hostname !== self.location.hostname || !CACHEABLE.test(url.pathname)) return
+
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()))
+        if (res.ok && res.type === "basic") {
+          const clone = res.clone()
+          caches.open(CACHE).then(c => c.put(e.request, clone)).catch(() => {})
+        }
         return res
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(e.request).then(r => r || Response.error()))
   )
 })
 `
@@ -46,5 +51,3 @@ export async function GET() {
     },
   })
 }
-
-

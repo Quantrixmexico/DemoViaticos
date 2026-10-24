@@ -25,6 +25,8 @@ function getEnv() {
   }
 }
 
+const ROLES_VALIDOS = new Set(["usuario", "gerente", "tesoreria", "contador", "admin", "demo"])
+
 function iniciales(nombre: string): string {
   return (nombre || "")
     .split(/\s+/)
@@ -118,6 +120,8 @@ async function createUserAction(body: any) {
   const gerente_id= body.gerente_id ?? body.gerenteId ?? body.gerente ?? null
   const division  = body.division ?? body.division_sap ?? null
 
+  if (!ROLES_VALIDOS.has(rol)) return { error: "Rol inválido", status: 400 as const }
+  if (typeof password !== "string" || password.length < 8) return { error: "La contraseña debe tener al menos 8 caracteres", status: 400 as const }
   if (!correo || !password || !nombre || !rol) {
     return {
       error: "Faltan campos requeridos",
@@ -189,7 +193,7 @@ async function resetPasswordAction(body: any) {
   const { SUPABASE_URL, SERVICE_KEY } = getEnv()
   const { userId, newPassword } = body
   if (!userId || !newPassword) return { error: "Falta userId o newPassword", status: 400 as const }
-  if (newPassword.length < 6) return { error: "Mínimo 6 caracteres", status: 400 as const }
+  if (typeof newPassword !== "string" || newPassword.length < 8) return { error: "Mínimo 8 caracteres", status: 400 as const }
 
   const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
     method: "PUT",
@@ -248,13 +252,13 @@ export async function POST(
     const body = await req.json().catch(() => ({}))
     const callerRol = (authCheck as any).rol
 
-    // Restricciones para rol demo
+    // Restricciones para rol demo: solo puede dar de alta usuarios de rol "usuario".
     if (callerRol === "demo") {
-      if (action === "deleteUser" || action === "resetPassword") {
+      if (action !== "createUser") {
         return NextResponse.json({ error: "Modo demo: acción no permitida" }, { status: 403 })
       }
-      if (action === "createUser" && (body.rol === "admin" || body.role === "admin")) {
-        return NextResponse.json({ error: "Modo demo: no puedes crear usuarios admin" }, { status: 403 })
+      if ((body.rol ?? body.role) !== "usuario") {
+        return NextResponse.json({ error: "Modo demo: solo puedes crear usuarios con rol usuario" }, { status: 403 })
       }
     }
 

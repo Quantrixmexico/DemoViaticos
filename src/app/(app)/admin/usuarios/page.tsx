@@ -2,14 +2,13 @@
 import { useState, useEffect, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useUsuario } from "@/lib/UsuarioContext"
-import { esDemo, MSG_DEMO_BLOQUEADO } from "@/lib/permisos"
+import { esDemo, MSG_DEMO_BLOQUEADO, rolesAsignables } from "@/lib/permisos"
 import { Toast } from "@/components/ui/Toast"
 import { Dialog } from "@/components/ui/Dialog"
 import { useConfirm } from "@/components/ui/Confirm"
 import { Plus, KeyRound, X } from "lucide-react"
 import { SkeletonList } from "@/components/ui/Skeleton"
 
-const ROLES = ["usuario","gerente","tesoreria","contador","admin","demo"]
 
 async function callWorker(action: string, payload: any) {
   const res = await fetch(`/api/admin/users/${action}`, {
@@ -37,6 +36,7 @@ const FormField = ({ label, children }: { label: string; children: React.ReactNo
 export default function AdminUsuariosPage() {
   const usuarioActual = useUsuario()
   const soyDemo = esDemo(usuarioActual.rol)
+  const ROLES = rolesAsignables(usuarioActual.rol)
   const confirm = useConfirm()
   const [usuarios, setUsuarios] = useState<any[]>([])
   const [centros, setCentros] = useState<any[]>([])
