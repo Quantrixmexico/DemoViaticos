@@ -13,3 +13,7 @@ out/
 # Scripts locales de setup
 *.sh
 tsconfig.tsbuildinfo
+
+# Plantillas de variables (sí se versionan)
+!.env.example
+!.dev.vars.example

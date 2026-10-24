@@ -31,19 +31,39 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 Secretos solo del servidor (como secretos del Worker en Cloudflare; en desarrollo en `.dev.vars`). Se leen en tiempo de ejecución con `getCloudflareContext()`:
 
 ```
-SUPABASE_SERVICE_ROLE_KEY=   # alta, baja y contraseñas de usuarios (api/admin/users)
-PUSH_WORKER_URL=             # Worker de FCM que envía las notificaciones push
-PUSH_WORKER_SECRET=          # token Bearer que acepta ese Worker
+SUPABASE_SERVICE_ROLE_KEY=   # alta, baja y contraseñas de usuarios; lectura de tokens push
+FIREBASE_SERVICE_ACCOUNT=    # JSON completo de la cuenta de servicio de Firebase, en una sola línea
 ```
 
-Sin `PUSH_WORKER_URL` y `PUSH_WORKER_SECRET` la app funciona, pero no envía push.
+## Notificaciones push
+
+La app envía las push directamente a Firebase Cloud Messaging (API HTTP v1) desde `/api/push/notify`; no hace falta ningún Worker aparte. Para activarlas en un despliegue:
+
+1. Crea un proyecto en [Firebase](https://console.firebase.google.com) y añade una app web.
+2. Configuración del proyecto → General → "Tus apps": copia los valores de `firebaseConfig`.
+3. Configuración del proyecto → Cloud Messaging → "Certificados push web": genera el par de claves y copia la clave pública (VAPID).
+4. Configuración del proyecto → Cuentas de servicio → "Generar nueva clave privada": descarga el JSON.
+
+Variables públicas (se incrustan en el build; en Cloudflare van en Settings → Build → Variables, y también como variables del Worker):
+
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_FIREBASE_VAPID_KEY=
+```
+
+Secreto del Worker: `FIREBASE_SERVICE_ACCOUNT` con el contenido del JSON del paso 4. Sin estas variables la app funciona igual, pero no ofrece ni envía push.
 
 ## Seguridad
 
 - **RLS en Supabase.** La app consulta la base desde el navegador con la clave `anon`, así que la seguridad real la ponen las políticas por fila. `supabase/policies.sql` las define para todas las tablas y el bucket `comprobantes`; ejecútalo en el SQL Editor tras cualquier cambio de esquema y pruébalo con cada rol.
 - **Control de rol en el servidor.** Los layouts de `admin/`, `gerente/`, `tesoreria/`, `contador/` y `solicitudes/todas/` comprueban el rol con `requireRol` (`src/lib/auth-server.ts`) y redirigen a `/dashboard` si no corresponde. La lista de roles por área vive en `AREA_ROLES` y debe coincidir con la navegación de `AppShell`.
 - **Rol `demo`.** Solo puede dar de alta usuarios con rol `usuario`; no restablece contraseñas ni borra (`src/lib/permisos.ts` y `api/admin/users`).
-- **Push.** El navegador llama a `/api/push/notify`; el secreto del Worker nunca sale del servidor. El registro del token siempre se asocia al usuario con sesión.
+- **Push.** El navegador llama a `/api/push/notify`, que firma la petición a FCM con la cuenta de servicio; esa credencial nunca sale del servidor. El registro del token siempre se asocia al usuario con sesión.
 - **Service worker.** Solo cachea recursos estáticos y `/login`; las páginas con sesión no se guardan en el dispositivo.
 - **Archivos.** El bucket `comprobantes` es privado. En `archivo_url` se guarda la ruta dentro del bucket y los enlaces se generan con URLs firmadas (`src/lib/archivos.ts`, `ArchivoLink`). Las filas antiguas con URL pública se resuelven igual.
 

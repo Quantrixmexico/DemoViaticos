@@ -1,0 +1,3 @@
+# Copia a .dev.vars para desarrollo local (no se sube a git)
+SUPABASE_SERVICE_ROLE_KEY=
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account","project_id":"...","client_email":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"}
