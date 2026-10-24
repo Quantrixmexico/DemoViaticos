@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
 import { SegmentedNav, TESORERIA_TABS } from "@/components/ui/SegmentedNav"
+import { SkeletonList } from "@/components/ui/Skeleton"
 
 export default function TesoreriaPagadosPage() {
   const router = useRouter()
@@ -70,7 +71,7 @@ export default function TesoreriaPagadosPage() {
 
       <div className="card" style={{ padding:0, overflow:"auto" }}>
         {loading ? (
-          <div style={{ padding:40, textAlign:"center", color:"var(--text-3)" }}>Cargando…</div>
+          <SkeletonList rows={6} card={false}/>
         ) : (
           <table className="t cards" style={{minWidth:700}}>
             <thead>

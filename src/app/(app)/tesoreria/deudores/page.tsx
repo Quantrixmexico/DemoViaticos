@@ -6,6 +6,7 @@ import { fmtMXN } from "@/lib/format"
 import { SegmentedNav, TESORERIA_TABS } from "@/components/ui/SegmentedNav"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { CheckCircle2 } from "lucide-react"
+import { SkeletonList } from "@/components/ui/Skeleton"
 
 export default function TesoreriaDeudoresPage() {
   const [deudores, setDeudores] = useState<any[]>([])
@@ -53,7 +54,7 @@ export default function TesoreriaDeudoresPage() {
       </div>
 
       {loading ? (
-        <div className="card" style={{ padding: 40, textAlign: "center", color: "var(--text-3)" }}>Cargando…</div>
+        <SkeletonList rows={4}/>
       ) : deudores.length === 0 ? (
         <EmptyState icon={CheckCircle2} tone="success" title="Sin deudores" text="Todos los anticipos están comprobados."/>
       ) : (

@@ -6,6 +6,7 @@ import { esDemo, MSG_DEMO_BLOQUEADO } from "@/lib/permisos"
 import { Toast } from "@/components/ui/Toast"
 import { Dialog } from "@/components/ui/Dialog"
 import { Layers, Plus, Edit2, Power, Trash2 } from "lucide-react"
+import { SkeletonTable } from "@/components/ui/Skeleton"
 
 interface Division {
   codigo: string
@@ -102,7 +103,21 @@ export default function AdminDivisionesPage() {
     await load()
   }
 
-  if (loading) return <div style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
+  if (loading) return (
+    <>
+      <div className="page-head">
+        <div>
+          <h1 className="page-title" style={{display:"flex",alignItems:"center",gap:10}}>
+            <Layers size={22} strokeWidth={1.75}/> Divisiones SAP
+          </h1>
+          <div className="page-sub">Cargando…</div>
+        </div>
+      </div>
+      <div className="card" style={{padding:0,overflow:"hidden"}}>
+        <SkeletonTable rows={6} cols={5}/>
+      </div>
+    </>
+  )
 
   return (
     <>

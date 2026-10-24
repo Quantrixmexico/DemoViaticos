@@ -9,6 +9,7 @@ import type { Solicitud, SolicitudStatus } from "@/types"
 import { AlertTriangle, Plus, Inbox, SearchX } from "lucide-react"
 import { StatCards } from "@/components/ui/StatCards"
 import { EmptyState } from "@/components/ui/EmptyState"
+import { SkeletonList } from "@/components/ui/Skeleton"
 
 export default function MisSolicitudesPage() {
   const router = useRouter()
@@ -101,7 +102,7 @@ export default function MisSolicitudesPage() {
       {/* Tabla */}
       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: "center", color: "var(--text-3)" }}>Cargando solicitudes…</div>
+          <SkeletonList rows={5} card={false}/>
         ) : filtradas.length === 0 ? (
           solicitudes.length === 0
             ? <EmptyState variant="plain" icon={Inbox} title="Aún no tienes solicitudes" text="Pide un anticipo o registra un reembolso y aparecerá aquí."

@@ -8,6 +8,7 @@ import { fmtMXN, fmtFecha } from "@/lib/format"
 import { StatusBadge, TipoBadge } from "@/components/ui/StatusBadge"
 import { ChevronUp, ChevronDown, RotateCcw, CornerDownRight, SearchX } from "lucide-react"
 import { EmptyState } from "@/components/ui/EmptyState"
+import { SkeletonList } from "@/components/ui/Skeleton"
 
 type SortField = "fecha" | "monto" | "status" | "usuario"
 type SortDir   = "asc" | "desc"
@@ -197,9 +198,7 @@ export default function TodasSolicitudesPage() {
       {/* ── Tabla ── */}
       <div className="card" style={{ padding: 0, overflow: "auto" }}>
         {loading ? (
-          <div style={{ padding: 48, textAlign: "center", color: "var(--text-3)" }}>
-            Cargando solicitudes…
-          </div>
+          <SkeletonList rows={6} card={false}/>
         ) : filtradas.length === 0 ? (
           <EmptyState variant="plain" compact icon={SearchX} title="Sin resultados" text="Ninguna solicitud coincide con esos filtros."
             action={<button className="btn sm" onClick={resetFiltros}><RotateCcw size={14} strokeWidth={2}/> Limpiar filtros</button>}/>

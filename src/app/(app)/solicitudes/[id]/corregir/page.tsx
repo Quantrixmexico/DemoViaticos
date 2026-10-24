@@ -10,6 +10,7 @@ import { useCatalogos } from "@/hooks/useCatalogos"
 import { isComidas } from "@/lib/cuentaComidas"
 import { notifyUsers } from "@/lib/notify"
 import type { CfdItem } from "@/types"
+import { SkeletonPage } from "@/components/ui/Skeleton"
 
 interface ItemConObs extends CfdItem { observaciones?: string }
 
@@ -109,7 +110,15 @@ export default function CorregirComprobacionPage() {
   }
 
   if (!solicitud) return (
-    <div style={{padding:60,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
+    <div style={{ maxWidth:1000 }}>
+      <div className="page-head">
+        <div>
+          <h1 className="page-title"><RotateCcw size={16} strokeWidth={2} className="inline-icon"/> Corregir comprobación</h1>
+          <div className="page-sub">{id}</div>
+        </div>
+      </div>
+      <SkeletonPage/>
+    </div>
   )
 
   const total = items.filter(i=>!i.duplicado).reduce((a,i)=>a+i.total,0)

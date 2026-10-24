@@ -8,6 +8,7 @@ import { useCatalogos } from "@/hooks/useCatalogos"
 import type { Solicitud, PolizaLinea } from "@/types"
 import { Download, CheckCircle2, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react"
 import { StatCards } from "@/components/ui/StatCards"
+import { SkeletonList } from "@/components/ui/Skeleton"
 
 export default function ContadorPolizasPage() {
   const { catalogoGastos, centros, usuarios, loaded } = useCatalogos()
@@ -119,9 +120,7 @@ export default function ContadorPolizasPage() {
 
       {/* Polizas list */}
       {loadingData || !loaded ? (
-        <div className="card" style={{ padding: 40, textAlign: "center", color: "var(--text-3)" }}>
-          Cargando datos…
-        </div>
+        <SkeletonList rows={5}/>
       ) : polizas.length === 0 ? (
         <div className="card" style={{ padding: 40, textAlign: "center", color: "var(--text-3)" }}>
           Sin pólizas en el período seleccionado

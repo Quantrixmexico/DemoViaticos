@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Bell, CheckCheck, Inbox } from "lucide-react"
 import { stripEmoji } from "@/lib/text"
 import { EmptyState } from "@/components/ui/EmptyState"
+import { SkeletonList } from "@/components/ui/Skeleton"
 
 interface Notif {
   id: string
@@ -71,7 +72,19 @@ export default function NotificacionesPage() {
 
   const noLeidas = notifs.filter(n => !n.leida).length
 
-  if (loading) return <div style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
+  if (loading) return (
+    <>
+      <div className="page-head">
+        <div>
+          <h1 className="page-title" style={{display:"flex",alignItems:"center",gap:10}}>
+            <Bell size={22} strokeWidth={1.75}/> Notificaciones
+          </h1>
+          <div className="page-sub">Cargando…</div>
+        </div>
+      </div>
+      <SkeletonList rows={6}/>
+    </>
+  )
 
   return (
     <>

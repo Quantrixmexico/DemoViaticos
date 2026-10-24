@@ -15,6 +15,7 @@ import { isComidas } from "@/lib/cuentaComidas"
 import { normalizaCuentaAsync } from "@/lib/normalizaCuenta"
 import type { CfdItem, Solicitud } from "@/types"
 import { Suspense } from "react"
+import { SkeletonPage } from "@/components/ui/Skeleton"
 
 function NuevaComprobacionInner() {
   const router = useRouter()
@@ -279,7 +280,7 @@ function NuevaComprobacionInner() {
 
 export default function NuevaComprobacionPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 40, color: "var(--text-3)" }}>Cargando…</div>}>
+    <Suspense fallback={<SkeletonPage/>}>
       <NuevaComprobacionInner />
     </Suspense>
   )

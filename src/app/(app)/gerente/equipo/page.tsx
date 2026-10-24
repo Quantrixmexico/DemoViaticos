@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { fmtMXN } from "@/lib/format"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { Users } from "lucide-react"
+import { SkeletonCards } from "@/components/ui/Skeleton"
 
 export default function GerenteEquipoPage() {
   const router = useRouter()
@@ -27,7 +28,7 @@ export default function GerenteEquipoPage() {
         <div><h1 className="page-title">Mi equipo</h1><div className="page-sub">{equipo.length} personas</div></div>
       </div>
       {loading ? (
-        <div style={{padding:40,textAlign:"center",color:"var(--text-3)"}}>Cargando…</div>
+        <SkeletonCards count={6} h={140} min={280}/>
       ) : equipo.length===0 ? (
         <EmptyState icon={Users} title="Sin equipo asignado" text="No tienes usuarios bajo tu gerencia"/>
       ) : (
