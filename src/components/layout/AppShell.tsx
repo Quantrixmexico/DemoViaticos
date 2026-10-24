@@ -5,6 +5,7 @@ import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { UsuarioProvider } from "@/lib/UsuarioContext"
+import { useTheme } from "@/contexts/ThemeContext"
 import type { LucideIcon } from "lucide-react"
 import {
   Home, LayoutDashboard, CheckCircle2, ShieldCheck, Banknote, HandCoins,
@@ -12,7 +13,7 @@ import {
   BookOpen, Gauge, Settings, FileSpreadsheet, BarChart3, UserCircle,
   CircleCheckBig, Flag, UsersRound, Search, GitCompare, Bell, LogOut,
   Menu as MenuIcon, Palette, Moon, Sun,
-  Layers,
+  Layers, Eye,
 } from "lucide-react"
 
 interface NavItem  { id: string; label: string; icon: LucideIcon; href: string }
@@ -111,10 +112,11 @@ interface Props {
 export function AppShell({ user, children }: Props) {
   const pathname = usePathname()
   const router = useRouter()
+  const { mode, setMode } = useTheme()
+  const dark = mode === "dark"
   const navGroups = NAV_BY_ROL[user.rol] || []
   const navItems  = navGroups.flatMap(g => g.items)
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const [dark, setDark] = useState(true)
   const [textColor, setTextColor] = useState<string | null>(null)
   const [showColorPicker, setShowColorPicker] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -131,8 +133,6 @@ export function AppShell({ user, children }: Props) {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener("resize", checkMobile)
-    const t = localStorage.getItem("theme")
-    if (t === "light") { setDark(false); document.documentElement.classList.add("light") }
     const c = localStorage.getItem("textColor")
     if (c) {
       setTextColor(c)
@@ -147,7 +147,6 @@ export function AppShell({ user, children }: Props) {
     router.push("/login")
   }
 
-
   const cambiarColor = (color: string | null) => {
     setTextColor(color)
     if (color) {
@@ -160,35 +159,28 @@ export function AppShell({ user, children }: Props) {
     setShowColorPicker(false)
   }
 
-  const toggleTheme = () => {
-    const next = !dark
-    setDark(next)
-    if (next) { document.documentElement.classList.remove("light"); localStorage.setItem("theme","dark") }
-    else      { document.documentElement.classList.add("light");    localStorage.setItem("theme","light") }
-  }
+  const toggleTheme = () => setMode(dark ? "light" : "dark")
 
   // Estilos inline garantizan el layout — no dependen de globals.css
   const containerStyle: React.CSSProperties = {
     display: "grid",
-    gridTemplateColumns: isMobile ? "1fr" : "240px 1fr",
+    gridTemplateColumns: isMobile ? "1fr" : "248px 1fr",
     minHeight: "100vh",
-    background: "var(--bg, #0f1114)",
   }
   const sidebarStyle: React.CSSProperties = {
     display: isMobile ? "none" : "flex",
     flexDirection: "column",
-    width: 240,
-    borderRight: "1px solid var(--border, #23262c)",
-    background: "var(--surface, #14171b)",
-    padding: 14,
+    width: 248,
+    padding: "18px 14px 14px",
     gap: 8,
     height: "100vh",
     position: "sticky",
     top: 0,
     overflowY: "auto",
+    zIndex: 20,
   }
   const mainStyle: React.CSSProperties = {
-    padding: isMobile ? "60px 14px 80px" : 20,
+    padding: isMobile ? "68px 16px 96px" : "36px 44px 48px",
     overflowX: "hidden",
     minWidth: 0,
   }
@@ -196,9 +188,9 @@ export function AppShell({ user, children }: Props) {
     display: isMobile ? "flex" : "none",
     position: "fixed",
     bottom: 0, left: 0, right: 0,
-    height: 60,
-    background: "var(--surface, #14171b)",
-    borderTop: "1px solid var(--border, #23262c)",
+    height: "calc(64px + env(safe-area-inset-bottom, 0px))",
+    paddingBottom: "env(safe-area-inset-bottom, 0px)",
+    borderTop: "1px solid var(--border-soft)",
     zIndex: 100,
     justifyContent: "space-around",
     alignItems: "center",
@@ -207,261 +199,235 @@ export function AppShell({ user, children }: Props) {
     display: isMobile ? "flex" : "none",
     position: "fixed",
     top: 0, left: 0, right: 0,
-    height: 48,
-    background: "var(--surface, #14171b)",
-    borderBottom: "1px solid var(--border, #23262c)",
+    height: 52,
+    borderBottom: "1px solid var(--border-soft)",
     zIndex: 99,
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "0 14px",
+    padding: "0 16px",
   }
+
+  const colorPicker = showColorPicker && (
+    <>
+      <div style={{ position:"fixed", inset:0, zIndex:999 }} onClick={() => setShowColorPicker(false)}/>
+      <div className="popover glass" style={{
+        position: isMobile ? "fixed" : "absolute",
+        top: isMobile ? 58 : 44, left: isMobile ? "auto" : 0, right: isMobile ? 12 : "auto",
+        zIndex:1000, borderRadius:16, padding:14,
+        border:"1px solid var(--border-soft)", boxShadow:"var(--shadow-pop)", width:232,
+      }}>
+        <div style={{ fontSize:13, fontWeight:600, marginBottom:10 }}>Color de texto</div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(6, 1fr)", gap:8, marginBottom:10 }}>
+          {[
+            { color:null,        label:"Predeterminado", bg:"transparent", border:"var(--border)" },
+            { color:"#ffffff",   label:"Blanco",  bg:"#ffffff" },
+            { color:"#f5e6d3",   label:"Crema",   bg:"#f5e6d3" },
+            { color:"#5ee6c3",   label:"Aurora",  bg:"#5ee6c3" },
+            { color:"#a8d5f0",   label:"Cielo",   bg:"#a8d5f0" },
+            { color:"#f5c0c0",   label:"Rosa",    bg:"#f5c0c0" },
+            { color:"#c0f5d5",   label:"Menta",   bg:"#c0f5d5" },
+            { color:"#e8d5f5",   label:"Lila",    bg:"#e8d5f5" },
+            { color:"#fbbf24",   label:"Ámbar",   bg:"#fbbf24" },
+            { color:"#f97316",   label:"Naranja", bg:"#f97316" },
+            { color:"#ef4444",   label:"Rojo",    bg:"#ef4444" },
+            { color:"#94a3b8",   label:"Gris",    bg:"#94a3b8" },
+          ].map((c, i) => {
+            const selected = (textColor === c.color) || (!textColor && c.color === null)
+            return (
+              <button key={i} onClick={() => cambiarColor(c.color)}
+                title={c.label} aria-label={c.label} aria-pressed={selected}
+                style={{
+                  width:26, height:26, borderRadius:"50%", padding:0, cursor:"pointer",
+                  border: `1px solid ${c.border || "rgba(0,0,0,0.15)"}`,
+                  background: c.bg, position:"relative",
+                  boxShadow: selected ? "0 0 0 2px var(--surface), 0 0 0 4px var(--accent)" : "none",
+                  transition:"box-shadow .2s, transform .25s var(--ease-spring)",
+                }}>
+                {c.color === null && (
+                  <span style={{ position:"absolute", inset:0, display:"grid", placeItems:"center",
+                    fontSize:11, color:"var(--text-3)" }}>×</span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+        <input type="color"
+          value={textColor || "#ffffff"}
+          onChange={(e) => cambiarColor(e.target.value)}
+          style={{ width:"100%", height:30, border:"1px solid var(--border)", borderRadius:10,
+            cursor:"pointer", background:"transparent" }}
+          title="Color personalizado"
+        />
+      </div>
+    </>
+  )
 
   return (
     <div style={containerStyle}>
       {/* SIDEBAR DESKTOP */}
-      <aside style={sidebarStyle} className="sidebar">
-        <div style={{ display:"flex", alignItems:"center", gap:10, padding:"4px 8px 12px" }}>
-          <Image src="/logo.png" alt="Logo" width={36} height={36} style={{ borderRadius:8 }}/>
-          <div>
-            <div style={{ fontSize:12, fontWeight:700 }}>Demo Viáticos</div>
-            <div style={{ fontSize:10, color:"var(--text-3, #888)" }}>Viáticos</div>
+      <aside style={sidebarStyle} className="sidebar glass">
+        <div style={{ display:"flex", alignItems:"center", gap:11, padding:"2px 6px 14px" }}>
+          <Image src="/logo.png" alt="Logo" width={36} height={36}
+            style={{ borderRadius:10, boxShadow:"0 0 0 1px var(--border-soft), 0 6px 18px -6px rgba(0,0,0,.5)" }}/>
+          <div style={{ lineHeight:1.2 }}>
+            <div style={{ fontSize:14, fontWeight:650, letterSpacing:"-0.02em" }}>Demo Viáticos</div>
+            <div style={{ fontSize:12, color:"var(--text-3)" }}>Gastos de viaje</div>
           </div>
         </div>
 
-        <div style={{ display:"flex", gap:6, padding:"0 4px", position:"relative" }}>
-          <button className="icon-btn" onClick={() => router.push("/notificaciones")} title="Notificaciones">
+        <div style={{ display:"flex", gap:8, padding:"0 4px 4px", position:"relative" }}>
+          <button className="icon-btn" onClick={() => router.push("/notificaciones")} title="Notificaciones" aria-label="Notificaciones">
             <Bell size={16} strokeWidth={1.75}/>
           </button>
-          <button className="icon-btn" onClick={() => setShowColorPicker(!showColorPicker)} title="Color de texto">
+          <button className="icon-btn" onClick={() => setShowColorPicker(!showColorPicker)} title="Color de texto" aria-label="Color de texto">
             <Palette size={16} strokeWidth={1.75} color={textColor || undefined}/>
           </button>
-          <button className="icon-btn" onClick={toggleTheme} title="Cambiar tema">
-            {dark ? <Sun size={16} strokeWidth={1.75}/> : <Moon size={16} strokeWidth={1.75}/>}
+          <button className="icon-btn" onClick={toggleTheme} title={dark ? "Usar tema claro" : "Usar tema oscuro"} aria-label="Cambiar tema">
+            <span key={mode} className="popover" style={{ display:"grid" }}>
+              {dark ? <Sun size={16} strokeWidth={1.75}/> : <Moon size={16} strokeWidth={1.75}/>}
+            </span>
           </button>
-
-          {showColorPicker && (
-            <div style={{
-              position:"absolute", top:36, left:0, zIndex:1000,
-              background:"var(--surface, #14171b)",
-              border:"1px solid var(--border, #23262c)",
-              borderRadius:10, padding:10,
-              boxShadow:"0 8px 24px rgba(0,0,0,0.4)",
-              minWidth:200,
-            }}>
-              <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", color:"var(--text-3, #888)", marginBottom:8, padding:"0 2px" }}>
-                Color de texto
-              </div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(6, 1fr)", gap:6, marginBottom:8 }}>
-                {[
-                  { color:null,        label:"Predet.", bg:"transparent", border:"var(--border, #23262c)" },
-                  { color:"#ffffff",   label:"Blanco",  bg:"#ffffff" },
-                  { color:"#f5e6d3",   label:"Crema",   bg:"#f5e6d3" },
-                  { color:"#c5f24d",   label:"Lima",    bg:"#c5f24d" },
-                  { color:"#a8d5f0",   label:"Cielo",   bg:"#a8d5f0" },
-                  { color:"#f5c0c0",   label:"Rosa",    bg:"#f5c0c0" },
-                  { color:"#c0f5d5",   label:"Menta",   bg:"#c0f5d5" },
-                  { color:"#e8d5f5",   label:"Lila",    bg:"#e8d5f5" },
-                  { color:"#fbbf24",   label:"Ámbar",   bg:"#fbbf24" },
-                  { color:"#f97316",   label:"Naranja", bg:"#f97316" },
-                  { color:"#ef4444",   label:"Rojo",    bg:"#ef4444" },
-                  { color:"#94a3b8",   label:"Gris",    bg:"#94a3b8" },
-                ].map((c, i) => {
-                  const isActive = (textColor === c.color) || (!textColor && c.color === null)
-                  return (
-                    <button key={i} onClick={() => cambiarColor(c.color)}
-                      title={c.label}
-                      style={{
-                        width:26, height:26,
-                        border: isActive ? "2px solid var(--accent, #c5f24d)" : `1px solid ${c.border || "rgba(0,0,0,0.2)"}`,
-                        borderRadius:6,
-                        background: c.bg,
-                        cursor:"pointer",
-                        padding:0,
-                        position:"relative",
-                      }}>
-                      {c.color === null && (
-                        <span style={{
-                          position:"absolute", inset:0,
-                          display:"grid", placeItems:"center",
-                          fontSize:10, color:"var(--text-3, #888)",
-                        }}>×</span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-              <input type="color"
-                value={textColor || "#ffffff"}
-                onChange={(e) => cambiarColor(e.target.value)}
-                style={{
-                  width:"100%", height:28,
-                  border:"1px solid var(--border, #23262c)",
-                  borderRadius:6, cursor:"pointer",
-                  background:"transparent",
-                }}
-                title="Color personalizado"
-              />
-            </div>
-          )}
+          {!isMobile && colorPicker}
         </div>
 
-        <nav style={{ flex:1, display:"flex", flexDirection:"column", overflowY:"auto", marginTop:8 }}>
+        <nav style={{ flex:1, display:"flex", flexDirection:"column", overflowY:"auto", overflowX:"visible", marginTop:4, gap:1 }}>
           {navGroups.map((group, gi) => (
-            <div key={gi} style={{ marginBottom: group.label ? 4 : 0 }}>
-              {group.label && (
-                <div style={{
-                  fontSize:9, fontWeight:700, textTransform:"uppercase",
-                  letterSpacing:"0.1em", color:"var(--text-3, #888)",
-                  padding:"10px 14px 4px", userSelect:"none",
-                }}>
-                  {group.label}
-                </div>
-              )}
+            <div key={gi} style={{ display:"flex", flexDirection:"column", gap:1 }}>
+              {group.label && <div className="nav-group-label">{group.label}</div>}
               {group.items.map(item => {
                 const Icon = item.icon
+                const active = isActive(item.href)
                 return (
                   <Link key={item.id} href={item.href}
-                    className={`nav-item ${isActive(item.href) ? "active" : ""}`}
-                    style={{
-                      display:"flex", alignItems:"center", gap:10,
-                      padding:"8px 12px", borderRadius:8, textDecoration:"none",
-                      color: isActive(item.href) ? "var(--accent, #c5f24d)" : "var(--text, #e5e7eb)",
-                      background: isActive(item.href) ? "var(--accent-soft, rgba(197,242,77,0.1))" : "transparent",
-                      fontSize:13, fontWeight: isActive(item.href) ? 600 : 400,
-                    }}>
-                    <Icon size={18} strokeWidth={1.75} style={{ flexShrink:0 }}/>
+                    className={`nav-item ${active ? "active" : ""}`}
+                    aria-current={active ? "page" : undefined}>
+                    <Icon size={18} strokeWidth={active ? 2 : 1.75} style={{ flexShrink:0 }}/>
                     <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                       {item.label}
                     </span>
                   </Link>
                 )
               })}
-              {gi < navGroups.length - 1 && group.label && (
-                <div style={{ height:1, background:"var(--border, #23262c)", margin:"6px 12px 2px" }}/>
-              )}
             </div>
           ))}
         </nav>
 
-        <div style={{ borderTop:"1px solid var(--border, #23262c)", paddingTop:10, marginTop:8 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 8px", marginBottom:8 }}>
-            <div style={{
-              width:32, height:32, borderRadius:"50%",
-              background:"var(--surface-2, #1a1e24)",
-              border:"1px solid var(--border, #23262c)",
-              display:"grid", placeItems:"center", fontSize:11, fontWeight:700,
-              flexShrink:0,
-            }}>{user.iniciales}</div>
+        <div style={{ borderTop:"1px solid var(--border-soft)", paddingTop:12, marginTop:8 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, padding:"4px 6px", marginBottom:6 }}>
+            <Avatar iniciales={user.iniciales} size={34}/>
             <div style={{ minWidth:0, flex:1 }}>
-              <div style={{ fontSize:12, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user.nombre}</div>
-              <div style={{ fontSize:10, color:"var(--text-3, #888)", textTransform:"capitalize" }}>{user.rol}</div>
+              <div style={{ fontSize:13, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user.nombre}</div>
+              <div style={{ fontSize:12, color:"var(--text-3)", textTransform:"capitalize" }}>{user.rol}</div>
             </div>
           </div>
-          <button onClick={cerrarSesion}
-            style={{
-              width:"100%", display:"flex", alignItems:"center", gap:8,
-              padding:"8px 12px", borderRadius:8, border:"none", cursor:"pointer",
-              background:"transparent", color:"var(--text-2, #aaa)", fontSize:12,
-            }}>
-            <LogOut size={14} strokeWidth={1.75}/> Cerrar sesión
+          <button onClick={cerrarSesion} className="nav-item"
+            style={{ width:"100%", border:"none", background:"transparent", font:"inherit", fontSize:13 }}>
+            <LogOut size={16} strokeWidth={1.75}/> Cerrar sesión
           </button>
         </div>
       </aside>
 
       {/* TOP BAR MOBILE */}
-      <div style={mobileTopbarStyle}>
-        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <Image src="/logo.png" alt="Logo" width={28} height={28} style={{ borderRadius:6 }}/>
-          <span style={{ fontSize:14, fontWeight:600 }}>Viáticos</span>
+      <div style={mobileTopbarStyle} className="glass">
+        <div style={{ display:"flex", alignItems:"center", gap:9 }}>
+          <Image src="/logo.png" alt="Logo" width={28} height={28} style={{ borderRadius:8 }}/>
+          <span style={{ fontSize:16, fontWeight:650, letterSpacing:"-0.02em" }}>Viáticos</span>
         </div>
-        <div style={{ display:"flex", gap:6 }}>
-          <button className="icon-btn" onClick={() => router.push("/notificaciones")}>
+        <div style={{ display:"flex", gap:8 }}>
+          <button className="icon-btn" onClick={() => router.push("/notificaciones")} aria-label="Notificaciones">
             <Bell size={16} strokeWidth={1.75}/>
           </button>
-          <button className="icon-btn" onClick={() => setShowColorPicker(!showColorPicker)} title="Color de texto">
+          <button className="icon-btn" onClick={() => setShowColorPicker(!showColorPicker)} title="Color de texto" aria-label="Color de texto">
             <Palette size={16} strokeWidth={1.75} color={textColor || undefined}/>
           </button>
-          <button className="icon-btn" onClick={toggleTheme}>
-            {dark ? <Sun size={16} strokeWidth={1.75}/> : <Moon size={16} strokeWidth={1.75}/>}
+          <button className="icon-btn" onClick={toggleTheme} aria-label="Cambiar tema">
+            <span key={mode} className="popover" style={{ display:"grid" }}>
+              {dark ? <Sun size={16} strokeWidth={1.75}/> : <Moon size={16} strokeWidth={1.75}/>}
+            </span>
           </button>
         </div>
+        {isMobile && colorPicker}
       </div>
 
       {/* MAIN */}
       <main style={mainStyle}>
         {user.rol === "demo" && (
           <div style={{
-            background: "linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%)",
-            color: "#1a1a1a", padding: "8px 16px", borderRadius: 8,
-            marginBottom: 16, fontSize: 13, fontWeight: 600,
-            display: "flex", alignItems: "center", gap: 8,
+            background: "var(--warn-soft)", color: "var(--warn)",
+            border: "1px solid color-mix(in srgb, var(--warn) 25%, transparent)",
+            padding: "9px 14px", borderRadius: 14, marginBottom: 20,
+            fontSize: 13, fontWeight: 500, display: "flex", alignItems: "center", gap: 10,
           }}>
-            <span style={{fontSize:16}}>👁</span>
-            MODO DEMO — Puedes explorar y crear registros, pero las acciones destructivas (borrar, desactivar) están bloqueadas.
+            <Eye size={16} strokeWidth={2} style={{ flexShrink:0 }}/>
+            <span>Modo demo: puedes explorar y crear registros. Borrar y desactivar están bloqueados.</span>
           </div>
         )}
-        <UsuarioProvider usuario={user}>{children}</UsuarioProvider>
+        <div key={pathname} className="page-enter" style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <UsuarioProvider usuario={user}>{children}</UsuarioProvider>
+        </div>
       </main>
 
       {/* BOTTOM NAV MOBILE */}
-      <nav style={mobileNavStyle}>
+      <nav style={mobileNavStyle} className="glass">
         {navItems.slice(0, 4).map(item => {
           const Icon = item.icon
+          const active = isActive(item.href)
           return (
             <Link key={item.id} href={item.href}
+              className={`mobile-nav-item ${active ? "active" : ""}`}
+              aria-current={active ? "page" : undefined}
               style={{
                 display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-                gap:2, flex:1, padding:"6px 2px", textDecoration:"none",
-                color: isActive(item.href) ? "var(--accent, #c5f24d)" : "var(--text-3, #888)",
+                gap:3, flex:1, padding:"6px 2px", textDecoration:"none",
+                color: active ? "var(--accent)" : "var(--text-3)",
               }}>
-              <Icon size={20} strokeWidth={1.75}/>
-              <span style={{ fontSize:9 }}>{item.label.split(" ")[0]}</span>
+              <Icon size={22} strokeWidth={active ? 2.1 : 1.75}/>
+              <span style={{ fontSize:10, fontWeight: active ? 600 : 500 }}>{item.label.split(" ")[0]}</span>
             </Link>
           )
         })}
         <button onClick={() => setShowUserMenu(!showUserMenu)}
+          className={`mobile-nav-item ${showUserMenu ? "active" : ""}`}
           style={{
             display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-            gap:2, flex:1, padding:"6px 2px", background:"transparent", border:"none",
-            color: showUserMenu ? "var(--accent, #c5f24d)" : "var(--text-3, #888)",
-            cursor:"pointer",
+            gap:3, flex:1, padding:"6px 2px", background:"transparent", border:"none",
+            color: showUserMenu ? "var(--accent)" : "var(--text-3)", cursor:"pointer", font:"inherit",
           }}>
-          <MenuIcon size={20} strokeWidth={1.75}/>
-          <span style={{ fontSize:9 }}>Más</span>
+          <MenuIcon size={22} strokeWidth={1.75}/>
+          <span style={{ fontSize:10, fontWeight:500 }}>Más</span>
         </button>
       </nav>
 
       {/* DRAWER MOBILE */}
       {showUserMenu && (
-        <div onClick={() => setShowUserMenu(false)}
+        <div onClick={() => setShowUserMenu(false)} className="sheet-backdrop"
           style={{
-            position:"fixed", inset:0, background:"rgba(0,0,0,0.5)",
+            position:"fixed", inset:0, background:"rgba(0,0,0,0.45)",
+            WebkitBackdropFilter:"blur(6px)", backdropFilter:"blur(6px)",
             zIndex:200, display:"flex", alignItems:"flex-end",
           }}>
-          <div onClick={e => e.stopPropagation()}
+          <div onClick={e => e.stopPropagation()} className="sheet"
             style={{
-              width:"100%", background:"var(--surface, #14171b)",
-              borderTopLeftRadius:16, borderTopRightRadius:16,
-              padding:16, maxHeight:"80vh", overflowY:"auto",
+              width:"100%", background:"var(--surface)",
+              borderTopLeftRadius:24, borderTopRightRadius:24,
+              padding:"10px 16px calc(20px + env(safe-area-inset-bottom, 0px))",
+              maxHeight:"82vh", overflowY:"auto",
+              boxShadow:"0 -20px 60px -20px rgba(0,0,0,.5)",
             }}>
-            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
-              <div style={{
-                width:40, height:40, borderRadius:"50%",
-                background:"var(--surface-2, #1a1e24)", border:"1px solid var(--border, #23262c)",
-                display:"grid", placeItems:"center", fontSize:14, fontWeight:700,
-              }}>{user.iniciales}</div>
+            <div style={{ width:38, height:5, borderRadius:3, background:"var(--border)", margin:"0 auto 16px" }}/>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14, padding:"0 4px" }}>
+              <Avatar iniciales={user.iniciales} size={44}/>
               <div>
-                <div style={{ fontSize:14, fontWeight:600 }}>{user.nombre}</div>
-                <div style={{ fontSize:11, color:"var(--text-3, #888)", textTransform:"capitalize" }}>{user.rol}</div>
+                <div style={{ fontSize:16, fontWeight:600, letterSpacing:"-0.02em" }}>{user.nombre}</div>
+                <div style={{ fontSize:13, color:"var(--text-3)", textTransform:"capitalize" }}>{user.rol}</div>
               </div>
             </div>
 
             <Link href="/perfil" onClick={() => setShowUserMenu(false)}
-              style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px",
-                borderRadius:10, color:"var(--text, #e5e7eb)", textDecoration:"none", marginBottom:8,
-                background: isActive("/perfil") ? "var(--accent-soft, rgba(197,242,77,0.1))" : "transparent" }}>
+              className={`nav-item ${isActive("/perfil") ? "active" : ""}`}
+              style={{ padding:"11px 12px", fontSize:15, marginBottom:6 }}>
               <UserCircle size={20} strokeWidth={1.75}/>
-              <span style={{ fontSize:14 }}>Mi perfil</span>
+              <span>Mi perfil</span>
             </Link>
 
             {(() => {
@@ -471,25 +437,16 @@ export function AppShell({ user, children }: Props) {
                 if (!visibleItems.length) return null
                 return (
                   <div key={gi} style={{ marginBottom:6 }}>
-                    {group.label && (
-                      <div style={{
-                        fontSize:10, fontWeight:700, textTransform:"uppercase",
-                        letterSpacing:"0.08em", color:"var(--text-3, #888)",
-                        padding:"10px 12px 4px", userSelect:"none",
-                      }}>
-                        {group.label}
-                      </div>
-                    )}
+                    {group.label && <div className="nav-group-label">{group.label}</div>}
                     {visibleItems.map(item => {
                       const Icon = item.icon
                       return (
                         <Link key={item.id} href={item.href}
                           onClick={() => setShowUserMenu(false)}
-                          style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px",
-                            borderRadius:10, color:"var(--text, #e5e7eb)", textDecoration:"none",
-                            background: isActive(item.href) ? "var(--accent-soft, rgba(197,242,77,0.1))" : "transparent" }}>
+                          className={`nav-item ${isActive(item.href) ? "active" : ""}`}
+                          style={{ padding:"11px 12px", fontSize:15 }}>
                           <Icon size={20} strokeWidth={1.75}/>
-                          <span style={{ fontSize:14 }}>{item.label}</span>
+                          <span>{item.label}</span>
                         </Link>
                       )
                     })}
@@ -498,14 +455,9 @@ export function AppShell({ user, children }: Props) {
               })
             })()}
 
-            <button onClick={cerrarSesion}
-              style={{
-                width:"100%", display:"flex", alignItems:"center", justifyContent:"center",
-                gap:8, padding:"10px 12px", borderRadius:10, border:"1px solid var(--border, #23262c)",
-                background:"transparent", color:"var(--text-2, #aaa)", fontSize:13,
-                cursor:"pointer", marginTop:12,
-              }}>
-              <LogOut size={14} strokeWidth={1.75}/> Cerrar sesión
+            <button onClick={cerrarSesion} className="btn"
+              style={{ width:"100%", justifyContent:"center", marginTop:12, padding:"12px" }}>
+              <LogOut size={15} strokeWidth={1.75}/> Cerrar sesión
             </button>
           </div>
         </div>
@@ -514,5 +466,15 @@ export function AppShell({ user, children }: Props) {
   )
 }
 
-export default AppShell
+function Avatar({ iniciales, size }: { iniciales: string; size: number }) {
+  return (
+    <div style={{
+      width:size, height:size, borderRadius:"50%", flexShrink:0,
+      display:"grid", placeItems:"center", fontSize: Math.round(size * .34), fontWeight:700,
+      color:"#04110d", letterSpacing:"-0.02em",
+      background:"linear-gradient(135deg, var(--aurora-1), var(--aurora-2) 60%, var(--aurora-3))",
+    }}>{iniciales}</div>
+  )
+}
 
+export default AppShell
