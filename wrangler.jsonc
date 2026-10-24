@@ -14,6 +14,10 @@
   "observability": {
     "enabled": true
   },
+  // Las variables de ejecución se administran en el panel de Cloudflare
+  // (Settings → Variables and Secrets). Sin esto, cada despliegue con wrangler
+  // borra las que no estén declaradas en este archivo.
+  "keep_vars": true,
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",

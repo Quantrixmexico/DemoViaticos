@@ -99,4 +99,5 @@ src/contexts          ThemeContext (modo claro/oscuro y acento)
 ## Notas de despliegue
 
 - La caché persistente de Turbopack está desactivada en `next.config.ts` (`turbopackFileSystemCacheForBuild/Dev: false`): con ella activa, Cloudflare Workers Builds y `next dev` servían un `globals.css` anterior tras editarlo.
-- Cloudflare Workers Builds ejecuta `npm run build` y después `npx wrangler versions upload`, que necesita `.open-next/worker.js`. Por eso `npm run build` corre OpenNext y no solo `next build`. Las variables `NEXT_PUBLIC_*` deben estar en Settings → Build → Variables, porque se incrustan al compilar.
+- Cloudflare Workers Builds ejecuta `npm run build` y después `npx wrangler versions upload`, que necesita `.open-next/worker.js`. Por eso `npm run build` corre OpenNext y no solo `next build`.
+- Las variables `NEXT_PUBLIC_*` van en dos sitios de Cloudflare: Settings → Build → Variables (se incrustan al compilar) y Settings → Variables and Secrets (las lee el servidor en ejecución). `wrangler.jsonc` lleva `keep_vars: true` para que el despliegue no borre las de ejecución.
