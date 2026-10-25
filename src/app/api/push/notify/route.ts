@@ -15,12 +15,17 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const sa = cuentaServicio()
+  const cuenta = cuentaServicio()
   const supabaseUrl = serverEnv("NEXT_PUBLIC_SUPABASE_URL")
   const serviceKey = serverEnv("SUPABASE_SERVICE_ROLE_KEY")
-  if (!sa || !supabaseUrl || !serviceKey) {
-    return NextResponse.json({ error: "Push no configurado" }, { status: 503 })
+  const motivos: string[] = []
+  if (!cuenta.sa) motivos.push(cuenta.motivo)
+  if (!supabaseUrl) motivos.push("NEXT_PUBLIC_SUPABASE_URL no está definido")
+  if (!serviceKey) motivos.push("SUPABASE_SERVICE_ROLE_KEY no está definido en Variables and Secrets")
+  if (!cuenta.sa || !supabaseUrl || !serviceKey) {
+    return NextResponse.json({ error: "Push no configurado", motivos }, { status: 503 })
   }
+  const sa = cuenta.sa
 
   const body = await request.json().catch(() => null)
   const userIds: unknown = body?.userIds

@@ -36,11 +36,11 @@ export function NotifButton() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userIds: [usuario.id], title: "Notificación de prueba", body: "Si ves esto, las push funcionan en este dispositivo.", path: "/perfil" }),
       })
-      const data = await res.json().catch(() => ({})) as { ok?: boolean; enviados?: number; error?: string }
+      const data = await res.json().catch(() => ({})) as { ok?: boolean; enviados?: number; error?: string; motivos?: string[] }
       if (res.ok && data.ok) {
         setAviso(data.enviados ? `✓ Enviada a ${data.enviados} dispositivo${data.enviados === 1 ? "" : "s"}. Debería aparecer en unos segundos.` : "⚠ El servidor no encontró ningún dispositivo registrado para tu usuario. Pulsa Volver a vincular.")
       } else if (res.status === 503) {
-        setAviso("⚠ El servidor no tiene configurado el envío (falta FIREBASE_SERVICE_ACCOUNT).")
+        setAviso(`⚠ El servidor no tiene configurado el envío: ${(data.motivos || []).join(" · ") || "sin detalle"}`)
       } else {
         setAviso(`⚠ Error ${res.status}: ${data.error || "sin detalle"}`)
       }
@@ -48,7 +48,7 @@ export function NotifButton() {
       setAviso(`⚠ No se pudo contactar al servidor: ${(e as Error).message}`)
     } finally {
       setProbando(false)
-      setTimeout(() => setAviso(null), 7000)
+      setTimeout(() => setAviso(null), 15000)
     }
   }
 
