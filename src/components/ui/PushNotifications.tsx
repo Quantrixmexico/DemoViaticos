@@ -50,9 +50,17 @@ function PushNotificationsInner({ userId }: Props) {
       .catch(reject)
   }), [])
 
-  const registerToken = useCallback(async () => {
+  const avisar = useCallback((msg: string, ms = 12000) => { setAviso(msg); setTimeout(() => setAviso(null), ms) }, [])
+
+  const registerToken = useCallback(async (mostrarResultado = false) => {
     try {
-      await loadFirebase()
+      try {
+        await loadFirebase()
+      } catch (e: unknown) {
+        console.error("[FCM] loadFirebase error:", (e as Error)?.message || e)
+        avisar("⚠ No se pudo cargar Firebase (www.gstatic.com). Si usas Edge en modo Estricto o un bloqueador, permite este sitio y vuelve a intentar.")
+        return
+      }
 
       // Explicitly register Firebase SW and pass it to getToken
       let swReg: ServiceWorkerRegistration | undefined
@@ -69,7 +77,11 @@ function PushNotificationsInner({ userId }: Props) {
         ...(swReg ? { serviceWorkerRegistration: swReg } : {}),
       })
 
-      if (!token) { console.warn("[FCM] No token returned - check VAPID key and permissions"); return }
+      if (!token) {
+        console.warn("[FCM] No token returned - check VAPID key and permissions")
+        avisar("⚠ El navegador no entregó un token de notificaciones. Revisa que el permiso esté concedido y que no haya bloqueadores.")
+        return
+      }
 
       console.log("[FCM] Token:", token.slice(0, 30) + "...")
 
@@ -77,26 +89,29 @@ function PushNotificationsInner({ userId }: Props) {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
       })
-      const data = await res.json()
-      if (data.ok) {
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data.ok) {
         console.log("[FCM] Token saved to DB")
         localStorage.setItem("notif-status", "granted")
+        if (mostrarResultado) avisar("✓ Este dispositivo quedó vinculado a tu cuenta. Ya puedes pulsar Enviar prueba.", 8000)
       } else {
         console.error("[FCM] DB save failed:", data)
+        avisar(`⚠ No se pudo guardar el dispositivo (${res.status}): ${data.error || "sin detalle"}`)
       }
     } catch(e: any) {
       console.error("[FCM] registerToken error:", e?.message || e)
+      avisar(`⚠ No se pudo vincular este dispositivo: ${e?.message || e}`)
     }
-  }, [loadFirebase])
+  }, [loadFirebase, avisar])
 
   const handleActivar = useCallback(async () => {
-    if (!("Notification" in window)) { setAviso("⚠ Este navegador no admite notificaciones push"); setTimeout(() => setAviso(null), 4000); return }
+    if (!("Notification" in window)) { avisar("⚠ Este navegador no admite notificaciones push", 4000); return }
     setStatus("asking"); setBanner(false)
     try {
       const perm = await Notification.requestPermission()
       if (perm === "granted") {
         setStatus("granted")
-        await registerToken()
+        await registerToken(true)
       } else {
         setStatus("denied")
         localStorage.setItem("notif-status", "denied")
@@ -105,7 +120,7 @@ function PushNotificationsInner({ userId }: Props) {
       console.error("[FCM] handleActivar error:", e?.message || e)
       setStatus("idle")
     }
-  }, [registerToken])
+  }, [registerToken, avisar])
 
   useEffect(() => { globalSetup = handleActivar; return () => { globalSetup = null } }, [handleActivar])
 
