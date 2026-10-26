@@ -79,14 +79,16 @@ export default function GerenteBandejaPage() {
       solicitud_id: id, accion: "autorizado", usuario_id: userId,
       detalle: "Aprobado por gerente", ts: new Date().toISOString(),
     })
-    // Notify solicitante
+    // Notify solicitante — in-app + push
+    const cuerpoSolicitante = `Tu ${s.tipo} de ${fmtMXN(s.monto)} fue autorizado por tu gerente. Pasa a validación de administración.`
     try {
       await sb.from("notificaciones").insert({
         usuario_id: s.usuario, titulo: "Solicitud autorizada",
-        cuerpo: `Tu solicitud ${id} fue autorizada`, tipo: "aprobacion",
-        leida: false, created_at: new Date().toISOString(),
+        cuerpo: cuerpoSolicitante, tipo: "aprobacion",
+        leida: false, solicitud_id: id, created_at: new Date().toISOString(),
       })
     } catch {}
+    await notifyUsers([s.usuario], "Solicitud autorizada", cuerpoSolicitante, `/solicitudes/${id}`)
 
     // Notify all admins — push + in-app
     try {
@@ -97,8 +99,8 @@ export default function GerenteBandejaPage() {
         // Push notification
         await notifyUsers(
           admins.map((a:any) => a.id),
-          "Solicitud pendiente de validación",
-          `${solicitante?.nombre || "Usuario"} · ${fmtMXN(s.monto)} — requiere tu validación admin`,
+          "Nueva solicitud por validar",
+          `${solicitante?.nombre || "Usuario"} · ${fmtMXN(s.monto)} · autorizada por gerente, requiere validación de administración`,
           "/admin/validar"
         )
         // In-app bell notification for each admin
@@ -138,14 +140,16 @@ export default function GerenteBandejaPage() {
       solicitud_id: id, accion: newStatus, usuario_id: userId,
       detalle: (s?.tipo==="comprobacion"?"Devuelto para corrección: ":"Rechazado: ") + motivoRechazo.trim(), ts: new Date().toISOString(),
     })
+    const tituloRechazo = devolver ? "Solicitud devuelta para corrección" : "Solicitud rechazada"
+    const cuerpoRechazo = `Tu gerente ${devolver ? "devolvió" : "rechazó"} tu ${s?.tipo || "solicitud"} de ${fmtMXN(s?.monto || 0)}: ${motivoRechazo.trim()}`
     try {
       await sb.from("notificaciones").insert({
-        usuario_id: s?.usuario,
-        titulo: devolver ? "Solicitud devuelta para corrección" : "Solicitud rechazada",
-        cuerpo: `${id}: ${motivoRechazo.trim()}`, tipo: "rechazo",
-        leida: false, created_at: new Date().toISOString(),
+        usuario_id: s?.usuario, titulo: tituloRechazo,
+        cuerpo: cuerpoRechazo, tipo: "rechazo",
+        leida: false, solicitud_id: id, created_at: new Date().toISOString(),
       })
     } catch {}
+    if (s?.usuario) await notifyUsers([s.usuario], tituloRechazo, cuerpoRechazo, `/solicitudes/${id}`)
     setSolicitudes(prev => prev.filter(x => x.id !== id))
     setRechazandoId(null); setMotivoRechazo(""); setProcesando(null)
   }

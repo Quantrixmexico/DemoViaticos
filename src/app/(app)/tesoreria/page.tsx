@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { notifyUsers } from "@/lib/notify"
 import { fmtMXN, fmtFecha } from "@/lib/format"
 import { TipoBadge } from "@/components/ui/StatusBadge"
 import { SegmentedNav, TESORERIA_TABS } from "@/components/ui/SegmentedNav"
@@ -82,14 +83,16 @@ export default function TesoreriaLiberarPage() {
         solicitud_id: id, accion: newStatus, usuario_id: userId,
         detalle: "Liberado por tesorería", ts: new Date().toISOString(),
       })
-      // Notificar al solicitante
+      // Notificar al solicitante — in-app + push
+      const cuerpoSolicitante = `Tesorería liberó el pago de tu ${s.tipo} de ${fmtMXN(s.monto)}.`
       try {
         await sb.from("notificaciones").insert({
           usuario_id: s.usuario, titulo: "Pago liberado",
-          cuerpo: `Tu solicitud ${id} fue liberada para pago`, tipo: "liberacion",
-          leida: false, created_at: new Date().toISOString(),
+          cuerpo: cuerpoSolicitante, tipo: "liberacion",
+          leida: false, solicitud_id: id, created_at: new Date().toISOString(),
         })
       } catch {}
+      await notifyUsers([s.usuario], "Pago liberado", cuerpoSolicitante, `/solicitudes/${id}`)
     }
     await load(); setSelected(new Set()); setProcesando(false)
   }

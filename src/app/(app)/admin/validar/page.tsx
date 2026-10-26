@@ -67,14 +67,16 @@ export default function AdminValidarPage() {
       await notifyUsers(tesoUsers, "Nueva solicitud para liberar",
         `${usuarios[s.usuario]?.nombre||"Usuario"} · ${fmtMXN(s.monto)}`, `/tesoreria`)
     }
-    // Notify the solicitante
+    // Notify the solicitante — in-app + push
+    const cuerpoSolicitante = `Administración validó tu ${s.tipo} de ${fmtMXN(s.monto)}. Tesorería procederá con el pago.`
     try {
       await sb.from("notificaciones").insert({
-        usuario_id:s.usuario, titulo:"Solicitud validada por admin",
-        cuerpo:`Tu solicitud ${id} fue validada. Tesorería procederá con el pago.`,
-        tipo:"aprobacion", leida:false, created_at:new Date().toISOString(),
+        usuario_id:s.usuario, titulo:"Solicitud validada",
+        cuerpo:cuerpoSolicitante,
+        tipo:"aprobacion", leida:false, solicitud_id:id, created_at:new Date().toISOString(),
       })
     } catch {}
+    await notifyUsers([s.usuario], "Solicitud validada", cuerpoSolicitante, `/solicitudes/${id}`)
     setSolicitudes(prev=>prev.filter(x=>x.id!==id))
     setProcesando(null)
   }
@@ -99,14 +101,16 @@ export default function AdminValidarPage() {
       detalle:`${s?.tipo==="comprobacion"?"Devuelto para corrección":"Rechazado"} por admin: ${motivo.trim()}`,
       ts:new Date().toISOString(),
     })
+    const tituloRechazo = s?.tipo==="comprobacion" ? "Comprobación devuelta para corrección" : "Solicitud rechazada por administración"
+    const cuerpoRechazo = `Administración ${s?.tipo==="comprobacion" ? "devolvió" : "rechazó"} tu ${s?.tipo || "solicitud"} de ${fmtMXN(s?.monto || 0)}: ${motivo.trim()}`
     try {
-      const sb2 = createClient()
-      await sb2.from("notificaciones").insert({
-        usuario_id:s?.usuario, titulo: s?.tipo==="comprobacion" ? "Comprobación devuelta para corrección" : "Solicitud rechazada por Admin",
-        cuerpo:`${motivo.trim()}`, tipo:"rechazo", leida:false,
+      await sb.from("notificaciones").insert({
+        usuario_id:s?.usuario, titulo: tituloRechazo,
+        cuerpo:cuerpoRechazo, tipo:"rechazo", leida:false, solicitud_id:id,
         created_at:new Date().toISOString(),
       })
     } catch {}
+    if (s?.usuario) await notifyUsers([s.usuario], tituloRechazo, cuerpoRechazo, `/solicitudes/${id}`)
     setSolicitudes(prev=>prev.filter(x=>x.id!==id))
     setRechazandoId(null); setMotivo(""); setMotivoError(false); setProcesando(null)
   }
